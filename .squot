@@ -1,3 +1,4 @@
 OrderedDictionary {
-	'packages/FRCROTH-Tutorial' : #SquotTonelSerializer
+	'packages/FRCROTH-Tutorial' : #SquotTonelSerializer,
+	'packages/Dworphic-HandTracking' : #SquotTonelSerializer
 }
