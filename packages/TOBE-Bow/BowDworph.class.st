@@ -7,6 +7,12 @@ Class {
 { #category : #'as yet unclassified' }
 BowDworph >> render: props [
 
+	^ self renderFull: props
+]
+
+{ #category : #'as yet unclassified' }
+BowDworph >> renderFull: props [
+
 	| arrows world grabbedSide aim string |
 	arrows := self useState: {}.
 	grabbedSide := self useState: nil.
@@ -37,4 +43,19 @@ BowDworph >> render: props [
 					transform: t first;
 					strength: t second])
 			in: world}
+]
+
+{ #category : #'as yet unclassified' }
+BowDworph >> renderVisuals: props [
+
+	^ GDSpatial new
+		transform: (Matrix4x4 withOffset: 0 @ 1 @ 0);
+		children: {
+			self cubeVisualOfSize: 0.03 @ 0.6 @ 0.03 color: (Color r: 0.6 g: 0.2 b: 0.0).
+			(self cubeVisualOfSize: 0.03 @ 0.03 @ 0.1 color: (Color r: 0.6 g: 0.2 b: 0.0)) translation: 0 @ 0.3 @ 0.05.
+			(self cubeVisualOfSize: 0.03 @ 0.03 @ 0.1 color: (Color r: 0.6 g: 0.2 b: 0.0)) translation: 0 @ -0.3 @ 0.05.
+			self cubeVisualOfSize: 0.04 @ 0.08 @ 0.04 color: (Color r: 0.758 g: 0.58 b: 0.491).
+			GDSpatial new
+				transform: (Matrix4x4 withOffset: 0 @ 0 @ 0.1);
+				children: (self cubeVisualOfSize: 0.005 @ 0.6 @ 0.005 color: (Color r: 0.758 g: 0.58 b: 0.491))}
 ]
