@@ -16,8 +16,13 @@ LogDworph >> render: props [
 
 	| entries |
 	entries := self useProvided: #logEntries.
-	^ GRGrabbableArea new children: {
-		GDLabel3D new text: (entries get joinSeparatedBy: String crlf); horizontalAlignment: GDGlobalConstants halignLeft; verticalAlignment: GDGlobalConstants valignBottom.
-		(self cubeOfSize: (0.1@0.1@0.1) color: (Color red)).
+	^ GRGrabbableArea new translation: (0 @ 1 @ 0); children: {
+		GDLabel3D new
+			pixelSize: 0.002;
+			width: 300;
+			autowrap: true;
+			doubleSided: false;
+			 text: (entries get joinSeparatedBy: String crlf); horizontalAlignment: GDGlobalConstants halignLeft; verticalAlignment: GDGlobalConstants valignBottom.
+		(self cubeOfSize: (0.6@1@0.01) color: (Color gray)) translation: (0.3 @ 0.5 @ -0.006).
 	}.
 ]
