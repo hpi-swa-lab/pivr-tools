@@ -28,7 +28,7 @@ BowDworph >> renderFull: props [
 				self cubeVisualOfSize: 0.03 @ 0.6 @ 0.03 color: (Color r: 0.6 g: 0.2 b: 0.0).
 				(self cubeVisualOfSize: 0.03 @ 0.03 @ 0.1 color: (Color r: 0.6 g: 0.2 b: 0.0)) translation: 0 @ 0.3 @ 0.05.
 				(self cubeVisualOfSize: 0.03 @ 0.03 @ 0.1 color: (Color r: 0.6 g: 0.2 b: 0.0)) translation: 0 @ -0.3 @ 0.05.
-				(self cubeOfSize: 0.04 @ 0.08 @ 0.04 color: (Color r: 0.758 g: 0.58 b: 0.491))
+				(self cubeOfSize: 0.04 @ 0.08 @ 0.04 color: (Color r: 0.707 g: 0.523 b: 0.432))
 					subscribeTo: #'global_transform'
 					do: [:t | aim set: t].
 				GRGrabbableArea new
