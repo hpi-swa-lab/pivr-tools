@@ -1,4 +1,5 @@
 OrderedDictionary {
 	'packages/BaselineOfPiVR' : #SquotTonelSerializer,
-	'packages/TOBE-Tutorial' : #SquotTonelSerializer
+	'packages/TOBE-Tutorial' : #SquotTonelSerializer,
+	'packages/Dworphic-Attention' : #SquotTonelSerializer
 }
