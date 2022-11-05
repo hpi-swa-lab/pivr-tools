@@ -3,5 +3,6 @@ OrderedDictionary {
 	'packages/Dworphic-HandTracking' : #SquotTonelSerializer,
 	'packages/Dworphic-Log' : #SquotTonelSerializer,
 	'packages/TOBE-Bow' : #SquotTonelSerializer,
-	'packages/Dworphic-Browsing' : #SquotTonelSerializer
+	'packages/Dworphic-Browsing' : #SquotTonelSerializer,
+	'packages/BaselineOfPiVR' : #SquotTonelSerializer
 }
