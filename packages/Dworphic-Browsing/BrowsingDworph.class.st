@@ -28,7 +28,7 @@ BrowsingDworph >> render: props [
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
 		methods get collect: [:desc | (self methodAsComponent: #renderMethod:)  text: desc; key: desc ].
-		GRInteractiveArea new onButtonPress: [:e | e isTrigger ifTrue: [methods set: [:old | old copyWith: 'a ', ThreadSafeRandom next asString]]] ; children: {
+		GRInteractiveArea new onButtonPress: [:e | e isTrigger ifTrue: [methods set: [:old | old copyWith: (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value getSource asString]]] ; children: {
 		self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0.7 @ -0.5) 
 		}
 	}
