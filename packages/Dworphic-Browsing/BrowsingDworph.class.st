@@ -19,28 +19,18 @@ BrowsingDworph >> collisionShape [
 ]
 
 { #category : #'as yet unclassified' }
-BrowsingDworph >> createStyledTextMorph: text [
-
-	^ (SHTextStylerST80 new
-				classOrMetaClass: UndefinedObject;
-				styledTextFor: text asText) asMorph
-				backgroundColor: Color white;
-				yourself
-]
-
-{ #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
 | methods areaRef |
-	methods := self useState: [{'self start'}].
+	methods := self useState: {'self start'}.
 	areaRef:= self useGodotRef.
 
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
-		methods get collect: [:desc | self renderMethod:  {1 -> desc}].
-		GRInteractiveArea new onButtonPress: [methods set: [:old | old copyWith: 'self catchOnFire.']] ; children: {
-		self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0 @0) 
-		}; transform: (Matrix4x4 withOffset: 0 @ 0.7 @ -0.2 )
+		methods get collect: [:desc | (self methodAsComponent: #renderMethod:)  text: desc; key: desc ].
+		GRInteractiveArea new onButtonPress: [:e | e isTrigger ifTrue: [methods set: [:old | old copyWith: 'a ', ThreadSafeRandom next asString]]] ; children: {
+		self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0.7 @ -0.5) 
+		}
 	}
 	
 	
@@ -50,22 +40,34 @@ BrowsingDworph >> render: props [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [
 
- | grabbed text pressed |
+ | grabbed text pressed morph |
 
 grabbed := self useState: false.
 	pressed := self useState: false.
 	"self halt."
-	text := (props at: 1) value.
-
-	Transcript show: 'render Button'.
+	text := (props at: #text) value.
+	morph:= self useStyledTextMorph: text.
 
 ^ GRGrabbableArea new
     children: {GDCollisionShape new shape: self collisionShape.
-		FormDworph new
-			morph: (self createStyledTextMorph: text);
+		"GDLabel3D new
+			text: text;"
+			FormDworph new morph: morph;
 			rotationDegrees: 90 @ 0 @ 0.};
     onButtonPress: [:e | e isTrigger ifTrue: [pressed set: true]];
     onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
     onGrab: [grabbed set: true];
-    onRelease: [grabbed set: false]
+    onRelease: [grabbed set: false];
+translate: (Matrix4x4 withOffset: 0 @ 0.75 @ 0.1)
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> useStyledTextMorph: text [
+
+	
+	^ self useMemo: [(SHTextStylerST80 new
+				classOrMetaClass: UndefinedObject;
+				styledTextFor: text asText) asMorph
+				backgroundColor: Color white;
+				yourself] dependencies: {text}
 ]
