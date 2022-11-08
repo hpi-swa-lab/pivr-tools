@@ -31,19 +31,18 @@ BrowsingDworph >> createStyledTextMorph: text [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-| m grabbed pressed areaRef |
-	m := self
-		useMemo: [self createStyledTextMorph: 'self halt.']
-		dependencies: {}.
-	grabbed := self useState: false.
-	pressed := self useState: false.
+| methods areaRef |
+	methods := self useState: [{'self start'}].
 	areaRef:= self useGodotRef.
 
-	^ GRProvider values: {#areaRef -> areaRef} children: { GDSpatial new children: {
-	self renderMethod: {1 -> m}.
-	GRInteractiveArea new onButtonPress: [Transcript show: 'Pressed']; children: {
-	self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0 @0) 
-	} }
+	^ GRProvider values: {#areaRef -> areaRef} children: {
+		GDSpatial new children: {
+		methods get collect: [:desc | self renderMethod:  {1 -> desc}].
+		GRInteractiveArea new onButtonPress: [methods set: [:old | old copyWith: 'self catchOnFire.']] ; children: {
+		self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0 @0) 
+		}; transform: (Matrix4x4 withOffset: 0 @ 0.7 @ -0.2 )
+	}
+	
 	
 	
 ]
@@ -51,18 +50,19 @@ BrowsingDworph >> render: props [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [
 
- | grabbed m pressed |
+ | grabbed text pressed |
 
 grabbed := self useState: false.
 	pressed := self useState: false.
 	"self halt."
-	m := (props at: 1) value.
+	text := (props at: 1) value.
 
+	Transcript show: 'render Button'.
 
 ^ GRGrabbableArea new
     children: {GDCollisionShape new shape: self collisionShape.
 		FormDworph new
-			morph: m;
+			morph: (self createStyledTextMorph: text);
 			rotationDegrees: 90 @ 0 @ 0.};
     onButtonPress: [:e | e isTrigger ifTrue: [pressed set: true]];
     onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
