@@ -32,9 +32,10 @@ LogDworph >> render: props [
 { #category : #'as yet unclassified' }
 LogDworph >> renderQuad: props [
 
-	| entries viewport viewportRef |
+	| entries viewport viewportRef viewportTex |
 	entries := self useProvided: #logEntries.
 	viewportRef := self useGodotRef.
+	viewportTex := self useState: nil.
 	viewport := GDViewport new
 		name: 'logViewport';
 		size: (300 @ 200);
@@ -43,6 +44,7 @@ LogDworph >> renderQuad: props [
 		renderTargetVFlip: true;
 		renderTargetUpdateMode: GDViewport updateAlways;
 		ref: viewportRef;
+		subscribeCall: 'get_texture' with: #() do: [:tex | viewportTex set: tex];
 		children: {
 			GDControl new
 				rectSize: (300 @ 200);
@@ -63,7 +65,7 @@ LogDworph >> renderQuad: props [
 							flagsTransparent: true;
 							flagsUnshaded: true;
 							flagsAlbedoTexForceSrgb: true;
-							albedoTexture: "(GDImageTexture new loadPath: 'res://pivr-tools-assets/attention/icon.png')" (GDViewportTexture new viewportPath: (GRNodePath path: '../logViewport'); resourceLocalToScene: true);
+							albedoTexture: viewportTex get;
 							resourceLocalToScene: true
 					)
 			);
