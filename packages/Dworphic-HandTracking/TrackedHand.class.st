@@ -5,49 +5,49 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-TrackedHand >> render: props [
-
-	| node finger rootRef |
-	node := [GDMeshInstance new mesh: (GDCubeMesh new size: 0.01 asVector3)].
-	finger := [:name |
-		node value
-			name: name, 'Metacarpal';
-			children: (node value
-				name: name, 'Proximal';
-				children: (node value
-					name: name, 'Intermediate';
-					children: (node value
-						name: name, 'Distal';
-						children: (node value name: name, 'Tip'))))].
+TrackedHand >> render: props [ 
+	| node finger rootRef area tipRefs |
+	node := [GDMeshInstance new].
+	area := [GDArea new children: {self cubeOfSize: 0.01 color: Color red}].
+	tipRefs := self
+				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
+	
+	finger := [:name | node value name: name , 'Metacarpal';
+				 children: { node value name: name , 'Proximal';
+					 children: {node value name: name , 'Intermediate';
+						 children: {node value name: name , 'Distal';
+							 children: {node value name: name , 'Tip';
+								 children: {area value
+									ref: (tipRefs get at: name)}}}}}].
 	rootRef := self useGodotRef.
 	self
-		useEffect: [
-			rootRef get setScript: (GRReactCurrentSession value loadResource: 'res://addons/godot-openxr/config/OpenXRHand.gdns').
+		useEffect: [rootRef get
+				setScript: (GRReactCurrentSession value loadResource: 'res://addons/godot-openxr/config/OpenXRHand.gdns').
 			GRReactCurrentSession value
 				callOn: rootRef get
 				method: 'set_hand'
-				arguments: {(props at: #side) = #left ifTrue: [0] ifFalse: [1]}.
+				arguments: {(props at: #side)
+							= #left
+						ifTrue: [0]
+						ifFalse: [1]}.
 			GRReactCurrentSession value
 				callOn: rootRef get
 				method: '_ready'
 				arguments: {}.
 			rootRef get setPhysicsProcessEnable: true]
 		dependencies: {}.
-	^ GDSpatial new
-		ref: rootRef;
-		children: {
-			node value
-				name: 'Wrist';
-				children: {
-					node value
-						name: 'ThumbMetacarpal';
-						children: (node value
-							name: 'ThumbProximal';
-							children: (node value
-								name: 'ThumbDistal';
-								children: (node value name: 'ThumbTip'))).
-					finger value: 'Index'.
-					finger value: 'Middle'.
-					finger value: 'Ring'.
-					finger value: 'Little'}}
+	^ GDSpatial new ref: rootRef;
+		 children: {node value name: 'Wrist';
+			 children: {area value. node value name: 'ThumbMetacarpal';
+				 children: {area value. node value name: 'ThumbProximal';
+					 children: {area value. node value name: 'ThumbDistal';
+						 children: {area value. node value name: 'ThumbTip';
+							 children: {GDArea new children: {self cubeOfSize: 0.01 color: Color red};
+								
+								onAreaEntered: [:other | 
+									| name |
+									name := ((tipRefs get values collect: [:ref | ref get]) select: [:el | el = other]) at: 1 ifAbsent: [].
+
+									name
+										ifNotNil: [Transcript show: 'Thumb tip touched ' , name]]}}}}. finger value: 'Index'. finger value: 'Middle'. finger value: 'Ring'. finger value: 'Little'}}
 ]
