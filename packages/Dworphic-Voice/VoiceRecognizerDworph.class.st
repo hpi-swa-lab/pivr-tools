@@ -28,7 +28,7 @@ extends AudioStreamPlayer
 class_name GRVoiceRecognizer
 
 const bus_name = "SQUEAK_VOICE_RECORDER"
-const host = "http://localhost:8000/transcribe"
+const host = "http://127.0.0.1:5000/transcribe"
 
 var is_recording setget set_recording
 
@@ -87,7 +87,7 @@ func set_recording(var is_recording: bool):
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText |
+	| isRecording script lastText head right distance shouldRecord headPortal |
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: ''.
@@ -101,6 +101,14 @@ VoiceRecognizerDworph >> render: props [
 			[script get unreference]]
 		dependencies: {}.
 	
+	head := self useHeadTransform.
+	right := self useProvided: #rightControllerTransform.
+	headPortal := self useProvided: #headPortal.
+	distance := head translation distanceTo: right translation.
+	shouldRecord := distance < 0.3.
+	
+	self useEffect: [Transcript showln: shouldRecord. isRecording set: shouldRecord] dependencies: {shouldRecord}.
+	
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: true]]
 		release: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: false]]
@@ -109,9 +117,10 @@ VoiceRecognizerDworph >> render: props [
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
-			GDLabel3D new
+			CMFReactNodePortal child: (isRecording get ifTrue: [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g: 0 b: 0) ) translation: -2 @ 2 @ -5] ifFalse:  [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0)) translation: -2 @ 2 @ -5]) in: headPortal.
+			CMFReactNodePortal child: (GDLabel3D new
 				text: lastText get;
-				translation: 0 @ 1 @ 0.
+				translation: -1 @ 2 @ -5) in: headPortal.
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
 				set: #'is_recording' to: isRecording get;
