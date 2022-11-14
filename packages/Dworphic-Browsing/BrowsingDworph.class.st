@@ -19,56 +19,44 @@ BrowsingDworph >> collisionShape [
 ]
 
 { #category : #'as yet unclassified' }
-BrowsingDworph >> createStyledTextMorph: text [
-
-	^ (SHTextStylerST80 new
-				classOrMetaClass: UndefinedObject;
-				styledTextFor: text asText) asMorph
-				backgroundColor: Color white;
-				yourself
-]
-
-{ #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-| m grabbed pressed areaRef |
-	m := self
-		useMemo: [self createStyledTextMorph: 'self halt.']
-		dependencies: {}.
-	grabbed := self useState: false.
-	pressed := self useState: false.
+| methods areaRef |
+	methods := self useState: {'self start'}.
 	areaRef:= self useGodotRef.
-
-	^ GRProvider values: {#areaRef -> areaRef} children: { GDSpatial new children: {
-	self renderMethod: {1 -> m}.
-	GRInteractiveArea new onButtonPress: [Transcript show: 'Pressed']; children: {
-	self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0 @0) 
-	}.
-	self renderSphere: 5 }
-	
+	^ GRProvider values: {#areaRef -> areaRef} children: {
+		GDSpatial new children: {
+		methods get collect: [:desc | (self methodAsComponent: #renderMethod:)  text: desc; key: desc ].
+		GRInteractiveArea new onButtonPress: [:e | e isTrigger ifTrue: [methods set: [:old | old copyWith: (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value getSource asString]]] ; children: {
+		self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum}; transform: (Matrix4x4 withOffset: 0 @ 0.7 @ -0.5) 
+		}.
+		self renderSphere: 5
+	}
 	
 ]
 
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [
-
- | grabbed m pressed |
+| grabbed text pressed morph |
 
 grabbed := self useState: false.
 	pressed := self useState: false.
 	"self halt."
-	m := (props at: 1) value.
-
+	text := (props at: #text) value.
+	morph:= self useStyledTextMorph: text.
 
 ^ GRGrabbableArea new
     children: {GDCollisionShape new shape: self collisionShape.
-		FormDworph new
-			morph: m;
+		"GDLabel3D new
+			text: text;"
+			FormDworph new morph: morph;
 			rotationDegrees: 90 @ 0 @ 0.};
-    onButtonPress: [:e | e isTrigger ifTrue: [pressed set: true]];
+    onButtonPress: [:e | e isTrigger ifTrue: [pressed set: true]. e button = GDGlobalConstants joyOculusBy ifTrue: [Transcript show: e transform forwardRay]];
     onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
     onGrab: [grabbed set: true];
-    onRelease: [grabbed set: false]
+    onRelease: [grabbed set: false];
+translate: (Matrix4x4 withOffset: 0 @ 0.75 @ 0.1)
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -84,6 +72,16 @@ BrowsingDworph >> renderSphere: radius [
 BrowsingDworph >> useSkyTexture [
 
 	^ self
-		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sky.jpg']
+		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sky_slim_low_res.png']
 		dependencies: #()
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> useStyledTextMorph: text [
+
+	^ self useMemo: [(SHTextStylerST80 new
+				classOrMetaClass: UndefinedObject;
+				styledTextFor: text asText) asMorph
+				backgroundColor: Color white;
+				yourself] dependencies: {text}
 ]
