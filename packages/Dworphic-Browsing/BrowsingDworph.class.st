@@ -37,21 +37,23 @@ BrowsingDworph >> render: props [
 
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [
-| grabbed text pressed morph |
+| grabbed text pressed morph debugPosition |
 
 grabbed := self useState: false.
 	pressed := self useState: false.
 	"self halt."
 	text := (props at: #text) value.
 	morph:= self useStyledTextMorph: text.
+	 debugPosition := self useState: 0@0@0.
 
 ^ GRGrabbableArea new
     children: {GDCollisionShape new shape: self collisionShape.
 		"GDLabel3D new
 			text: text;"
 			FormDworph new morph: morph;
-			rotationDegrees: 90 @ 0 @ 0.};
-    onButtonPress: [:e | e isTrigger ifTrue: [pressed set: true]. e button = GDGlobalConstants joyOculusBy ifTrue: [Transcript show: e transform forwardRay]];
+			rotationDegrees: 90 @ 0 @ 0.
+			DebugDworph new point: debugPosition get};
+    onButtonPress: [:e | e isTrigger ifTrue: [pressed set: true]. e button = GDGlobalConstants joyOculusBy ifTrue: [debugPosition set: (e transform forwardRay intersectSphere: 0 @ 0 @ 0 radius: 5) second]];
     onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
     onGrab: [grabbed set: true];
     onRelease: [grabbed set: false];
