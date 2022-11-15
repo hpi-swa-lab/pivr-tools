@@ -12,5 +12,5 @@ TimedLoggingDworph >> render: props [
 	value := props at: #value.
 	interval := props at: #interval.
 	
-	 ^ GDTimer new autostart: true; onTimeout: [log value: value]; timeout: interval
+	 ^ GDTimer new autostart: true; onTimeout: [log value: value]; waitTime: interval
 ]
