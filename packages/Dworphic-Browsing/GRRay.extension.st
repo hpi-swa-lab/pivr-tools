@@ -17,8 +17,7 @@ GRRay >> intersectSphere: sphereOrigin radius: sphereRadius [
 ]
 
 { #category : #'*Dworphic-Browsing' }
-GRRay >> origin: aVector direction: anotherVector [
+GRRay >> pointFromOrigin: dist [
 
-	origin := aVector.
-	direction := anotherVector
+	^ origin + ((direction normalized) * dist)
 ]
