@@ -5,7 +5,7 @@ OrderedDictionary {
 	'packages/TOBE-Bow' : #SquotTonelSerializer,
 	'packages/Dworphic-Browsing' : #SquotTonelSerializer,
 	'packages/BaselineOfPiVR' : #SquotTonelSerializer,
-	'packages/TOBE-Tutorial' : #SquotTonelSerializer,
 	'packages/Dworphic-Attention' : #SquotTonelSerializer,
-	'packages/Dworphic-Voice' : #SquotTonelSerializer
+	'packages/Dworphic-Voice' : #SquotTonelSerializer,
+	'packages/BCD-Tutorial' : #SquotTonelSerializer
 }
