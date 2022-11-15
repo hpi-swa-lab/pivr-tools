@@ -37,6 +37,7 @@ LogDworph >> render: props [
 				}
 		}.
 		GDMeshInstance new
+			children: (DebugDworph new point: 0 asVector3);
 			mesh: (
 				GDQuadMesh new
 					size: (1.5 @ 1);

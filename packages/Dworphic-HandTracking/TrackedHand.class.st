@@ -579,7 +579,7 @@ TrackedHand >> a1000CommonEnglishWordList [
 	'nothing'.
 	'notice'.
 	'now'.
-	'n’t'.
+	'nt'.
 	'number'.
 	'occur'.
 	'of'.
@@ -1028,7 +1028,7 @@ TrackedHand >> buildTree: aListOfWords [
 	aListOfWords do: [:word |
 		currentNode := rootNode.
 		word do: [:char | 
-			currentNode := currentNode getChild: (self fingerCharacterMapping at: (char asString)).
+			currentNode := currentNode getChild: (self fingerCharacterMapping at: (char asString translateToLowercase)).
 		].
 		currentNode words add: word.
 	].
@@ -1057,38 +1057,47 @@ TrackedHand >> node [
 { #category : #'as yet unclassified' }
 TrackedHand >> oldFingerCharacterMapping [
 
-	^ Dictionary newFromPairs: {
-		'Littleleft'. 'a'.
-		'Ringleft'. 's'.
-		'Middleleft'. 'd'.
-		'Indexleft'. 'f'.
-		'Littleright'. 'o'.
-		'Ringright'. 'l'.
-		'Middleright'. 'k'.
-		'Indexright'. 'j'.
+	^ {
+		'Littleleft'. 
+		'Ringleft'.
+		'Middleleft'.
+		'Indexleft'. 
+		'Littleright'. 
+		'Ringright'. 
+		'Middleright'. 
+		'Indexright'.
 	}
 ]
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log |
-
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log currentWordRef rootNodeRef currentNodeRef |
+	
+	rootNodeRef := self useProvidedRef: #rootNode.
+	currentNodeRef := self useProvidedRef: #currentNode.
+	self useEffect: [self buildTree: self a1000CommonEnglishWordList.
+		rootNodeRef get set: rootNode.
+		currentNodeRef get set: rootNode.]
+		 dependencies: #().
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
-	"log := self useLog."
-	log := [:text | Transcript show: text].
 	
-	tipPos := self useState: (Vector3 zero).
-	proximalPos := self useState: (Vector3 zero).
-	metacarpalPos := self useState: (Vector3 zero).
+	
+	currentWordRef := self useProvidedRef: #pinchtypeWord.
+	 "log := [:message | currentWordRef get set: [:word | word, message]]."
+	log := [:text | Transcript show: text].
+	"log := self useLog."
+	
+	tipPos := self useState: Vector3 zero.
+	proximalPos := self useState: Vector3 zero.
+	metacarpalPos := self useState: Vector3 zero.
 	
 	waitForRelease := self useState: false.
 	angle := (tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get).
 	
 	(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
-		log value: ((props at: #side) = #left
-						ifTrue: Character space
-						ifFalse: Character linefeed).
+		log value: 'Suggestions recieved for input: ', (self traverse: currentNodeRef get get) words.
+		currentNodeRef get set: rootNodeRef get get.
 		waitForRelease set: true.
 		] .
 	(angle > 2 and: waitForRelease get) ifTrue: [
@@ -1111,7 +1120,7 @@ TrackedHand >> render: props [
 										noDepthTest: true;
 										fixedSize: true;
 										pixelSize: 0.005;
-										translation: 0 @ 0.01 @ 0; text: (self fingerCharacterMapping at: (name, (props at: #side)))}}}}}].
+										translation: 0 @ 0.01 @ 0; text: (self oldFingerCharacterMapping indexOf: (name, (props at: #side)))}}}}}].
 	rootRef := self useGodotRef.
 	
 	self useRegisterHandsSide: (props at: #side) ref: rootRef.
@@ -1123,6 +1132,10 @@ TrackedHand >> render: props [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> renderThumb: props [
+	
+	| currentNodeRef rootNodeRef |
+	rootNodeRef := self useProvidedRef: #rootNode.
+	currentNodeRef := self useProvidedRef: #currentNode.
 	^ props extract: [:log :tipRefs :side |
 		self node name: 'ThumbMetacarpal';
 				 children: {self node name: 'ThumbProximal';
@@ -1132,9 +1145,12 @@ TrackedHand >> renderThumb: props [
 								onAreaEntered: [:other | (tipRefs get
 										associationsSelect: [:asc | asc value get = other]) associations
 										ifNotEmpty: [:list |
-											 log
-												value: (self fingerCharacterMapping at: list first key
-															, side)]]}}}}
+											|index|
+											 index := self oldFingerCharacterMapping indexOf: (list first key
+															, side).
+											log value: ('Detected input ', list first key
+															, side).
+											currentNodeRef get set: (currentNodeRef get get getChild: index).]]}}}}
 		].
 
 ]
@@ -1157,9 +1173,13 @@ TrackedHand >> traverse: node [
 	allWords := Bag new.
 	
 	node children do: [:child |
+		child ifNotNil: [
 		(child words isEmpty) ifFalse: [allWords add: child words].
 		(child hasChildren) ifTrue: [self traverse: child].
-	]
+		].
+	].
+
+	^ allWords.
 ]
 
 { #category : #'as yet unclassified' }
