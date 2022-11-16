@@ -12,6 +12,12 @@ LogDworph class >> appDescription [
 ]
 
 { #category : #'as yet unclassified' }
+LogDworph >> fontSize [
+
+	^ 50
+]
+
+{ #category : #'as yet unclassified' }
 LogDworph >> render: props [
 
 	| entries viewportTex |
@@ -21,18 +27,21 @@ LogDworph >> render: props [
 	^ {
 		GDViewport new
 		name: 'logViewport';
-		size: (600 @ 400);
+		size: self resolution;
 		renderTargetVFlip: true;
 		renderTargetUpdateMode: GDViewport updateAlways;
 		subscribeCall: 'get_texture' with: #() do: [:tex | viewportTex set: tex];
 		children: {
 			GDControl new
-				rectSize: (600 @ 400);
+				rectSize: self resolution;
 				children: {
 					GDScrollContainer new
-						rectSize: (600 @ 400);
+						rectSize: self resolution;
 						children: {
-							GDLabel new rectSize: (600 @ 400); text: (entries get joinSeparatedBy: String crlf)
+							GDLabel new rectSize: self resolution; 
+								theme: (GDTheme new defaultFont: 
+									(GDDynamicFont new fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf'); size: self fontSize));
+								text: (entries get joinSeparatedBy: String crlf)
 						}
 				}
 		}.
@@ -50,4 +59,10 @@ LogDworph >> render: props [
 			);
 			translation: (0 @ 1 @ 0).
 	}
+]
+
+{ #category : #'as yet unclassified' }
+LogDworph >> resolution [
+
+	^ (3000 @ 2000)
 ]
