@@ -36,13 +36,17 @@ LogDworph >> render: props [
 				rectSize: self resolution;
 				children: {
 					GDScrollContainer new
-						rectSize: self resolution;
-						children: {
-							GDLabel new rectSize: self resolution; 
-								theme: (GDTheme new defaultFont: 
-									(GDDynamicFont new fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf'); size: self fontSize));
-								text: (entries get joinSeparatedBy: String crlf)
+						rectSize: self resolution; followFocus: true;
+						children: {GDVBoxContainer new rectSize: self resolution; 
+							sizeFlagsHorizontal: GDVBoxContainer sizeExpandFill; 
+							children: {(entries get collect: [:entry | 
+								{GDLabel new theme: (GDTheme new defaultFont: 
+									(GDDynamicFont new fontData: 
+										(GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf'); size: self fontSize));
+								 text: entry.
+							GDHSeparator new sizeFlagsHorizontal: GDHSeparator sizeExpandFill.}]). 
 						}
+					}
 				}
 		}.
 		GDMeshInstance new
