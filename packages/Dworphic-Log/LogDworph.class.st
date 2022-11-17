@@ -45,6 +45,7 @@ LogDworph >> render: props [
 										(GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf'); size: self fontSize));
 								 text: entry.
 							GDHSeparator new sizeFlagsHorizontal: GDHSeparator sizeExpandFill.}]). 
+							GDControl new focusMode: GDControl focusAll; subscribeCall: 'grab_focus' with: #() do: [].
 						}
 					}
 				}
