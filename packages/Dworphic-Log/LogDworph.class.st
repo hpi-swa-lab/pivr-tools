@@ -14,7 +14,7 @@ LogDworph class >> appDescription [
 { #category : #'as yet unclassified' }
 LogDworph >> fontSize [
 
-	^ 50
+	^ 30
 ]
 
 { #category : #'as yet unclassified' }
@@ -37,12 +37,14 @@ LogDworph >> render: props [
 				children: {
 					GDScrollContainer new
 						rectSize: self resolution; followFocus: true;
+						scrollHorizontalEnabled: false;
 						children: {GDVBoxContainer new rectSize: self resolution; 
 							sizeFlagsHorizontal: GDVBoxContainer sizeExpandFill; 
-							children: {(entries get collect: [:entry | 
+							children: {((entries get last: (20 min: entries get size)) collect: [:entry | 
 								{GDLabel new theme: (GDTheme new defaultFont: 
 									(GDDynamicFont new fontData: 
 										(GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf'); size: self fontSize));
+								autowrap: true;
 								 text: entry.
 							GDHSeparator new sizeFlagsHorizontal: GDHSeparator sizeExpandFill.}]). 
 							GDControl new focusMode: GDControl focusAll; subscribeCall: 'grab_focus' with: #() do: [].
@@ -69,5 +71,5 @@ LogDworph >> render: props [
 { #category : #'as yet unclassified' }
 LogDworph >> resolution [
 
-	^ (3000 @ 2000)
+	^ (1500 @ 1000)
 ]
