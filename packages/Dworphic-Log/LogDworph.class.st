@@ -52,6 +52,8 @@ LogDworph >> render: props [
 					}
 				}
 		}.
+		GRGrabbableArea new children: {
+		GDCollisionShape new shape: (GDBoxShape new extents: (1.5 @ 1 @ 0.1)).
 		GDMeshInstance new
 			mesh: (
 				GDQuadMesh new
@@ -63,8 +65,20 @@ LogDworph >> render: props [
 							albedoTexture: viewportTex get;
 							resourceLocalToScene: true
 					)
-			);
-			translation: (0 @ 1 @ 0).
+			).
+		GDMeshInstance new
+			mesh: (
+				GDQuadMesh new
+					size: (1.5 @ 1);
+					material: (
+						GDSpatialMaterial new 
+							flagsUnshaded: true;
+							flagsAlbedoTexForceSrgb: true;
+							albedoTexture: viewportTex get;
+							resourceLocalToScene: true
+					)
+			); rotationDegrees: (0 @ 180 @ 0)
+			}
 	}
 ]
 
