@@ -3,7 +3,8 @@ Class {
 	#superclass : #ExternalLibrary,
 	#instVars : [
 		'working',
-		'context'
+		'context',
+		'destroyQueued'
 	],
 	#category : #'Dworphic-Voice'
 }
@@ -11,22 +12,16 @@ Class {
 { #category : #'as yet unclassified' }
 WhisperCpp class >> ensureModel: aModelNameString [
 
-	| output res |
+	| output |
 	"Links from here: https://github.com/ggerganov/whisper.cpp/blob/master/models/download-ggml-model.sh"
 	output := FileDirectory default / ('ggml-{1}.bin' format: {aModelNameString}).
 	output exists ifTrue: [^ output fullName].
 	
-	'Fetching Whisper Model: ' displaySequentialProgress: [
-		ProgressNotification signal: 0.0 extra: 'Downloading ...'.
-		res := WebClient httpGet: ('https://huggingface.co/datasets/ggerganov/whisper.cpp/resolve/main/ggml-{1}.bin' format: {aModelNameString}).
+	'Fetching Whisper Model: ' displaySequentialProgress: [ | content |
+		ProgressNotification signal: 0.1 extra: 'Downloading ...'.
+		content := ('https://huggingface.co/datasets/ggerganov/whisper.cpp/resolve/main/ggml-{1}.bin' format: {aModelNameString}) asUrl retrieveContents contentStream binary contents.
 		ProgressNotification signal: 0.9 extra: 'Saving ...'.
-		FileStream forceNewFileNamed: output fullName do: [:s | | content |
-			content := res contentWithProgress: [:total :amount |
-				HTTPProgress new
-					total: total;
-					amount: amount;
-					signal: 'Progress'].
-			self halt.
+		FileStream forceNewFileNamed: output fullName do: [:s |
 			s
 				binary;
 				nextPutAll: content]].
@@ -145,6 +140,9 @@ WhisperCpp >> currentString [
 { #category : #api }
 WhisperCpp >> destroy [
 
+	working ifTrue: [
+		destroyQueued := true.
+		^ self].
 	(context notNil and: [context isNull not]) ifTrue: [self free: context]
 ]
 
@@ -239,7 +237,8 @@ WhisperCpp >> init: aPathString [
 WhisperCpp >> initialize [
 
 	super initialize.
-	working := false
+	working := false.
+	destroyQueued := false
 ]
 
 { #category : #utils }
@@ -270,7 +269,7 @@ WhisperCpp >> transcribeMonoPCMF32: aCollection do: aBlock [
 	[
 		[self fullThreadIsComplete] whileFalse: [10 milliSeconds wait].
 		working := false.
-		aBlock value: self currentString] fork
+		destroyQueued ifTrue: [self destroy] ifFalse: [aBlock value: self currentString]] fork
 ]
 
 { #category : #api }
