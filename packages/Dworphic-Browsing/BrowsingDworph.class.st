@@ -20,9 +20,10 @@ BrowsingDworph >> collisionShape [
 
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [ 
-	| methods areaRef |
+	| methods areaRef debugPosition |
 	methods := self useState: {'self start'}.
 	areaRef := self useGodotRef.
+	 debugPosition := self useState: 0@0@0.
 	^ GRProvider values: {#areaRef -> areaRef} children: {GDSpatial new children: {methods get
 				collect: [:desc | (self methodAsComponent: #renderMethod:) text: desc;
 						 key: desc]. GRInteractiveArea new
@@ -37,35 +38,34 @@ BrowsingDworph >> render: props [
 
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [ 
-	| grabbed text pressed morph debugPosition world |
+	| grabbed text pressed morph debugPosition world transform |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	world := self useWorldPortal.
-	"self halt."
 	text := (props at: #text) value.
 	morph := self useStyledTextMorph: text.
 	debugPosition := self useState: 0 @ 0 @ 0.
+	transform := self useState: ((Matrix4x4 identity) rotation: 90 around: 1 @ 0 @ 0; translation: 0 @ 1 @ 0).
 	^ GRGrabbableArea new children: {GDCollisionShape new shape: self collisionShape. FormDworph new morph: morph;
-			 rotationDegrees: 90 @ 0 @ 0. 
+			 rotationDegrees: 90 @ 0 @ 0. "TODO: Make the collision shape as big as the method"
 			CMFReactNodePortal child: (
-			DebugDworph new point: debugPosition get; scale: 6 @ 6 @ 6) in: world};
+			DebugDworph new label: 'Intersection'; point: debugPosition get; scale: 6 @ 6 @ 6) in: world.
+			};
 		
 		onButtonPress: [:e | 
-			"GDLabel3D new
-			text: text;"
 			e isTrigger
 				ifTrue: [pressed set: true].
 			e button = GDGlobalConstants joyOculusBy
-				ifTrue: [debugPosition set: (e transform forwardRay intersectSphere: 0 @ 0 @ 0 radius: 5) first]];
+				ifTrue: [debugPosition set: (e transform forwardRay intersectSphere: 0 @ 0 @ 0 radius: 5) second].];
 		
 		onButtonRelease: [:e | e isTrigger
 				ifTrue: [pressed set: false]];
 		
 		onGrab: [grabbed set: true];
 		
-		onRelease: [grabbed set: false];
+		onRelease: [:e | transform set: e transform. grabbed set: false];
 		
-		translate: (Matrix4x4 withOffset: 0 @ 0.75 @ 0.1)
+		transform: transform get.
 ]
 
 { #category : #'as yet unclassified' }
