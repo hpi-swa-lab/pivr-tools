@@ -28,7 +28,7 @@ extends AudioStreamPlayer
 class_name GRVoiceRecognizer
 
 const bus_name = "SQUEAK_VOICE_RECORDER"
-const host = "http://127.0.0.1:5000/transcribe"
+const host = "http://127.0.0.1:8000/transcribe"
 
 var is_recording setget set_recording
 
@@ -72,6 +72,8 @@ func set_recording(var is_recording: bool):
 		print("recording now..")
 	else:
 		var recording: AudioStreamSample = recordEffect.get_recording()
+		if not recording:
+			return
 		recordEffect.set_recording_active(false)
 		var localSavePath = "res://voicerecording.wav"
 		recording.save_to_wav(localSavePath)
@@ -85,12 +87,24 @@ func set_recording(var is_recording: bool):
 ]
 
 { #category : #'as yet unclassified' }
+VoiceRecognizerDworph >> match: aString on: aCollectionOfIntentHandlers [
+
+	aCollectionOfIntentHandlers do: [:ref | | callback string |
+		string := ref get key.
+		callback := ref get value.
+		
+		aString = string ifTrue: [^ callback value]]
+]
+
+{ #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal |
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers |
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: ''.
+	
+	intentHandlers := self useProvided: #voiceIntentHandlers.
 	
 	self
 		useEffect: [
@@ -117,12 +131,18 @@ VoiceRecognizerDworph >> render: props [
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
-			CMFReactNodePortal child: (isRecording get ifTrue: [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g: 0 b: 0) ) translation: -2 @ 2 @ -5] ifFalse:  [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0)) translation: -2 @ 2 @ -5]) in: headPortal.
+			CMFReactNodePortal child: (isRecording get ifTrue: [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g: 0 b: 0) ) translation: -2 @ 1.5 @ -5] ifFalse:  [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0)) translation: -2 @ 1.5 @ -5]) in: headPortal.
 			CMFReactNodePortal child: (GDLabel3D new
 				text: lastText get;
-				translation: -1 @ 2 @ -5) in: headPortal.
+				translation: -1.5 @ 1.5 @ -5;
+				horizontalAlignment: 0; 
+				verticalAlignment: 0;
+				width: 400;
+				autowrap: true) in: headPortal.
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
 				set: #'is_recording' to: isRecording get;
-				set: #'text_recognized' to: [:text | lastText set: text]}]
+				set: #'text_recognized' to: [:text |
+					lastText set: text.
+					self match: text on: intentHandlers]}]
 ]
