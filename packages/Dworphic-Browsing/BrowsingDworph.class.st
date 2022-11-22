@@ -44,6 +44,14 @@ BrowsingDworph >> collisionShape [
 ]
 
 { #category : #'as yet unclassified' }
+BrowsingDworph >> getTextMorphShape: morph [
+
+	| extent |
+	extent := morph imageForm extent.
+	^ (self godot: #BoxShape) extents: 0.015 @ (extent x * 0.0005) @ (extent y * 0.0005)
+]
+
+{ #category : #'as yet unclassified' }
 BrowsingDworph >> pinpoardCenter [
 
 	^ 0 @ 1.5 @ 0
@@ -71,7 +79,7 @@ BrowsingDworph >> render: props [
 			GRInteractiveArea new
 				onButtonPress: [:e | e isTrigger ifTrue: [methods set: [:old | old copyWith: (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value getSource asString]]];
 				children: {
-					self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum.
+					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color bubblegum.
 					GDLabel3D new
 						text: 'Create new random method';
 						pixelSize: 0.0035;
@@ -81,7 +89,7 @@ BrowsingDworph >> render: props [
 			GRInteractiveArea new
 				onButtonPress: [:e | e isTrigger ifTrue: [methods set: {}]];
 				children: {
-					self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color red.
+					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color red.
 					GDLabel3D new
 						text: 'Delete all methods';
 						pixelSize: 0.0035;
@@ -89,25 +97,6 @@ BrowsingDworph >> render: props [
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
 		self renderSphere: 5}
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> renderButton: props [
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> renderButton: action position: pos color: c text: t [
-
-	GRInteractiveArea new
-		onButtonPress: action;
-		children: {
-			self cubeOfSize: 0.3 @ 0.2 @ 0.1 color: c.
-			GDLabel3D new
-				text: t;
-				pixelSize: 0.0035;
-				billboard: GDSpatialMaterial billboardEnabled;
-				transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
-		transform: (pos)
 ]
 
 { #category : #'as yet unclassified' }
@@ -121,8 +110,9 @@ BrowsingDworph >> renderMethod: props [
 	morph := self useStyledTextMorph: text.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	transform := self useState: (Matrix4x4 identity
-		rotation: 90 around: 1 @ 0 @ 0;
-		translation: 0 @ 1 @ 0.5).
+		rotation: -180 around: 1 @ 0 @ 0;
+		rotation: 180 around: 0 @ 1 @ 0;
+		translation: 0 @ 1.5 @ 0.5).
 	
 	onPinboard := self useState: false.
 	
@@ -133,7 +123,9 @@ BrowsingDworph >> renderMethod: props [
 	
 	^ GRGrabbableArea new
 		children: {
-			GDCollisionShape new shape: self collisionShape.
+			GDCollisionShape new
+				shape: (self getTextMorphShape: morph);
+				rotation: 90 @ 0 @ 300.
 			GDSpatial new
 				children: {
 					FormDworph new
@@ -146,7 +138,7 @@ BrowsingDworph >> renderMethod: props [
 						in: world};
 				rotation: 90 @ 0 @ 0};
 		transform: transform get;
-		onButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [onPinboard set: true]];
+		onButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [onPinboard set: onPinboard get not]];
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [grabbed set: true];
 		onRelease: [:e |
