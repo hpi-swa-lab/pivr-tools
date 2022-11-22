@@ -59,10 +59,9 @@ func init():
 # Called when the HTTP request is completed.
 func _transcription_completed(result, response_code, headers, body):
 	var bodyString = body.get_string_from_utf8()
-	var response = parse_json(bodyString)
+	#var response = parse_json(bodyString)
 	# Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
-	print(response)
-	emit_signal("text_recognized", response["text"])
+	emit_signal("text_recognized", bodyString)
 	
 func set_recording(var is_recording: bool):
 	if recordEffect == null:
@@ -79,6 +78,7 @@ func set_recording(var is_recording: bool):
 		recording.save_to_wav(localSavePath)
 		print("saved recording")
 		var globalSavePath = ProjectSettings.globalize_path(localSavePath)
+		print(globalSavePath)
 		var body = to_json({"path": globalSavePath})
 		var error = http.request(host, [], false, HTTPClient.METHOD_POST, body)
 		if error != OK:
@@ -89,11 +89,11 @@ func set_recording(var is_recording: bool):
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> match: aString on: aCollectionOfIntentHandlers [
 
-	aCollectionOfIntentHandlers do: [:ref | | callback string |
-		string := ref get key.
+	aCollectionOfIntentHandlers get do: [:ref | | callback intentString |
+		intentString := ref get key.
 		callback := ref get value.
 		
-		aString = string ifTrue: [^ callback value]]
+		(aString = intentString) ifTrue: [^ callback value]]
 ]
 
 { #category : #'as yet unclassified' }
@@ -102,7 +102,7 @@ VoiceRecognizerDworph >> render: props [
 	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers |
 	isRecording := self useState: false.
 	script := self useState: nil.
-	lastText := self useState: ''.
+	lastText := self useState: 'Say "show" to show applications, and "hide" to hide them.'.
 	
 	intentHandlers := self useProvided: #voiceIntentHandlers.
 	
@@ -142,7 +142,8 @@ VoiceRecognizerDworph >> render: props [
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
 				set: #'is_recording' to: isRecording get;
-				set: #'text_recognized' to: [:text |
-					lastText set: text.
-					self match: text on: intentHandlers]}]
+				set: #'text_recognized' to: [:text | | json |
+					json := Json readFrom: (text utf8ToSqueak readStream).
+					lastText set: (json at: 'text').
+					self match: (json at: #intent) on: intentHandlers]}]
 ]
