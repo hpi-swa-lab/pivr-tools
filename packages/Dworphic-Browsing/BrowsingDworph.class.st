@@ -71,7 +71,11 @@ BrowsingDworph >> render: props [
 			GRInteractiveArea new
 				onButtonPress: [:e | e isTrigger ifTrue: [methods set: [:old | old copyWith: (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value getSource asString]]];
 				children: {self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color bubblegum};
-				transform: (Matrix4x4 withOffset: 0 @ 1 @0)}.
+				transform: (Matrix4x4 withOffset: 0 @ 1 @ 0).
+			GRInteractiveArea new
+				onButtonPress: [:e | e isTrigger ifTrue: [methods set: {}]];
+				children: {self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color red. GDLabel3D new text: 'Delete all methods'; transform: (Matrix4x4 withOffset: 0 @ 0.5 @ 0)};
+				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
 		self renderSphere: 5}
 ]
 
@@ -96,9 +100,9 @@ BrowsingDworph >> renderMethod: props [
 	
 	^ GRGrabbableArea new
 		children: {
+			GDCollisionShape new shape: self collisionShape.
 			GDSpatial new
 				children: {
-					GDCollisionShape new shape: self collisionShape.
 					FormDworph new
 						morph: morph;
 						rotationDegrees: 0 @ 0 @ 0.
@@ -107,14 +111,16 @@ BrowsingDworph >> renderMethod: props [
 							label: 'Intersection';
 							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [0 @ 0 @ 0]))
 						in: world};
-				rotationDegrees: 90 @ 0 @ 0};
+				rotation: 0 @ 0 @ 0};
 		transform: transform get;
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [grabbed set: true];
 		onRelease: [:e |
+			e button = GDGlobalConstants joyOculusBy
+				ifTrue: [transform set: t]
+				ifFalse: [transform set: e transform].
 			"transform set: e transform"
-			grabbed set: false.
-			transform set: t]
+			grabbed set: false]
 ]
 
 { #category : #'as yet unclassified' }
