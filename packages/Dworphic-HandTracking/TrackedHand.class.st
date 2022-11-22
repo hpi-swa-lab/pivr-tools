@@ -32,21 +32,13 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log currentWordRef rootNodeRef currentNodeRef |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log currentWord suggestions |
 	
-	rootNodeRef := self useProvidedRef: #rootNode.
-	currentNodeRef := self useProvidedRef: #currentNode.
-	self useEffect: [
-		|rootNode |
-		rootNode := CharGroupNode newFrom: CharGroupNode a1000CommonEnglishWordList.
-		rootNodeRef get set: rootNode.
-		currentNodeRef get set: rootNode.]
-		 dependencies: #().
+	suggestions := self useMemo: (FuzzySuggestions newFrom: Symbol allSymbols) dependencies: #().
+	currentWord := self useState: {}.
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
 	
-	
-	currentWordRef := self useProvidedRef: #pinchtypeWord.
 	 "log := [:message | currentWordRef get set: [:word | word, message]]."
 	log := [:text | Transcript showln: text].
 	"log := self useLog."
@@ -59,8 +51,8 @@ TrackedHand >> render: props [
 	angle := (tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get).
 	
 	(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
-		log value: 'Suggestions recieved for input: ', (currentNodeRef get get getWords) .
-		currentNodeRef get set: rootNodeRef get get.
+		log value: 'Suggestions recieved for input: ', (suggestions search: currentWord get) .
+		currentWord set: {}.
 		waitForRelease set: true.
 		] .
 	(angle > 2 and: waitForRelease get) ifTrue: [
@@ -90,16 +82,13 @@ TrackedHand >> render: props [
 	
 	^ GDSpatial new ref: rootRef;
 		 children: {self node name: 'Wrist';
-			 children: {(self methodAsComponent: #renderThumb:) log: log; tipRefs: tipRefs; side: (props at: #side). finger value: 'Index'. finger value: 'Middle'. finger value: 'Ring'. finger value: 'Little'}}
+			 children: {(self methodAsComponent: #renderThumb:) log: log; tipRefs: tipRefs; side: (props at: #side); currentWord: currentWord. finger value: 'Index'. finger value: 'Middle'. finger value: 'Ring'. finger value: 'Little'}}
 ]
 
 { #category : #'as yet unclassified' }
 TrackedHand >> renderThumb: props [
-	
-	| currentNodeRef rootNodeRef |
-	rootNodeRef := self useProvidedRef: #rootNode.
-	currentNodeRef := self useProvidedRef: #currentNode.
-	^ props extract: [:log :tipRefs :side |
+
+	^ props extract: [:log :tipRefs :side :currentWord |
 		self node name: 'ThumbMetacarpal';
 				 children: {self node name: 'ThumbProximal';
 					 children: {self node name: 'ThumbDistal';
@@ -108,12 +97,10 @@ TrackedHand >> renderThumb: props [
 								onAreaEntered: [:other | (tipRefs get
 										associationsSelect: [:asc | asc value get = other]) associations
 										ifNotEmpty: [:list |
-											|index|
-											 index := self oldFingerCharacterMapping indexOf: (list first key
-															, side).
-											log value: ('Detected input ', list first key
-															, side).
-											currentNodeRef get set: (currentNodeRef get get getChild: index).]]}}}}
+											|inputString|
+											 inputString :=  list first key, side.
+											log value: ('Detected input ', inputString).
+											currentWord set: (currentWord copyWith: (self oldFingerCharacterMapping indexOf: inputString)).]]}}}}
 		].
 
 ]

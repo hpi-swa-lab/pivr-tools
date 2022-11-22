@@ -9,10 +9,10 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-FuzzySuggestionEntry class >> newFrom: aString [
+FuzzySuggestionEntry class >> newFrom: aString withMapping: aDict [
 	| result |
 	result := self new.
-	result chars: aString.
+	result chars: aString mapping: aDict.
 	^ result.
 ]
 
@@ -22,9 +22,9 @@ FuzzySuggestionEntry >> chars [
 ]
 
 { #category : #'as yet unclassified' }
-FuzzySuggestionEntry >> chars: aString [
+FuzzySuggestionEntry >> chars: aString mapping: aDict [
 	chars := aString.
-	group := aString asArray collect: [:c | CharGroupNode fingerCharacterMapping at: (c asLowercase asString) ifAbsent: [8]]
+	group := aString asArray collect: [:c | aDict at: c asLowercase ifAbsent: [8]]
 ]
 
 { #category : #'as yet unclassified' }
