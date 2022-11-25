@@ -9,7 +9,7 @@ GRComponent >> findMe [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound [
 
-	| world log translation head radius sound |
+	| world log translation head radius sound angle |
 
 	^ [
 	world := self useWorldPortal.
@@ -21,8 +21,10 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound [
 		dependencies: #().
 	
 	radius := ((head get translation) distanceTo: (translation get)) * 0.01.	
+	angle := self isInView: translation get.
 		
 	{
+		GDTimer new onTimeout: [Transcript showln: head get rotation. Transcript showln: (angle radiansToDegrees asString)]; waitTime: 0.1; autostart: true.
 		GDSpatial new subscribeTo: #'global_translation' do: [:t | translation set: t].
 		CMFReactNodePortal
 			child: (GDMeshInstance new mesh: 
@@ -36,4 +38,20 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound [
 			in: world.
 	}
 	] asComponent.
+]
+
+{ #category : #'*Dworphic-Attention' }
+GRComponent >> isInView: aPosition [
+
+	| head objectDirection cameraDirection objectAngle |
+	
+	head := self useProvidedRef: #headTransform.
+	objectDirection := aPosition - (head get translation).
+	cameraDirection := head get rotation.
+	objectAngle := objectDirection angleTo: cameraDirection.
+	
+	^ objectAngle
+	
+	
+	
 ]
