@@ -54,7 +54,7 @@ BrowsingDworph >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> pinpoardCenter [
 
-	^ 0 @ 1.5 @ 0
+	^ (0 @ 1.5 @ 0)
 ]
 
 { #category : #'as yet unclassified' }
@@ -96,13 +96,14 @@ BrowsingDworph >> render: props [
 						billboard: GDSpatialMaterial billboardEnabled;
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
-		self renderSphere: 5}
+		self renderSphere: 5.
+		CB22Browser new methods: methods}
 ]
 
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [
 
-	| grabbed text pressed morph debugPosition world transform t et onPinboard |
+	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	world := self useWorldPortal.
@@ -115,6 +116,7 @@ BrowsingDworph >> renderMethod: props [
 		translation: 0 @ 1.5 @ 0.5).
 	
 	onPinboard := self useState: false.
+	endGrab := self useRef: nil.
 	
 	et := self useProvided: #rightControllerTransform.
 	t := (et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius)
@@ -122,6 +124,7 @@ BrowsingDworph >> renderMethod: props [
 		ifNil: [Matrix4x4 identity].
 	
 	^ GRGrabbableArea new
+		"endGrabRef: endGrab;"
 		children: {
 			GDCollisionShape new
 				shape: (self getTextMorphShape: morph);
@@ -134,11 +137,15 @@ BrowsingDworph >> renderMethod: props [
 					CMFReactNodePortal
 						child: (DebugDworph new
 							label: 'Intersection';
-							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [0 @ 0 @ 0]))
+							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: ["end grabbing with endGrab value"
+							0 @ 0 @ 0]))
 						in: world};
 				rotation: 90 @ 0 @ 0};
 		transform: transform get;
-		onButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [onPinboard set: onPinboard get not]];
+		onAxisChange: [:e |
+			e isStickY ifTrue: [
+				Transcript showln: e strength.
+				onPinboard set: e strength > 0.5]];
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [grabbed set: true];
 		onRelease: [:e |
