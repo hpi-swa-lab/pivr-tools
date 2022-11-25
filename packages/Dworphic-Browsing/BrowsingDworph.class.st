@@ -118,7 +118,7 @@ BrowsingDworph >> renderMethod: props [
 	
 	et := self useProvided: #rightControllerTransform.
 	t := (et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius)
-		ifNotNil: [:i | (Matrix4x4 lookAt2: i from: self pinpoardCenter up: 0 @ 1 @ 0) translation: i]
+		ifNotNil: [:i | (Matrix4x4 lookAt: i from: self pinpoardCenter up: 0 @ 1 @ 0) translation: i]
 		ifNil: [Matrix4x4 identity].
 	
 	^ GRGrabbableArea new
