@@ -56,11 +56,7 @@ LogDworph >> render: props [
 				GDMeshInstance new
 					mesh: (GDQuadMesh new
 						size: 1.5 @ 1;
-						material: (GDSpatialMaterial new
-							flagsUnshaded: true;
-							flagsAlbedoTexForceSrgb: true;
-							albedoTexture: viewportTex get;
-							resourceLocalToScene: true)).
+						material: material).
 				GDMeshInstance new
 					mesh: (GDQuadMesh new
 						size: 1.5 @ 1;
