@@ -7,7 +7,9 @@ Class {
 { #category : #'as yet unclassified' }
 CB22Browser >> circleCenter [
 
-	^ (self useProvidedRef: #headTransform) get translation
+	| center |
+	center := self useState: ((self useProvidedRef: #headTransform) get translation).
+	^ center get
 ]
 
 { #category : #'as yet unclassified' }

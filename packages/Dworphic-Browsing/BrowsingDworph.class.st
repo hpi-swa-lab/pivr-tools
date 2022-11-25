@@ -66,10 +66,18 @@ BrowsingDworph >> pinpoardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition |
+	| methods areaRef debugPosition browserVisible |
 	methods := self useState: {'self start'}.
+	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
+	self
+		useButtonPress: [:e |
+			e button = GDGlobalConstants joyOculusBy ifTrue: [
+				browserVisible set: browserVisible get not]]
+		release: [:e | ]
+		axisChange: [:e | ]
+		side: #right.
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
 			methods get collect: [:desc |
@@ -97,7 +105,7 @@ BrowsingDworph >> render: props [
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
 		self renderSphere: 5.
-		CB22Browser new methods: methods}
+		browserVisible get ifTrue:[ CB22Browser new methods: methods]}
 ]
 
 { #category : #'as yet unclassified' }
