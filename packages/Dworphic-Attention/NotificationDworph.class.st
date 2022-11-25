@@ -28,5 +28,9 @@ NotificationDworph >> render: props [
 	GDAudioStreamPlayer3D new stream: sound; autoplay: true.
 	GDLabel3D new transform: (head get localTranslatedBy: (0 @ -0.25 @ -0.5));
 		visible: visible get;
+		font: (GDDynamicFont new
+			fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+			size: 72);
+		pixelSize: 0.001;
 		text: message}
 ]
