@@ -32,9 +32,20 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log currentWord suggestions |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log currentWord suggestions handRef eventReceivers onButtonPress transform |
+	handRef := self useRef: nil.
+	eventReceivers := self useProvided: #eventReceivers.
+	transform := self useState: Matrix4x4 new.
+	onButtonPress := self useCallback: [:button | | event |
+		event := GRInteractiveAreaEventButton new
+			side: (props at: #side);
+			transform: transform get;
+			button: button;
+			handRef: handRef get.
+		eventReceivers get do: [:r | (r get at: #onButtonPress) cull: event]] dependencies: {}.
+	self useRegisterHand: handRef.
 	
-	suggestions := self useMemo: (FuzzySuggestions newFrom: Symbol allSymbols) dependencies: #().
+	suggestions := self useMemo: [FuzzySuggestions newFrom: Symbol allSymbols] dependencies: #().
 	currentWord := self useState: {}.
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
@@ -49,6 +60,8 @@ TrackedHand >> render: props [
 	
 	waitForRelease := self useState: false.
 	angle := (tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get).
+	self useEffect: [angle < 1 ifTrue: [
+			onButtonPress value: GDGlobalConstants joyVrTrigger]] dependencies: {angle}.
 	
 	(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
 		log value: 'Suggestions recieved for input: ', (suggestions search: currentWord get) .
@@ -80,9 +93,23 @@ TrackedHand >> render: props [
 	
 	self useRegisterHandsSide: (props at: #side) ref: rootRef.
 	
-	^ GDSpatial new ref: rootRef;
-		 children: {self node name: 'Wrist';
-			 children: {(self methodAsComponent: #renderThumb:) log: log; tipRefs: tipRefs; side: (props at: #side); currentWord: currentWord. finger value: 'Index'. finger value: 'Middle'. finger value: 'Ring'. finger value: 'Little'}}
+	^ GDSpatial new ref: handRef; children: {
+		GDSpatial new ref: rootRef; children: {
+			self node
+				subscribeTo: #global_transform do: transform setter;
+				name: 'Wrist';
+				children: {
+					GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
+					GRPointer new handRef: handRef.
+					(self methodAsComponent: #renderThumb:)
+						log: log;
+						tipRefs: tipRefs;
+						side: (props at: #side);
+						currentWord: currentWord.
+					finger value: 'Index'.
+					finger value: 'Middle'.
+					finger value: 'Ring'.
+					finger value: 'Little'}}}
 ]
 
 { #category : #'as yet unclassified' }
@@ -100,7 +127,7 @@ TrackedHand >> renderThumb: props [
 											|inputString|
 											 inputString :=  list first key, side.
 											log value: ('Detected input ', inputString).
-											currentWord set: (currentWord copyWith: (self oldFingerCharacterMapping indexOf: inputString)).]]}}}}
+											currentWord set: [:c | c copyWith: (self oldFingerCharacterMapping indexOf: inputString)].]]}}}}
 		].
 
 ]
