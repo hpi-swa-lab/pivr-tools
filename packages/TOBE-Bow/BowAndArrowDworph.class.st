@@ -8,7 +8,7 @@ Class {
 BowAndArrowDworph class >> appDescription [
 	<home>
 
-	^ super appDescription
+	^ super appDescription rendersEnvironment: true
 ]
 
 { #category : #'as yet unclassified' }
