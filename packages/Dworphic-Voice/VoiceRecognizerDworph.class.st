@@ -87,13 +87,17 @@ func set_recording(var is_recording: bool):
 ]
 
 { #category : #'as yet unclassified' }
-VoiceRecognizerDworph >> match: aString on: aCollectionOfIntentHandlers [
+VoiceRecognizerDworph >> match: aString on: aCollectionOfIntentHandlerCollections [
 
-	aCollectionOfIntentHandlers get do: [:ref | | callback intentString |
-		intentString := ref get key.
-		callback := ref get value.
-		
-		(aString = intentString) ifTrue: [^ callback value]]
+	aCollectionOfIntentHandlerCollections get do: [ :aCollectionOfIntentHandlers |
+			aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | 
+			(aString = intentString) ifTrue: [^ callback value]]
+		]
+]
+
+{ #category : #components }
+VoiceRecognizerDworph >> recordingIndicator [
+	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0)) translation: -2 @ 1.5 @ -5
 ]
 
 { #category : #'as yet unclassified' }
@@ -122,6 +126,7 @@ VoiceRecognizerDworph >> render: props [
 	shouldRecord := distance < 0.3.
 	
 	self useEffect: [Transcript showln: shouldRecord. isRecording set: shouldRecord] dependencies: {shouldRecord}.
+	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {shouldRecord}.
 	
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: true]]
@@ -131,7 +136,7 @@ VoiceRecognizerDworph >> render: props [
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
-			CMFReactNodePortal child: (isRecording get ifTrue: [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g: 0 b: 0) ) translation: -2 @ 1.5 @ -5] ifFalse:  [(self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0)) translation: -2 @ 1.5 @ -5]) in: headPortal.
+			CMFReactNodePortal child: (isRecording get ifTrue: [self recordingIndicator] ifFalse:  [self standbyIndicator]) in: headPortal.
 			CMFReactNodePortal child: (GDLabel3D new
 				text: lastText get;
 				translation: -1.5 @ 1.5 @ -5;
@@ -146,4 +151,19 @@ VoiceRecognizerDworph >> render: props [
 					json := Json readFrom: (text utf8ToSqueak readStream).
 					lastText set: (json at: 'text').
 					self match: (json at: #intent) on: intentHandlers]}]
+]
+
+{ #category : #'as yet unclassified' }
+VoiceRecognizerDworph >> setIntentHandlersOnServer: aCMFReactHookUseState [ 
+
+	| intents |
+	intents := aCMFReactHookUseState get gather: [ :handlerRef | handlerRef get keys].
+	[WebClient new httpPost: 'http://127.0.0.1:8000/initIntents' content: (JsonObject fromAssociations: {
+		#intents -> intents.
+	}) asJsonString type: 'application/json'.] fork
+]
+
+{ #category : #components }
+VoiceRecognizerDworph >> standbyIndicator [
+	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g: 0 b: 0) ) translation: -2 @ 1.5 @ -5
 ]
