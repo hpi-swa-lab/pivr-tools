@@ -23,10 +23,10 @@ TrackedHand >> oldFingerCharacterMapping [
 		'Ringleft'.
 		'Middleleft'.
 		'Indexleft'. 
-		'Littleright'. 
-		'Ringright'. 
-		'Middleright'. 
 		'Indexright'.
+		'Middleright'. 
+		'Ringright'. 
+		'Littleright'. 
 	}
 ]
 
@@ -67,8 +67,8 @@ TrackedHand >> render: props [
 			||
 			searchResults := suggestions search: currentWord get.
 			log value: currentWord get.
-			searchResults ifEmpty: [replaceLog value: (logIndices get at: #suggestions) value: 'No words found for this query'] ifNotEmpty: [replaceLog value: (logIndices get at: #suggestions) value: (searchResults take: 5) asString].
-		replaceLog value: (logIndices get at: #input) value: currentWord get asString.
+			searchResults ifEmpty: [replaceLog value: (logIndices get at: #suggestions) value: ['No words found for this query']] ifNotEmpty: [replaceLog value: (logIndices get at: #suggestions) value: [(searchResults take: 5) asString]].
+		replaceLog value: (logIndices get at: #input) value: [currentWord get asString].
 		.] ]dependencies: {currentWord get}.
 	
 	waitForRelease := self useState: false.
@@ -78,7 +78,7 @@ TrackedHand >> render: props [
 	
 	(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
 		log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) .
-		replaceLog value: (logIndices get at: #result) value: ((suggestions search: currentWord get) at: 1 ifAbsent: '').
+		replaceLog value: (logIndices get at: #result) value: [:prev | prev , ' ' ,((suggestions search: currentWord get) at: 1 ifAbsent: '')].
 		log value: 'resetting'.
 		currentWord set: [:old | {}].
 		waitForRelease set: true.
@@ -165,10 +165,12 @@ logIndices := self useProvided: #logIndices.
 	self useEffect: [
 			| inputIIndex resultIndex suggestionsIndex |
 	side = #left ifTrue: [
-	suggestionsIndex := (log value: 'Start typing to see suggestions here') value.
+		logIndices get at: #suggestions ifAbsent: [
+			suggestionsIndex := (log value: 'Start typing to see suggestions here') value.
 	inputIIndex := (log value: 'Start typing to see your input here') value.	
 	resultIndex := (log value: '') value.
-	logIndices set: {#suggestions -> suggestionsIndex. #input -> inputIIndex. #result -> resultIndex} asDictionary.]] dependencies: #().
+	logIndices set: {#suggestions -> suggestionsIndex. #input -> inputIIndex. #result -> resultIndex} asDictionary.]]
+	] dependencies: #().
 	 
 ]
 

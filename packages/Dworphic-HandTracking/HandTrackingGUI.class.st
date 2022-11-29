@@ -5,6 +5,13 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+HandTrackingGUI class >> appDescription [
+
+	 < home> 
+	^ super appDescription
+]
+
+{ #category : #'as yet unclassified' }
 HandTrackingGUI >> render: props [
 
 	| entries viewportTex |
@@ -46,4 +53,8 @@ HandTrackingGUI >> render: props [
 						size: 1.5 @ 1;
 						material: material);
 					rotationDegrees: 0 @ 180 @ 0}]
+]
+
+{ #category : #'as yet unclassified' }
+HandTrackingGUI >> resolution [ 400@600
 ]

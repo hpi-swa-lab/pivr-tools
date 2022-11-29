@@ -1082,6 +1082,6 @@ FuzzySuggestions >> list: aListOfWords [
 
 { #category : #'as yet unclassified' }
 FuzzySuggestions >> search: aQuery [
-	^ list select: [:entry | self entry: entry matches: aQuery] 
-		thenCollect: [: entry | entry chars]
+	^ (list select: [:entry | self entry: entry matches: aQuery] 
+		thenCollect: [: entry | entry chars]) sort: [:a :b | a size < b size]
 ]
