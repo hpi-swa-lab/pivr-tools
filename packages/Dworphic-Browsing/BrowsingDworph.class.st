@@ -199,7 +199,7 @@ BrowsingDworph >> useSkyTexture: highQuality [
 		useMemo: [
 			GDResourceLoader instance loadPath: (highQuality
 				ifFalse: ['res://assets/browsing/sky_slim_low_res.png']
-				ifTrue: ['res://assets/browsing/skg.png'])]
+				ifTrue: ['res://assets/browsing/sky.jpg'])]
 		dependencies: #()
 ]
 
