@@ -2,12 +2,12 @@ Extension { #name : #WorldDworph }
 
 { #category : #'*Dworphic-HandTracking' }
 WorldDworph >> provideHandtrackingState [
-	| word suggestions currentNode rootNode |
+	| word logIndices |
 	<provider>
 	
-	suggestions := self useState: {}.
-	rootNode := self useState: {}.
-	currentNode := self useState: {}.
+	logIndices := self useState: Dictionary new.
+	
 	word := self useState: {}.
-	^ {#pinchtypeSuggestions -> suggestions. #pinchtypeWord -> word. #rootNode -> rootNode. #currentNode -> currentNode}
+	
+	^ {#currentWord -> word. #logIndices -> logIndices}.
 ]
