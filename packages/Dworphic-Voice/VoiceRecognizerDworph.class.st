@@ -97,7 +97,7 @@ VoiceRecognizerDworph >> match: aString on: aCollectionOfIntentHandlerCollection
 
 { #category : #components }
 VoiceRecognizerDworph >> recordingIndicator [
-	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g:0 b: 0)) translation: -2 @ 1.5 @ -5
+	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g:0 b: 0)) translation: -2 @ -1.5 @ -5
 ]
 
 { #category : #'as yet unclassified' }
@@ -139,7 +139,7 @@ VoiceRecognizerDworph >> render: props [
 			CMFReactNodePortal child: (isRecording get ifTrue: [self recordingIndicator] ifFalse:  [self standbyIndicator]) in: headPortal.
 			CMFReactNodePortal child: (GDLabel3D new
 				text: lastText get;
-				translation: -1.5 @ 1.5 @ -5;
+				translation: -1.5 @ -1.5 @ -5;
 				horizontalAlignment: 0; 
 				verticalAlignment: 0;
 				width: 400;
@@ -149,7 +149,6 @@ VoiceRecognizerDworph >> render: props [
 				set: #'is_recording' to: isRecording get;
 				set: #'text_recognized' to: [:text | | json |
 					json := Json readFrom: (text utf8ToSqueak readStream).
-					Transcript showln: (json at: 'text').
 					lastText set: (json at: 'text').
 					self match: (json at: #intent) on: intentHandlers]}]
 ]
@@ -166,5 +165,5 @@ VoiceRecognizerDworph >> setIntentHandlersOnServer: aCMFReactHookUseState [
 
 { #category : #components }
 VoiceRecognizerDworph >> standbyIndicator [
-	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0) ) translation: -2 @ 1.5 @ -5
+	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0) ) translation: -2 @ -1.5 @ -5
 ]
