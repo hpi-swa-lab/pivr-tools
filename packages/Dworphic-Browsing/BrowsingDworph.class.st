@@ -66,18 +66,20 @@ BrowsingDworph >> pinpoardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible |
+	| methods areaRef debugPosition browserVisible highQuality os |
 	methods := self useState: {'self start'}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	self
-		useButtonPress: [:e |
-			e button = GDGlobalConstants joyOculusBy ifTrue: [
-				browserVisible set: browserVisible get not]]
+		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
+		
+		os := self useMemo: [GDOS instance getName] dependencies: {}.
+	highQuality := os ~= 'Android'.
+	
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
 			methods get collect: [:desc |
@@ -104,8 +106,8 @@ BrowsingDworph >> render: props [
 						billboard: GDSpatialMaterial billboardEnabled;
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
-		self renderSphere: 5.
-		browserVisible get ifTrue:[ CB22Browser new methods: methods]}
+		self renderSphere: 5 highQuality: highQuality.
+		browserVisible get ifTrue: [CB22Browser new methods: methods]}
 ]
 
 { #category : #'as yet unclassified' }
@@ -163,21 +165,26 @@ BrowsingDworph >> renderMethod: props [
 ]
 
 { #category : #'as yet unclassified' }
-BrowsingDworph >> renderSphere: radius [ 
+BrowsingDworph >> renderSphere: radius highQuality: highQuality [
+
 	^ GDCollisionShape new
 		shape: (GDSphereShape new radius: radius);
-		
-		children: (GDMeshInstance new mesh: (GDSphereMesh new material: (GDSpatialMaterial new albedoTexture: self useSkyTexture;
-						 paramsCullMode: GDSpatialMaterial cullFront);
-					 radius: radius;
-					 height: radius * 2))
+		children: (GDMeshInstance new mesh: (GDSphereMesh new
+			material: (GDSpatialMaterial new
+				albedoTexture: (self useSkyTexture: highQuality);
+				paramsCullMode: GDSpatialMaterial cullFront);
+			radius: radius;
+			height: radius * 2))
 ]
 
 { #category : #'as yet unclassified' }
-BrowsingDworph >> useSkyTexture [
+BrowsingDworph >> useSkyTexture: highQuality [
 
 	^ self
-		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sky_slim_low_res.png']
+		useMemo: [
+			GDResourceLoader instance loadPath: (highQuality
+				ifFalse: ['res://assets/browsing/sky_slim_low_res.png']
+				ifTrue: ['res://assets/browsing/skg.png'])]
 		dependencies: #()
 ]
 
