@@ -113,7 +113,7 @@ BrowsingDworph >> render: props [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> renderMethod: props [
 
-	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab |
+	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	world := self useWorldPortal.
@@ -127,6 +127,7 @@ BrowsingDworph >> renderMethod: props [
 	
 	onPinboard := self useState: false.
 	endGrab := self useRef: nil.
+	api := Dictionary new.
 	
 	et := self useProvided: #rightControllerTransform.
 	t := (et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius)
@@ -134,7 +135,7 @@ BrowsingDworph >> renderMethod: props [
 		ifNil: [Matrix4x4 identity].
 	
 	^ GRGrabbableArea new
-		"endGrabRef: endGrab;"
+		api: api;
 		children: {
 			GDCollisionShape new
 				shape: (self getTextMorphShape: morph);
@@ -147,20 +148,22 @@ BrowsingDworph >> renderMethod: props [
 					CMFReactNodePortal
 						child: (DebugDworph new
 							label: 'Intersection';
-							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: ["end grabbing with endGrab value"
+							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [
 							0 @ 0 @ 0]))
 						in: world};
 				rotation: 90 @ 0 @ 0};
 		transform: transform get;
 		onAxisChange: [:e |
 			e isStickY ifTrue: [
-				Transcript showln: e strength.
-				onPinboard set: e strength > 0.5]];
+				e strength > 0.5 ifTrue: [
+					onPinboard set: e strength > 0.5.
+					(api at: #endGrab) value]]];
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
-		onGrab: [grabbed set: true];
+		onGrab: [
+			grabbed set: true.
+			onPinboard set: false];
 		onRelease: [:e |
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			"transform set: e transform"
 			grabbed set: false]
 ]
 
