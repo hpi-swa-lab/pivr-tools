@@ -130,12 +130,14 @@ BrowsingDworph >> renderMethod: props [
 	api := Dictionary new.
 	
 	et := self useProvided: #rightControllerTransform.
+	"TODO: move to mehthod"
 	t := (et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius)
 		ifNotNil: [:i | (Matrix4x4 lookAt: i from: self pinpoardCenter up: 0 @ 1 @ 0) translation: i]
 		ifNil: [Matrix4x4 identity].
 	
 	^ GRGrabbableArea new
 		api: api;
+		point: onPinboard get;
 		children: {
 			GDCollisionShape new
 				shape: (self getTextMorphShape: morph);
@@ -148,16 +150,18 @@ BrowsingDworph >> renderMethod: props [
 					CMFReactNodePortal
 						child: (DebugDworph new
 							label: 'Intersection';
-							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [
-							0 @ 0 @ 0]))
+							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [0 @ 0 @ 0]))
 						in: world};
 				rotation: 90 @ 0 @ 0};
 		transform: transform get;
 		onAxisChange: [:e |
 			e isStickY ifTrue: [
-				e strength > 0.5 ifTrue: [
-					onPinboard set: e strength > 0.5.
-					(api at: #endGrab) value]]];
+				(onPinboard get not and: [e strength > 0.5]) ifTrue: [
+					onPinboard set: true.
+					(api at: #endGrab) value]].
+			(onPinboard get and: [e strength < -0.5]) ifTrue: [
+				onPinboard set: false.
+				transform set: (self transformInSphere: et center: et translation radius: 0.1)]];
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [
 			grabbed set: true.
@@ -178,6 +182,14 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 				paramsCullMode: GDSpatialMaterial cullFront);
 			radius: radius;
 			height: radius * 2))
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> transformInSphere: et center: c radius: r [
+
+	^ (et forwardRay intersectSphere: c radius: r)
+		ifNotNil: [:i | (Matrix4x4 lookAt: i from: c up: 0 @ 1 @ 0) translation: i]
+		ifNil: [Matrix4x4 identity]
 ]
 
 { #category : #'as yet unclassified' }
