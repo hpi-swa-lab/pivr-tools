@@ -4,7 +4,7 @@ Extension { #name : #GRComponent }
 GRComponent >> useVoiceIntent: anIntent do: aBlock [
 
 	| handlers handlerRef |
-	self halt.
+	
 	handlers := self useProvided: #voiceIntentHandlers.
 	handlerRef := self useRef: nil.
 	handlerRef set: anIntent -> aBlock.

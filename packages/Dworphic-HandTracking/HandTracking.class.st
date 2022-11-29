@@ -8,16 +8,26 @@ Class {
 HandTracking class >> appDescription [
 	<home>
 	
-	^ DworphicApplicationDescription new
+	"^ DworphicApplicationDescription new
 		name: self name;
-		render: [PinchtypeSuggestionPanel new. PinchtypeImage new. ];
-		renderController: [TrackedHand new.]
+		render: [];
+		renderController: [TrackedHand new.]"
 
-	"^ super appDescription renderController: [TrackedHand new]"
+	^ super appDescription renderController: [TrackedHand new].
 ]
 
 { #category : #'as yet unclassified' }
 HandTracking >> render: props [
 
-	^ nil
+	^nil.
+		"| inputIIndex log resultIndex suggestionsIndex logIndices |
+	log := self useLog.
+	suggestionsIndex := (log value: 'Start typing to see suggestions here') value.
+	inputIIndex := (log value: 'Start typing to see your input here') value.	
+	resultIndex := (log value: '') value.
+	
+	logIndices := self useProvided: #logIndices.
+	logIndices set: {#suggestions -> suggestionsIndex. #input -> inputIIndex. #result -> resultIndex} asDictionary.
+	
+	^ nil."
 ]

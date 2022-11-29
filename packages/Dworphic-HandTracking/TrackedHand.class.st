@@ -32,7 +32,9 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log currentWord suggestions handRef eventReceivers onButtonPress transform |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults |
+	
+	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
 	eventReceivers := self useProvided: #eventReceivers.
 	transform := self useState: Matrix4x4 new.
@@ -45,18 +47,29 @@ TrackedHand >> render: props [
 		eventReceivers get do: [:r | (r get at: #onButtonPress) cull: event]] dependencies: {}.
 	self useRegisterHand: handRef.
 	
-	suggestions := self useMemo: [FuzzySuggestions newFrom: Symbol allSymbols] dependencies: #().
-	currentWord := self useState: {}.
+	suggestions := self useMemo: [FuzzySuggestions newFrom: FuzzySuggestions a1000CommonEnglishWordList] dependencies: #().
+	
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
 	
 	 "log := [:message | currentWordRef get set: [:word | word, message]]."
 	log := [:text | Transcript showln: text].
 	"log := self useLog."
+	logIndices := self useProvided: #logIndices.
+	replaceLog := self replaceLog.
 	
 	tipPos := self useState: Vector3 zero.
 	proximalPos := self useState: Vector3 zero.
 	metacarpalPos := self useState: Vector3 zero.
+	
+	currentWord := self useProvided: #currentWord.
+	self useEffect: [(props at: #side) = 'left' ifTrue: [
+			||
+			searchResults := suggestions search: currentWord get.
+			log value: currentWord get.
+			searchResults ifEmpty: [replaceLog value: (logIndices get at: #suggestions) value: 'No words found for this query'] ifNotEmpty: [replaceLog value: (logIndices get at: #suggestions) value: (searchResults take: 5) asString].
+		replaceLog value: (logIndices get at: #input) value: currentWord get asString.
+		.] ]dependencies: {currentWord get}.
 	
 	waitForRelease := self useState: false.
 	angle := (tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get).
@@ -64,8 +77,10 @@ TrackedHand >> render: props [
 			onButtonPress value: GDGlobalConstants joyVrTrigger]] dependencies: {angle}.
 	
 	(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
-		log value: 'Suggestions recieved for input: ', (suggestions search: currentWord get) .
-		currentWord set: {}.
+		log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) .
+		replaceLog value: (logIndices get at: #result) value: ((suggestions search: currentWord get) at: 1 ifAbsent: '').
+		log value: 'resetting'.
+		currentWord set: [:old | {}].
 		waitForRelease set: true.
 		] .
 	(angle > 2 and: waitForRelease get) ifTrue: [
@@ -104,8 +119,7 @@ TrackedHand >> render: props [
 					(self methodAsComponent: #renderThumb:)
 						log: log;
 						tipRefs: tipRefs;
-						side: (props at: #side);
-						currentWord: currentWord.
+						side: (props at: #side).
 					finger value: 'Index'.
 					finger value: 'Middle'.
 					finger value: 'Ring'.
@@ -115,21 +129,47 @@ TrackedHand >> render: props [
 { #category : #'as yet unclassified' }
 TrackedHand >> renderThumb: props [
 
-	^ props extract: [:log :tipRefs :side :currentWord |
+	|currentWord cooldown |
+	
+	cooldown := self useState: TimeStamp now.
+
+	currentWord := self useProvided: #currentWord.
+
+	^ props extract: [:log :tipRefs :side |
 		self node name: 'ThumbMetacarpal';
 				 children: {self node name: 'ThumbProximal';
 					 children: {self node name: 'ThumbDistal';
 						 children: {self node name: 'ThumbTip';
 							 children: {self area
-								onAreaEntered: [:other | (tipRefs get
+								onAreaExited: [:other | (tipRefs get
+										associationsSelect: [:asc | asc value get = other]) associations
+										ifNotEmpty: [:list | cooldown set: TimeStamp now.]];
+								onAreaEntered: [:other | 
+									TimeStamp now - cooldown get > (Duration milliSeconds: 100) ifFalse: [log value: 'Prevented input due to cooldown']
+									ifTrue: [
+									(tipRefs get
 										associationsSelect: [:asc | asc value get = other]) associations
 										ifNotEmpty: [:list |
-											|inputString|
+											|inputString |
 											 inputString :=  list first key, side.
-											log value: ('Detected input ', inputString).
-											currentWord set: [:c | c copyWith: (self oldFingerCharacterMapping indexOf: inputString)].]]}}}}
+											currentWord set: [:c | c copyWith: (self oldFingerCharacterMapping indexOf: inputString)].]]]}}}}
 		].
 
+]
+
+{ #category : #'as yet unclassified' }
+TrackedHand >> useInitLogForSide: side [
+| log logIndices|
+log := self useLog.
+logIndices := self useProvided: #logIndices.
+	self useEffect: [
+			| inputIIndex resultIndex suggestionsIndex |
+	side = #left ifTrue: [
+	suggestionsIndex := (log value: 'Start typing to see suggestions here') value.
+	inputIIndex := (log value: 'Start typing to see your input here') value.	
+	resultIndex := (log value: '') value.
+	logIndices set: {#suggestions -> suggestionsIndex. #input -> inputIIndex. #result -> resultIndex} asDictionary.]] dependencies: #().
+	 
 ]
 
 { #category : #'as yet unclassified' }
