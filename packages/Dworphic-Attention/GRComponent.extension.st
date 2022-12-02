@@ -28,7 +28,7 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 	indicatorTranslation := Vector3 x: (angle second x min: 0.5 max: -0.5) y: (angle second y min: 0.25 max: -0.25) z: -1.
 		
 	{
-		GDTimer new onTimeout: [rlog value: idx value: angle asString]; waitTime: 0.1; autostart: true.
+		"GDTimer new onTimeout: [rlog value: idx value: angle asString]; waitTime: 0.1; autostart: true."
 		GDTimer new onTimeout: [playing set: true.]; waitTime: 2; autostart: enableSound.
 		GDSpatial new subscribeTo: #'global_translation' do: [:t | translation set: t].
 		CMFReactNodePortal
@@ -40,7 +40,18 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 					GDAudioStreamPlayer3D new stream: sound; autoplay: enableSound; playing: playing get; onFinished: [repeat ifTrue: [playing set: false.]].
 				}
 			)] ifFalse: [
-				(self cubeOfSize: 0.1 color: Color red) transform: (head get localTranslatedBy: indicatorTranslation).
+				{GDLabel3D new text: self className; transform: (head get localTranslatedBy: indicatorTranslation + (0 @ 0.1 @ 0));
+				billboard: true;
+				noDepthTest: true;
+				font: (GDDynamicFont new
+					fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+					size: 72);
+				pixelSize: 0.001.
+				
+				(GDMeshInstance new mesh: 
+					(GDCubeMesh new size: (0.1 @ 0.1 @ 0.1); material: 
+						(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: true));
+				transform: (head get localTranslatedBy: indicatorTranslation)).}
 			])
 			in: world.}
 	] asComponent.
@@ -55,7 +66,7 @@ GRComponent >> isInView: aPosition [
 	objectDirection := aPosition - (head get translation).
 	cameraDirection := head get forwardRay direction.
 	objectAngle := (objectDirection angleTo: cameraDirection) radiansToDegrees.
-	transformedDirection := head get productFromVector3: objectDirection "(head get transform: objectDirection normalized)".
+	transformedDirection := head get productFromVector3: objectDirection.
 	
 	^ {objectAngle < 40. Vector3 x: transformedDirection x * -1 y: transformedDirection y * -1 z: 0.}
 	
