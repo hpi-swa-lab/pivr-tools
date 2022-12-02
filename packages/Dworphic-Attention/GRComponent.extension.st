@@ -28,7 +28,7 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 	indicatorTranslation := Vector3 x: (angle second x min: 0.5 max: -0.5) y: (angle second y min: 0.25 max: -0.25) z: -1.
 		
 	{
-		"GDTimer new onTimeout: [rlog value: idx value: angle asString]; waitTime: 0.1; autostart: true."
+		GDTimer new onTimeout: [rlog value: idx value: angle asString]; waitTime: 0.1; autostart: true.
 		GDTimer new onTimeout: [playing set: true.]; waitTime: 2; autostart: enableSound.
 		GDSpatial new subscribeTo: #'global_translation' do: [:t | translation set: t].
 		CMFReactNodePortal
@@ -63,12 +63,12 @@ GRComponent >> isInView: aPosition [
 	| head objectDirection cameraDirection objectAngle transformedDirection |
 	
 	head := self useProvidedRef: #headTransform.
-	objectDirection := aPosition - (head get translation).
+	objectDirection := aPosition - (head get translation) normalized.
 	cameraDirection := head get forwardRay direction.
 	objectAngle := (objectDirection angleTo: cameraDirection) radiansToDegrees.
-	transformedDirection := head get productFromVector3: objectDirection.
+	transformedDirection := head get orientation productFromVector3: objectDirection.
 	
-	^ {objectAngle < 40. Vector3 x: transformedDirection x * -1 y: transformedDirection y * -1 z: 0.}
+	^ {objectAngle < 40. Vector3 x: transformedDirection x y: transformedDirection y z: 0. objectAngle}
 	
 	
 	
