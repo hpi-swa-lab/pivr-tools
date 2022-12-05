@@ -14,11 +14,16 @@ TestCubeVoice class >> appDescription [
 { #category : #'as yet unclassified' }
 TestCubeVoice >> render: props [
 
+	| yTranslation |
+	yTranslation := self useState: 0.
+
 	self useVoiceIntents: {
-		'translate (?P<number>\b\d+\b)' -> [ :number |
-			self halt.
-			self transform set: (self get localTranslatedBy: 0 @ 0 @ number)].
-	} key: 'applications'.
+		'translate (?P<number>\b\d+\b)' -> [ :params |
+			yTranslation set: [:y | (params at: 'number') asNumber]]
+	} key: 'cube'.
 	
-	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g:0 b: 0)) translation: -2 @ -1.5 @ -5
+	^ GDSpatial new children: {
+	(self cubeVisualOfSize: 1 @ 1 @ 1 color: (Color r: 0 g:0 b: 1)) translation: -2 @ -1.5 @ (yTranslation get).
+	VoiceUI new translation: -2.5 @ -1.5 @ (yTranslation get + 0.5); key: 'cube'.
+	}
 ]

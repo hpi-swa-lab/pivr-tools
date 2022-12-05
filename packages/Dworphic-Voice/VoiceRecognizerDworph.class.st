@@ -87,31 +87,46 @@ func set_recording(var is_recording: bool):
 ]
 
 { #category : #'as yet unclassified' }
-VoiceRecognizerDworph >> match: aString on: aCollectionOfIntentHandlerCollections [
+VoiceRecognizerDworph >> match: aString withParams: aDictionary on: aCollectionOfIntentHandlerCollections [
 
-	aCollectionOfIntentHandlerCollections get do: [ :aCollectionOfIntentHandlers |
-			aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | 
-			(aString = intentString) ifTrue: [^ callback value]]
-		]
+	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback cull: aDictionary]]]
 ]
 
 { #category : #components }
 VoiceRecognizerDworph >> recordingIndicator [
-	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 1 g:0 b: 0)) translation: -2 @ -1.5 @ -5
+	^ GDMeshInstance new  translation: -2 @ -1.5 @ -5; mesh: (GDSphereMesh new
+					radius: 0.06;
+					height: 0.06 * 2;
+					material: (GDSpatialMaterial new
+						albedoColor: Color red;
+						flagsUnshaded: true;
+						flagsNoDepthTest: true)).
+]
+
+{ #category : #components }
+VoiceRecognizerDworph >> recordingIndicatorActive: aBoolean [
+	^ GDMeshInstance new  translation: -2 @ -1.5 @ -5; mesh: (GDSphereMesh new
+					radius: 0.06;
+					height: 0.06 * 2;
+					material: (GDSpatialMaterial new
+						albedoColor: (aBoolean ifTrue: [Color red] ifFalse: [Color green]);
+						flagsUnshaded: true;
+						flagsNoDepthTest: true)).
 ]
 
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers |
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible |
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: 'Say "show" to show applications, and "hide" to hide them.'.
 	
 	intentHandlers := self useProvided: #voiceIntentHandlers.
+	visible := self useState: false.
 	
 	self
-		useEffect: [
+		useSingletonEffect: [
 			script set: (GDGDScript externalNew
 				sourceCode: self gdSource withUnixLineEndings;
 				reload;
@@ -124,8 +139,9 @@ VoiceRecognizerDworph >> render: props [
 	headPortal := self useProvided: #headPortal.
 	distance := head translation distanceTo: right translation.
 	shouldRecord := distance < 0.3.
+	isVisible := shouldRecord or: [visible get].
 	
-	self useEffect: [Transcript showln: shouldRecord. isRecording set: shouldRecord] dependencies: {shouldRecord}.
+	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
 	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {shouldRecord}.
 	
 	self
@@ -136,34 +152,45 @@ VoiceRecognizerDworph >> render: props [
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
-			CMFReactNodePortal child: (isRecording get ifTrue: [self recordingIndicator] ifFalse:  [self standbyIndicator]) in: headPortal.
-			CMFReactNodePortal child: (GDLabel3D new
-				text: lastText get;
-				translation: -1.5 @ -1.5 @ -5;
-				horizontalAlignment: 0; 
-				verticalAlignment: 0;
-				width: 400;
-				autowrap: true) in: headPortal.
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
 				set: #'is_recording' to: isRecording get;
 				set: #'text_recognized' to: [:text | | json |
-					json := Json readFrom: (text utf8ToSqueak readStream).
+					visible set: true.
+					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: (json at: 'text').
-					self match: (json at: #intent) on: intentHandlers]}]
+					self match: (json at: #intent) withParams: (json at: #params) on: intentHandlers].
+			TestCubeVoice new.
+			CMFReactNodePortal
+				child: (GDSpatial new children: (isVisible
+					ifTrue: [
+						{
+							self recordingIndicatorActive: isRecording get.
+							GDLabel3D new
+								text: lastText get;
+								noDepthTest: true;
+								translation: -1.9 @ -1.5 @ -5;
+								horizontalAlignment: 0;
+								verticalAlignment: 0;
+								width: 400;
+								autowrap: true}]
+					ifFalse: [{}]))
+				in: headPortal.
+			visible get ifTrue: [
+				GDTimer new
+					autostart: true;
+					waitTime: 5;
+					onTimeout: [visible set: false]]}]
 ]
 
 { #category : #'as yet unclassified' }
-VoiceRecognizerDworph >> setIntentHandlersOnServer: aCMFReactHookUseState [ 
+VoiceRecognizerDworph >> setIntentHandlersOnServer: aCMFReactHookUseState [
 
 	| intents |
-	intents := aCMFReactHookUseState get gather: [ :handlerRef | handlerRef get keys].
-	[WebClient new httpPost: 'http://127.0.0.1:8000/initIntents' content: (JsonObject fromAssociations: {
-		#intents -> intents.
-	}) asJsonString type: 'application/json'.] fork
-]
-
-{ #category : #components }
-VoiceRecognizerDworph >> standbyIndicator [
-	^ (self cubeVisualOfSize: 0.3 @ 0.3 @ 0.3 color: (Color r: 0 g: 1 b: 0) ) translation: -2 @ -1.5 @ -5
+	intents := aCMFReactHookUseState get gather: [:handlerRef | handlerRef get keys].
+	[
+		WebClient new
+			httpPost: 'http://127.0.0.1:8000/initIntents'
+			content: (JsonObject fromAssociations: {#intents -> intents}) asJsonString
+			type: 'application/json'] fork
 ]

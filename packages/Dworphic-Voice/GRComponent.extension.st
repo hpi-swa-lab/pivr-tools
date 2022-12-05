@@ -19,15 +19,16 @@ GRComponent >> useVoiceIntents: aCollection key: aString [
 
 	| handlers handlerRef commands handlersKeys |
 	handlers := self useProvided: #voiceIntentHandlers.
-	handlersKeys := handlers get gather: [ :ref | ref get keys].
+	handlersKeys := handlers get gather: [:ref | ref get keys].
 	
 	commands := Dictionary new.
-	aCollection do: [:association | commands at: (aString, ' ', association key) put: association value].
+	aCollection do: [:association | commands at: (aString, ' ', association key) withBlanksTrimmed put: association value].
 	"add a default help command which shows all commands of this object"
-	commands at: (aString, ' help') put: [ Transcript showln:( (handlersKeys detect: [:k | k beginsWith: aString] ifNone: ''), (commands keys detect: [:k | k beginsWith: aString] ifNone: '')) ].
 	handlerRef := self useRef: commands.
 	
-	self useEffect: [
-		handlers set: [:h | h copyWith: handlerRef].
-		[handlers set: [:h | h copyRemove: handlerRef]]] dependencies: {}.
+	self
+		useEffect: [
+			handlers set: [:h | h copyWith: handlerRef].
+			[handlers set: [:h | h copyRemove: handlerRef]]]
+		dependencies: {}
 ]
