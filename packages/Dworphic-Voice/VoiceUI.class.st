@@ -24,7 +24,7 @@ VoiceUI >> render: props [
 					material: (GDSpatialMaterial new
 						albedoColor: Color red;
 						flagsUnshaded: true;
-						flagsNoDepthTest: true)).
+						flagsNoDepthTest: false)).
 				GDLabel3D new
 					text: key;
 					fixedSize: true;

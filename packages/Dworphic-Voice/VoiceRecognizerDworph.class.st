@@ -179,7 +179,7 @@ VoiceRecognizerDworph >> render: props [
 			visible get ifTrue: [
 				GDTimer new
 					autostart: true;
-					waitTime: 5;
+					waitTime: 10;
 					onTimeout: [visible set: false]]}]
 ]
 
