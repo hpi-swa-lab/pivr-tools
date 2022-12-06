@@ -106,7 +106,7 @@ BrowsingDworph >> render: props [
 					lastCreationEvent: lastCreationEvent get].
 			GRInteractiveArea new
 				onButtonPress: [:e |
-					e isTrigger ifTrue: [
+					e isGrip ifTrue: [
 						lastCreationEvent set: e.
 						methods set: [:old | old copyWith: (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value getSource asString]]];
 				children: {
@@ -118,7 +118,7 @@ BrowsingDworph >> render: props [
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: 0 @ 1 @ 0).
 			GRInteractiveArea new
-				onButtonPress: [:e | e isTrigger ifTrue: [methods set: {}]];
+				onButtonPress: [:e | e isGrip ifTrue: [methods set: {}]];
 				children: {
 					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color red.
 					GDLabel3D new
@@ -160,7 +160,7 @@ BrowsingDworph >> renderMethod: props [
 		useEffect: [
 			(props at: #lastCreationEvent) ifNotNil: [
 				(api at: #startGrab) value: (props at: #lastCreationEvent).
-				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)]]
+				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0). grabbed set: true ]]
 		dependencies: {}.
 	^ GRGrabbableArea new
 		api: api;
