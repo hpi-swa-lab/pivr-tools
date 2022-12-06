@@ -160,7 +160,8 @@ BrowsingDworph >> renderMethod: props [
 		useEffect: [
 			(props at: #lastCreationEvent) ifNotNil: [
 				(api at: #startGrab) value: (props at: #lastCreationEvent).
-				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0). grabbed set: true ]]
+				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
+				grabbed set: true]]
 		dependencies: {}.
 	^ GRGrabbableArea new
 		api: api;
@@ -175,81 +176,12 @@ BrowsingDworph >> renderMethod: props [
 						morph: morph;
 						rotationDegrees: 0 @ 0 @ 0;
 						translation: 0 @ 0.017 @ 0.
-					CMFReactNodePortal
-						child: (DebugDworph new
-							label: 'Intersection';
-							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [0 @ 0 @ 0]))
-						in: world.
 					GDMeshInstance new
 						mesh: (GDCubeMesh new
 							size: (self getTextMorphExtent: morph) * 2;
 							material: (GDSpatialMaterial new albedoColor: (grabbed get ifTrue: [Color lightBlue] ifFalse: [Color lightGray])));
 						rotation: 0 @ 0 @ Float pi / 2;
 						scale: 1 @ 1 @ 1};
-				rotation: 90 @ 0 @ 0};
-		transform: transform get;
-		onAxisChange: [:e |
-			e isStickY ifTrue: [
-				(onPinboard get not and: [e strength > 0.5]) ifTrue: [
-					onPinboard set: true.
-					(api at: #endGrab) value]].
-			(onPinboard get and: [e strength < -0.5]) ifTrue: [
-				onPinboard set: false.
-				transform set: (self transformInSphere: et center: et translation radius: 2 cm)]];
-		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
-		onGrab: [
-			grabbed set: true.
-			onPinboard set: false];
-		onRelease: [:e |
-			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false]
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> renderMethod: props creationEvent: ce [
-
-	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized creationEvent |
-	grabbed := self useState: false.
-	pressed := self useState: false.
-	initialized := self useState: false.
-	world := self useWorldPortal.
-	text := (props at: #text) value.
-	morph := self useStyledTextMorph: text.
-	debugPosition := self useState: 0 @ 0 @ 0.
-	transform := self useState: (Matrix4x4 identity
-		rotation: -180 around: 1 @ 0 @ 0;
-		rotation: 180 around: 0 @ 1 @ 0;
-		translation: 0 @ 1.5 @ 0.5).
-	
-	creationEvent := self useRef: ce.
-	
-	onPinboard := self useState: false.
-	endGrab := self useRef: nil.
-	api := Dictionary new.
-	
-	et := self useProvided: #rightControllerTransform.
-	"TODO: move to method"
-	t := (et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius)
-		ifNotNil: [:i | (Matrix4x4 lookAt: i from: self pinpoardCenter up: 0 @ 1 @ 0) translation: i]
-		ifNil: [Matrix4x4 identity].
-	self useEffect: [(api at: #startGrab) value: creationEvent] dependencies: {}.
-	^ GRGrabbableArea new
-		api: api;
-		point: onPinboard get;
-		children: {
-			GDCollisionShape new
-				shape: (self getTextMorphShape: morph);
-				rotation: 90 @ 0 @ 300.
-			GDSpatial new
-				children: {
-					FormDworph new
-						morph: morph;
-						rotationDegrees: 0 @ 0 @ 0.
-					CMFReactNodePortal
-						child: (DebugDworph new
-							label: 'Intersection';
-							point: ((et forwardRay intersectSphere: self pinpoardCenter radius: self pinpoardRadius) ifNil: [0 @ 0 @ 0]))
-						in: world};
 				rotation: 90 @ 0 @ 0};
 		transform: transform get;
 		onAxisChange: [:e |
