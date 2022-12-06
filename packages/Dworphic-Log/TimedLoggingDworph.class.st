@@ -21,7 +21,7 @@ TimedLoggingDworph >> render: props [
 	interval := props at: #interval ifAbsent: [2].
 	
 	^ {GDTimer new autostart: true; onTimeout: [idx := (log value: value) value. 
-		rlog value: idx value: idx asString.
+		rlog value: idx value: [idx asString].
 		]; waitTime: interval.
 	}
 ]

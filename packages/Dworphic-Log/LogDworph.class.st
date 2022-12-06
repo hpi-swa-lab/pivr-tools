@@ -54,10 +54,12 @@ LogDworph >> render: props [
 			GRGrabbableArea new children: {
 				GDCollisionShape new shape: (GDBoxShape new extents: 1.5 @ 1 @ 0.1).
 				GDMeshInstance new
+				translation: 0@1@0;
 					mesh: (GDQuadMesh new
 						size: 1.5 @ 1;
 						material: material).
 				GDMeshInstance new
+					translation: 0 @ 1 @ 0;
 					mesh: (GDQuadMesh new
 						size: 1.5 @ 1;
 						material: material);

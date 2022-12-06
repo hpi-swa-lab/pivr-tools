@@ -7,7 +7,7 @@ GRComponent >> replaceLog [
 	| log |
 	log := self useProvidedRef: #logEntries.
 	
-	^ [:anIndex :aValue | log get set: [:entries | entries at: anIndex put: aValue. entries]]
+	^ [:anIndex :aBlock | log get set: [:entries | entries at: anIndex put: (aBlock cull: (entries at: anIndex)). entries]]
 	
 ]
 

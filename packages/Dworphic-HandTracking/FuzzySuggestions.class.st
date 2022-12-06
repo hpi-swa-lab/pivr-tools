@@ -8,7 +8,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-FuzzySuggestions class >> a1000CommonEnglishWordList [
+FuzzySuggestions class >> a1001CommonEnglishWordList [
 
 	^ {
 	'a'.
@@ -386,6 +386,7 @@ FuzzySuggestions class >> a1000CommonEnglishWordList [
 	'hear'.
 	'heart'.
 	'heat'.
+	'hello'.
 	'heavy'.
 	'help'.
 	'her'.
@@ -1055,20 +1056,6 @@ FuzzySuggestions >> entry: aSuggestionEntry matches: query exactFirst: aNumber [
 ]
 
 { #category : #'as yet unclassified' }
-FuzzySuggestions >> fingerCharacterMapping [
-	^ Dictionary newFromPairs: {
-		$q. 1. $a. 1. $y. 1. 							"LeftLittle"
-		$w. 2. $s. 2. $x. 2. 							"LeftRing"
-		$e. 3. $d. 3. $c. 3. 							"LeftMiddle"
-		$t. 4. $r. 4. $f. 4. $g. 4. $v. 4. $b. 4. 		"LeftIndex"
-		$z. 5. $u. 5. $h. 5. $j. 5. $n. 5. $m. 5. 		"RightIndex"
-		$i. 6. $k. 6. 								"RightMiddle"
-		$o. 7. $p. 7. $l. 7. 							"RightRing"
-		$ü. 8. $ö. 8. $ä. 8							"RightLittle"
-	}.
-]
-
-{ #category : #'as yet unclassified' }
 FuzzySuggestions >> list [
 	^ list
 ]
@@ -1076,7 +1063,7 @@ FuzzySuggestions >> list [
 { #category : #'as yet unclassified' }
 FuzzySuggestions >> list: aListOfWords [
 	| mapping |
-	mapping := self fingerCharacterMapping.
+	mapping := HandTracking fingerCharacterMapping.
 	list := aListOfWords collect: [:word | FuzzySuggestionEntry newFrom: word withMapping: mapping.].
 ]
 
