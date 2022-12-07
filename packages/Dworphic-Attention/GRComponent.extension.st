@@ -9,7 +9,7 @@ GRComponent >> findMe [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat: repeat showDistance: showDistance [
 
-	| world log rlog translation head radius sound angle idx playing indicatorTranslation indicatorText |
+	| world log rlog translation head radius sound angle idx playing indicatorTranslation indicatorText arrow |
 
 	^ [
 	world := self useWorldPortal.
@@ -20,12 +20,15 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 	sound := self
 		useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/ding.wav']
 		dependencies: #().
+	"arrow := self
+		useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/arrow.tres']
+		dependencies: #()."
 	idx := self useMemo: [(log value: '') value] dependencies: #().
 	playing := self useState: false.
 	
-	radius := ((head get translation) distanceTo: (translation get)) * 0.01.	
+	radius := 0.01 * ((head get translation) distanceTo: (translation get)).	
 	angle := self isInView: translation get.
-	indicatorTranslation := Vector3 x: (angle second x min: 0.5 max: -0.5) y: (angle second y min: 0.25 max: -0.25) z: -1.
+	indicatorTranslation := Vector3 x: (angle second x * (angle second z > 0 ifTrue: [10000] ifFalse: [1]) min: 0.5 max: -0.5) y: (angle second y min: 0.25 max: -0.25) z: -1.
 	indicatorText := showDistance ifTrue: [
 			('{1}', String crlf, '{2}m') format: {self className. angle third printShowingMaxDecimalPlaces: 1}
 		] ifFalse: [
@@ -56,7 +59,9 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 				(GDMeshInstance new mesh: 
 					(GDCubeMesh new size: (Vector3 value: 0.05); material: 
 						(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: true));
-				transform: (head get localTranslatedBy: indicatorTranslation)).}
+				transform: (head get localTranslatedBy: indicatorTranslation)).
+					"rotation: ((0 @ 1 @ 0) rotationTo: (translation get - (head get localTranslatedBy: indicatorTranslation) translation normalized)) forwardRay direction)."
+					}
 			])
 			in: world.}
 	] asComponent.
@@ -74,7 +79,7 @@ GRComponent >> isInView: aPosition [
 	objectAngle := (objectDirection angleTo: cameraDirection) radiansToDegrees.
 	transformedDirection := head get orientation productFromVector3: objectDirection.
 	
-	^ {objectAngle < 40. Vector3 x: transformedDirection x y: transformedDirection y z: 0. objectDistance}
+	^ {objectAngle < 40. Vector3 x: transformedDirection x y: transformedDirection y z: transformedDirection z. objectDistance}
 	
 	
 	
