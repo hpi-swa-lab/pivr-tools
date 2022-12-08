@@ -20,7 +20,7 @@ GRComponent >> findMe [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat: repeat showDistance: showDistance [
 
-	| head targetPosition world log rlog radius sound angle idx audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView indicatorRotationWorld |
+	| head targetPosition world log rlog radius sound angle idx audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView |
 
 	^ [
 		world := self useWorldPortal.
@@ -55,7 +55,6 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 			y: (distanceVectorInView y min: 0.25 max: -0.25) "height relative to head lookAt"
 			z: -1. "1m away from head"
 		indicatorTranslationWorld := (head get localTranslatedBy: indicatorTranslation) translation.
-		indicatorRotationWorld := (0 @ 0 @ 0).
 		indicatorText := showDistance ifTrue: [
 				('{1}', String crlf, '{2}m') format: {self className. (targetPosition get - head get translation) length printShowingMaxDecimalPlaces: 1}
 			] ifFalse: [
@@ -86,8 +85,7 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 										(GDCubeMesh new size: (Vector3 value: 0.05); material: 
 											(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: true)
 										);
-									translation: indicatorTranslationWorld;
-									rotation: indicatorRotationWorld).
+									transform: (Matrix4x4 lookAt: targetPosition get from: indicatorTranslationWorld up: (0 @ 1 @ 0))).
 								
 									"rotation: ((0 @ 1 @ 0) rotationTo: (translation get - (head get localTranslatedBy: indicatorTranslation) translation normalized)) forwardRay direction)."
 							 }
