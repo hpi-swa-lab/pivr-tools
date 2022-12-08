@@ -1,6 +1,17 @@
 Extension { #name : #GRComponent }
 
 { #category : #'*Dworphic-Attention' }
+GRComponent >> distanceVectorInView: targetPosition [
+
+	| head objectDirection |
+	
+	head := self useProvidedRef: #headTransform.
+	objectDirection := (targetPosition - head get translation) normalized.
+
+	^ head get orientation productFromVector3: objectDirection.
+]
+
+{ #category : #'*Dworphic-Attention' }
 GRComponent >> findMe [
 
 	^ self findMeNoDepthTest: false withSound: false repeat: false showDistance: true
@@ -9,78 +20,105 @@ GRComponent >> findMe [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat: repeat showDistance: showDistance [
 
-	| world log rlog translation head radius sound angle idx playing indicatorTranslation indicatorText arrow |
+	| head targetPosition world log rlog radius sound angle idx audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView indicatorRotationWorld |
 
 	^ [
-	world := self useWorldPortal.
-	log := self useLog.
-	rlog:= self replaceLog.
-	translation := self useState: (0 @ 0 @ 0).
-	head := self useProvidedRef: #headTransform.
-	sound := self
-		useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/ding.wav']
-		dependencies: #().
-	"arrow := self
-		useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/arrow.tres']
-		dependencies: #()."
-	idx := self useMemo: [(log value: '') value] dependencies: #().
-	playing := self useState: false.
+		world := self useWorldPortal.
 	
-	radius := 0.01 * ((head get translation) distanceTo: (translation get)).	
-	angle := self isInView: translation get.
-	indicatorTranslation := Vector3 x: (angle second x * (angle second z > 0 ifTrue: [10000] ifFalse: [1]) min: 0.5 max: -0.5) y: (angle second y min: 0.25 max: -0.25) z: -1.
-	indicatorText := showDistance ifTrue: [
-			('{1}', String crlf, '{2}m') format: {self className. angle third printShowingMaxDecimalPlaces: 1}
-		] ifFalse: [
-			self className].
-		
-	{
-		"GDTimer new onTimeout: [rlog value: idx value: angle asString]; waitTime: 0.1; autostart: true."
-		GDTimer new onTimeout: [playing set: true.]; waitTime: 2; autostart: enableSound.
-		GDSpatial new subscribeTo: #'global_translation' do: [:t | translation set: t].
-		CMFReactNodePortal
-			child: (angle first ifTrue: [(GDMeshInstance new mesh: 
-				(GDCubeMesh new size: (radius @ 1000 @ radius); material: 
-					(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: disableDepthTest));
-				translation: (translation get + (0 @ 500 @ 0));
-				children: {
-					GDAudioStreamPlayer3D new stream: sound; autoplay: enableSound; playing: playing get; onFinished: [repeat ifTrue: [playing set: false.]].
-				}
-			)] ifFalse: [
-				{GDLabel3D new text: indicatorText; 
-				transform: (head get localTranslatedBy: indicatorTranslation + (0 @ 0.1 @ 0));
-				billboard: true;
-				noDepthTest: true;
-				font: (GDDynamicFont new
-					fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
-					size: 48);
-				pixelSize: 0.001.
-				
-				(GDMeshInstance new mesh: 
-					(GDCubeMesh new size: (Vector3 value: 0.05); material: 
-						(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: true));
-				transform: (head get localTranslatedBy: indicatorTranslation)).
-					"rotation: ((0 @ 1 @ 0) rotationTo: (translation get - (head get localTranslatedBy: indicatorTranslation) translation normalized)) forwardRay direction)."
-					}
-			])
-			in: world.}
+		log := self useLog.
+		rlog:= self replaceLog.
+		idx := self useMemo: [(log value: '') value] dependencies: #().
+	
+		head := self useProvidedRef: #headTransform.
+		targetPosition := self useState: (0 @ 0 @ 0).
+		targetDistance := head get translation distanceTo: targetPosition get.
+	
+		sound := self
+			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/ding.wav']
+			dependencies: #().
+		audioIsPlaying := self useState: false.
+		"arrow := self
+			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/arrow.tres']
+			dependencies: #()."
+	
+		radius := 0.01 * ((head get translation) distanceTo: (targetPosition get)).	
+		angle := self getViewAngle: targetPosition get.
+	
+		distanceVectorInView := self distanceVectorInView: targetPosition get.
+		indicatorTranslation := Vector3 x: (
+			distanceVectorInView x * (
+				distanceVectorInView z > 0 "Object is behind head -> should lock to peripheral vision"
+					ifTrue: [10000]
+					ifFalse: [1]
+				) min: 0.5 max: -0.5
+			)
+			y: (distanceVectorInView y min: 0.25 max: -0.25) "height relative to head lookAt"
+			z: -1. "1m away from head"
+		indicatorTranslationWorld := (head get localTranslatedBy: indicatorTranslation) translation.
+		indicatorRotationWorld := (0 @ 0 @ 0).
+		indicatorText := showDistance ifTrue: [
+				('{1}', String crlf, '{2}m') format: {self className. (targetPosition get - head get translation) length printShowingMaxDecimalPlaces: 1}
+			] ifFalse: [
+				self className
+			].
+
+		{
+			GDTimer new onTimeout: [rlog value: idx value: [distanceVectorInView asString]]; waitTime: 0.1; autostart: true. "Debug logging"
+			GDTimer new onTimeout: [audioIsPlaying set: true.]; waitTime: 2; autostart: enableSound.
+			GDSpatial new subscribeTo: #'global_translation' do: [:t | targetPosition set: t].
+			CMFReactNodePortal
+				child: (
+					angle > 40
+						ifTrue:
+						[
+							{
+								GDLabel3D new text: indicatorText; 
+									transform: (head get localTranslatedBy: indicatorTranslation + (0 @ 0.1 @ 0));
+									billboard: true;
+									noDepthTest: true;
+									font: (GDDynamicFont new
+										fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+										size: 48);
+										pixelSize: 0.001.
+					
+								(GDMeshInstance new
+									mesh: 
+										(GDCubeMesh new size: (Vector3 value: 0.05); material: 
+											(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: true)
+										);
+									translation: indicatorTranslationWorld;
+									rotation: indicatorRotationWorld).
+								
+									"rotation: ((0 @ 1 @ 0) rotationTo: (translation get - (head get localTranslatedBy: indicatorTranslation) translation normalized)) forwardRay direction)."
+							 }
+						]
+						"TODO also render beam / finder when object is not being looked at for 2d spectators?"
+						ifFalse:
+						[
+						GDMeshInstance new mesh: 
+							(GDCubeMesh new
+								size: (radius @ 1000 @ radius);
+								material: 
+									(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: disableDepthTest));
+								translation: (targetPosition get + (0 @ 500 @ 0));
+								children: {
+									GDAudioStreamPlayer3D new stream: sound; autoplay: enableSound; playing: audioIsPlaying get; onFinished: [repeat ifTrue: [audioIsPlaying set: false.]].
+								}
+						]
+				)
+				in: world.
+		}
 	] asComponent.
 ]
 
 { #category : #'*Dworphic-Attention' }
-GRComponent >> isInView: aPosition [
+GRComponent >> getViewAngle: targetPosition [
 
-	| head objectDistance objectDirection cameraDirection objectAngle transformedDirection |
-	
+	| head objectDirection cameraDirection |
+
 	head := self useProvidedRef: #headTransform.
-	objectDirection := (aPosition - head get translation) normalized.
-	objectDistance := (aPosition - head get translation) length.
+	objectDirection := (targetPosition - head get translation) normalized.
 	cameraDirection := head get forwardRay direction.
-	objectAngle := (objectDirection angleTo: cameraDirection) radiansToDegrees.
-	transformedDirection := head get orientation productFromVector3: objectDirection.
 	
-	^ {objectAngle < 40. Vector3 x: transformedDirection x y: transformedDirection y z: transformedDirection z. objectDistance}
-	
-	
-	
+	^ (objectDirection angleTo: cameraDirection) radiansToDegrees.
 ]
