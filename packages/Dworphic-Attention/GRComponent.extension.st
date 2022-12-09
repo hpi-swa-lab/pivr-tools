@@ -37,9 +37,9 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/ding.wav']
 			dependencies: #().
 		audioIsPlaying := self useState: false.
-		"arrow := self
+		arrow := self
 			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/arrow.tres']
-			dependencies: #()."
+			dependencies: #().
 	
 		radius := 0.01 * ((head get translation) distanceTo: (targetPosition get)).	
 		angle := self getViewAngle: targetPosition get.
@@ -62,7 +62,7 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 			].
 
 		{
-			GDTimer new onTimeout: [rlog value: idx value: [distanceVectorInView asString]]; waitTime: 0.1; autostart: true. "Debug logging"
+			"GDTimer new onTimeout: [rlog value: idx value: [distanceVectorInView asString]]; waitTime: 0.1; autostart: true." "Debug logging"
 			GDTimer new onTimeout: [audioIsPlaying set: true.]; waitTime: 2; autostart: enableSound.
 			GDSpatial new subscribeTo: #'global_translation' do: [:t | targetPosition set: t].
 			CMFReactNodePortal
@@ -81,10 +81,8 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 										pixelSize: 0.001.
 					
 								(GDMeshInstance new
-									mesh: 
-										(GDCubeMesh new size: (Vector3 value: 0.05); material: 
-											(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: true)
-										);
+									mesh: arrow;
+									"scale: 0.05;" "<- scale doesn't work, arrow object needs to be scaled instead"
 									transform: (Matrix4x4 lookAt: targetPosition get from: indicatorTranslationWorld up: (0 @ 1 @ 0))).
 								
 									"rotation: ((0 @ 1 @ 0) rotationTo: (translation get - (head get localTranslatedBy: indicatorTranslation) translation normalized)) forwardRay direction)."
