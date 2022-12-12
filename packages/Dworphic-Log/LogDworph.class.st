@@ -20,9 +20,15 @@ LogDworph >> fontSize [
 { #category : #'as yet unclassified' }
 LogDworph >> render: props [
 
-	| entries viewportTex |
-	entries := self useProvided: #logEntries.
+	| entries viewportTex transcript |
 	viewportTex := self useState: nil.
+	transcript := self useRef: nil.
+	self useEffect: [
+		transcript set: DworphicTranscript new.
+		[transcript get cleanup]] dependencies: #().
+	entries := transcript get
+		ifNil: [#()]
+		ifNotNil: [:t | t lines].
 	
 	^ GRViewportTexture new
 		extent: self resolution;
@@ -38,7 +44,7 @@ LogDworph >> render: props [
 							rectSize: self resolution;
 							sizeFlagsHorizontal: GDVBoxContainer sizeExpandFill;
 							children: {
-								(entries get last: (20 min: entries get size)) collect: [:entry |
+								entries collect: [:entry |
 									{
 										GDLabel new
 											theme: (GDTheme new defaultFont: (GDDynamicFont new
