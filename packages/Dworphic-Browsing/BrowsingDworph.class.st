@@ -27,12 +27,13 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent |
-	methods := self useState: {'self halt'}.
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId |
+	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	lastCreationEvent := self useRef: nil.
+	nextMethodId := self useState: 0.
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
 		release: [:e | ]
@@ -46,14 +47,19 @@ BrowsingDworph >> render: props [
 		GDSpatial new children: {
 			methods get collect: [:desc |
 				(CB22Method new methodAsComponent: #render:)
-					text: desc;
-					key: desc;
+					key: desc first;
+					class: desc second;
+					name: desc third;
+					text: desc fourth;
 					lastCreationEvent: lastCreationEvent get].
 			GRInteractiveArea new
 				onButtonPress: [:e |
 					e isGrip ifTrue: [
 						lastCreationEvent set: e.
-						methods set: [:old | old copyWith: (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value getSource asString]]];
+						methods set: [:old | | method |
+							nextMethodId set: nextMethodId get + 1.
+							method := (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value.
+							old copyWith: {nextMethodId get. CMFFiber name. method selector. method getSource asString}]]];
 				children: {
 					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color bubblegum.
 					GDLabel3D new
@@ -73,7 +79,7 @@ BrowsingDworph >> render: props [
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
 		self renderSphere: 5 highQuality: highQuality.
-		browserVisible get ifTrue: [CB22Browser new methods: methods]}
+		browserVisible get ifTrue: [CB22Browser new methods: methods; nextMethodId: nextMethodId]}
 ]
 
 { #category : #'as yet unclassified' }

@@ -30,10 +30,11 @@ angle := degs degreesToRadians.
 { #category : #'as yet unclassified' }
 CB22Browser >> render: props [
 
-	| methods currentClass selectedMethods |
+	| methods currentClass selectedMethods method nextMethodId |
 	currentClass := BrowsingDworph.
 	methods := self useState: (currentClass methodDict values collect: [:sth | sth selector]).
 	selectedMethods := props at: #methods.
+	nextMethodId := props at: #nextMethodId.
 	
 	^ GDSpatial new children: {
 		GDLabel3D new text: 'Here be the Browser'.
@@ -43,7 +44,9 @@ CB22Browser >> render: props [
 				choice: methodName;
 				key: methodName;
 				angle: 360 / methods get size * (methods get indexOf: methodName);
-				action: [selectedMethods set: [:old | old copyWith: ((currentClass methodDict at: methodName) getSource asString)]]]}
+				action: [selectedMethods set: [:old | method := (currentClass methodDict at: methodName).
+						nextMethodId set: nextMethodId get + 1.
+						 old copyWith: {nextMethodId get. currentClass name. method selector. method getSource asString}]]]}
 ]
 
 { #category : #'as yet unclassified' }

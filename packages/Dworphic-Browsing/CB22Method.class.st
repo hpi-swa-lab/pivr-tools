@@ -27,12 +27,13 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized |
+| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
 	world := self useWorldPortal.
 	text := (props at: #text) value.
+	name := (props at: #name) value.
 	morph := self useStyledTextMorph: text.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	transform := self useState: (Matrix4x4 identity
@@ -62,10 +63,8 @@ CB22Method >> render: props [
 				rotation: 4.2 @ 0 @ Float pi / 2.
 			GDSpatial new
 				children: {
-					FormDworph new
-						morph: morph;
-						rotationDegrees: 0 @ 0 @ 0;
-						translation: 0 @ 0.017 @ 0.
+					(self renderMethodDisplayNear: morph) visible: (onPinboard get not).
+					(self renderMethodDisplayFar:  name) visible: (onPinboard get).
 					GDMeshInstance new
 						mesh: (GDCubeMesh new
 							size: (self getTextMorphExtent: morph) * 2;
@@ -90,6 +89,21 @@ CB22Method >> render: props [
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
 			grabbed set: false]
 
+]
+
+{ #category : #'as yet unclassified' }
+CB22Method >> renderMethodDisplayFar: name [
+
+	^ GDLabel3D new text: name; rotation: 0 @ 0 @ 0
+]
+
+{ #category : #'as yet unclassified' }
+CB22Method >> renderMethodDisplayNear: morph [
+
+	^ FormDworph new
+						morph: morph;
+						rotationDegrees: 0 @ 0 @ 0;
+						translation: 0 @ 0.017 @ 0.
 ]
 
 { #category : #'as yet unclassified' }
