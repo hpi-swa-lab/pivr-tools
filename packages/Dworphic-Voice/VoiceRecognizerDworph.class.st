@@ -87,9 +87,9 @@ func set_recording(var is_recording: bool):
 ]
 
 { #category : #'as yet unclassified' }
-VoiceRecognizerDworph >> match: aString withParams: aDictionary on: aCollectionOfIntentHandlerCollections [
+VoiceRecognizerDworph >> match: aString withParams: aCollection on: aCollectionOfIntentHandlerCollections [
 
-	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback cull: aDictionary]]]
+	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback valueWithArguments: aCollection]]]
 ]
 
 { #category : #components }

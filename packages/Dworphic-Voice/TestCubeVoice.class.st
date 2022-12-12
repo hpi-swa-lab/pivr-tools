@@ -22,15 +22,14 @@ TestCubeVoice >> render: props [
 	x := self useVoiceControlledState: 1 on: 'translate x (?P<number>\b\-?d+\b)' format: #asNumber.
 	x := self useVoiceControlledState: 1 on: 'translate x (?P<number>\b\-?d+\b)' format: [:string | string splitBy: 'asd'].
 	"
-	
 	self
-		useVoiceIntents: {'translate x (?P<number>-?\d+)' -> [:params | x set: [:xOld | (params at: 'number') asNumber]]}
+		useVoiceIntents: {'translate x \num' -> [:num | x set: [:xOld | (num ifNil: [0]) asNumber]]}
 		key: 'cube'.
 	self
-		useVoiceIntents: {'translate y (?P<number>-?\d+)' -> [:params | y set: [:yOld | (params at: 'number') asNumber]]}
+		useVoiceIntents: {'translate y \num' -> [:num | y set: [:yOld | (num ifNil: [0]) asNumber]]}
 		key: 'cube'.
 	self
-		useVoiceIntents: {'translate z (?P<number>-?\d+)' -> [:params | z set: [:zOld | (params at: 'number') asNumber]]}
+		useVoiceIntents: {'translate z \num' -> [:num | z set: [:zOld | (num ifNil: [0]) asNumber]]}
 		key: 'cube'.
 	
 	^ (self cubeVisualOfSize: 0.5 @ 0.5 @ 0.5 color: (Color r: 0.0 g: 0.0 b: 1))
