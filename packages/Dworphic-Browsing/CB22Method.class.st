@@ -61,10 +61,11 @@ CB22Method >> render: props [
 			GDCollisionShape new
 				shape: (self getTextMorphShape: morph);
 				rotation: 4.2 @ 0 @ Float pi / 2.
+			((self renderMethodDisplayFar:  name extent: (self getTextMorphExtent: morph)) visible: (onPinboard get)).
 			GDSpatial new
 				children: {
 					(self renderMethodDisplayNear: morph) visible: (onPinboard get not).
-					(self renderMethodDisplayFar:  name) visible: (onPinboard get).
+					
 					GDMeshInstance new
 						mesh: (GDCubeMesh new
 							size: (self getTextMorphExtent: morph) * 2;
@@ -92,9 +93,15 @@ CB22Method >> render: props [
 ]
 
 { #category : #'as yet unclassified' }
-CB22Method >> renderMethodDisplayFar: name [
+CB22Method >> renderMethodDisplayFar: name extent: e [
 
-	^ GDLabel3D new text: name; rotation: 0 @ 0 @ 0
+	^ GDLabel3D new
+		text: name;
+		pixelSize: 0.003;
+		autowrap: true;
+		width: 2000000;
+		translation: 0 @ 0 @ 0.02;
+		rotation: 0.4 @ 0 @ 0
 ]
 
 { #category : #'as yet unclassified' }
