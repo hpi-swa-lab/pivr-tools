@@ -27,13 +27,14 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	lastCreationEvent := self useRef: nil.
 	nextMethodId := self useState: 0.
+	trashCanMesh := self useTrashCanMesh.
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
 		release: [:e | ]
@@ -78,6 +79,14 @@ BrowsingDworph >> render: props [
 						billboard: GDSpatialMaterial billboardEnabled;
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
+			GRInteractiveArea new
+				onButtonRelease: [:e | e isGrip ifTrue: [methods set: {[:old | old copyWithoutKey: e]}]];
+				children: {
+				GDMeshInstance new
+					mesh: trashCanMesh;
+					scale: 0.0015 asVector3;
+					rotation: -1.6 @ 0 @0 };
+				transform: (Matrix4x4 withOffset: 0 @ 0 @ 0).
 		self renderSphere: 5 highQuality: highQuality.
 		browserVisible get ifTrue: [CB22Browser new methods: methods; nextMethodId: nextMethodId]}
 ]
@@ -89,7 +98,7 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 		shape: (GDSphereShape new radius: radius);
 		children: (GDMeshInstance new mesh: (GDSphereMesh new
 			material: (GDSpatialMaterial new
-				albedoTexture: (self useSkyTexture: highQuality);
+				albedoTexture: (self useWinterTexture: true image: 'landscape');
 				paramsCullMode: GDSpatialMaterial cullFront);
 			radius: radius;
 			height: radius * 2))
@@ -114,4 +123,42 @@ BrowsingDworph >> useStyledTextMorph: text [
 				styledTextFor: text asText) asMorph
 				backgroundColor: Color white;
 				yourself] dependencies: {text}
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> useTrashCanMesh [
+
+	^ self
+		useMemo: [GDResourceLoader instance loadPath: 'res://assets/models/trash_can/trash_can.tres']
+		dependencies: #()
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> useWinterTexture: highQuality [
+
+	^ self
+		useMemo: [
+			GDResourceLoader instance loadPath: (highQuality
+				ifFalse: ['res://assets/browsing/sky_slim_low_res.png']
+				ifTrue: ['res://assets/browsing/sky.jpg'])]
+		dependencies: #()
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> useWinterTexture: highQuality image: image [
+
+	^ self
+		useMemo: [
+			GDResourceLoader instance loadPath: (highQuality
+				ifTrue: [
+					image = 'landscape'
+						ifTrue: ['res://assets/assets-large/winter_landscape_high_res.png']
+						ifFalse: ['res://assets/assets-large/winter_church_high_res.jpg']]
+				ifFalse: [
+					image = 'church'
+					ifTrue: ['res://assets/assets-large/winter_church_low_res.jpg']
+					ifFalse: ['res://assets/assets-large/winter_landscape_low_res.jpg']]
+			)
+		]
+		dependencies: #()
 ]

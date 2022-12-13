@@ -87,9 +87,15 @@ func set_recording(var is_recording: bool):
 ]
 
 { #category : #'as yet unclassified' }
+VoiceRecognizerDworph >> match: aVoiceServerResultMatch on: aCollectionOfIntentHandlerCollections [
+
+	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aVoiceServerResultMatch intent = intentString ifTrue: [callback valueWithEnoughArguments: aVoiceServerResultMatch params]]]
+]
+
+{ #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> match: aString withParams: aCollection on: aCollectionOfIntentHandlerCollections [
 
-	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback valueWithArguments: aCollection]]]
+	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback valueWithEnoughArguments: aCollection]]]
 ]
 
 { #category : #components }
@@ -117,7 +123,8 @@ VoiceRecognizerDworph >> recordingIndicatorActive: aBoolean [
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible |
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible log |
+	log := self useLog.
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: 'Say "show" to show applications, and "hide" to hide them.'.
@@ -155,11 +162,14 @@ VoiceRecognizerDworph >> render: props [
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
 				set: #'is_recording' to: isRecording get;
-				set: #'text_recognized' to: [:text | | json |
+				set: #'text_recognized' to: [:text | | json matches |
 					visible set: true.
 					json := Json readFrom: text utf8ToSqueak readStream.
-					lastText set: (json at: 'text').
-					self match: (json at: #intent) withParams: (json at: #params) on: intentHandlers].
+					lastText set: (json at: #text).
+					log value: 'detected text: ',(json at: #text).
+					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
+					matches do: [:m | log value: ('intent: ', (m intent), ';    accuracy: ', (m accuracy), ' %')].
+					(matches isEmpty not and: [matches first accuracy > 50]) ifTrue: [self match: matches first on: intentHandlers]].
 			TestCubeVoice new.
 			CMFReactNodePortal
 				child: (GDSpatial new children: (isVisible
