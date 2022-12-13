@@ -8,6 +8,7 @@ Class {
 HandTracking class >> appDescription [
 	<home>
 	
+	
 	^ DworphicApplicationDescription new
 		name: self name;
 		render: [PinchtypeKeyboard new];

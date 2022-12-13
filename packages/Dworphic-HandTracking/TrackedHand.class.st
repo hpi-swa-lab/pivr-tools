@@ -11,7 +11,7 @@ TrackedHand >> area [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> area: aColor ref: aRef [
-	^ GDArea new children: {self cubeOfSize: 0.011 color: aColor}; ref: aRef.
+	^ GDArea new children: {self cubeOfSize: 0.015 color: aColor}; ref: aRef.
 ]
 
 { #category : #'as yet unclassified' }
