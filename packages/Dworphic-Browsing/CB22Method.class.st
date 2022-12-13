@@ -27,10 +27,11 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name |
+| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
+	grabbedMethod := self useState: nil.
 	world := self useWorldPortal.
 	text := (props at: #text) value.
 	name := (props at: #name) value.
@@ -65,7 +66,6 @@ CB22Method >> render: props [
 			GDSpatial new
 				children: {
 					(self renderMethodDisplayNear: morph) visible: (onPinboard get not).
-					
 					GDMeshInstance new
 						mesh: (GDCubeMesh new
 							size: (self getTextMorphExtent: morph) * 2;
