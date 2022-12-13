@@ -17,7 +17,7 @@ GRComponent >> christmasFindMe [
 		targetDistance := head get translation distanceTo: targetPosition get.
 	
 		sound := self
-			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/ding.wav']
+			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/jingle.wav']
 			dependencies: #().
 		audioIsPlaying := self useState: false.
 		arrow := self
