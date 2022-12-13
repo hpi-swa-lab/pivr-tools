@@ -14,14 +14,14 @@ TimedLoggingDworph class >> appDescription [
 { #category : #'as yet unclassified' }
 TimedLoggingDworph >> render: props [
 
-	| log value interval idx rlog |
-	log := self useLog.
-	rlog := self replaceLog.
-	value := props at: #value ifAbsent: ['xdd'].
+	| interval n |
+	n := self useState: 0.
 	interval := props at: #interval ifAbsent: [2].
 	
-	^ {GDTimer new autostart: true; onTimeout: [idx := (log value: value) value. 
-		rlog value: idx value: [idx asString].
-		]; waitTime: interval.
-	}
+	^ {GDTimer new
+			autostart: true;
+			waitTime: interval;
+			onTimeout: [
+				Transcript showln: 'tick ', n get asString.
+				n set: [:old | old  + 1]]}
 ]
