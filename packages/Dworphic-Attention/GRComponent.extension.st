@@ -3,7 +3,7 @@ Extension { #name : #GRComponent }
 { #category : #'*Dworphic-Attention' }
 GRComponent >> christmasFindMe [
 
-	| head targetPosition world log rlog radius sound angle idx audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView snowflake |
+	| head targetPosition world log rlog radius sound angle idx audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView snowflake distanceVectorInWorld |
 
 	^ [
 		world := self useWorldPortal.
@@ -30,7 +30,8 @@ GRComponent >> christmasFindMe [
 		radius := 0.01 * ((head get translation) distanceTo: (targetPosition get)).	
 		angle := self getViewAngle: targetPosition get.
 	
-		distanceVectorInView := self distanceVectorInView: targetPosition get.
+		distanceVectorInWorld := (targetPosition get - head get translation).
+		distanceVectorInView := head get orientation productFromVector3: distanceVectorInWorld normalized.
 		indicatorTranslation := Vector3 x: (
 			distanceVectorInView x * (
 				distanceVectorInView z > 0 "Object is behind head -> should lock to peripheral vision"
@@ -98,17 +99,6 @@ GRComponent >> christmasFindMe [
 ]
 
 { #category : #'*Dworphic-Attention' }
-GRComponent >> distanceVectorInView: targetPosition [
-
-	| head objectDirection |
-	
-	head := self useProvidedRef: #headTransform.
-	objectDirection := (targetPosition - head get translation) normalized.
-
-	^ head get orientation productFromVector3: objectDirection.
-]
-
-{ #category : #'*Dworphic-Attention' }
 GRComponent >> findMe [
 
 	^ self findMeNoDepthTest: false withSound: false repeat: false showDistance: true
@@ -117,7 +107,7 @@ GRComponent >> findMe [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat: repeat showDistance: showDistance [
 
-	| head targetPosition world sound angle audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView |
+	| head targetPosition world sound angle audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView distanceVectorInWorld |
 
 	^ [
 		world := self useWorldPortal.
@@ -136,7 +126,8 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 	
 		angle := self getViewAngle: targetPosition get.
 	
-		distanceVectorInView := self distanceVectorInView: targetPosition get.
+		distanceVectorInWorld := (targetPosition get - head get translation).
+		distanceVectorInView := head get orientation productFromVector3: distanceVectorInWorld normalized.
 		indicatorTranslation := Vector3 x: (
 			distanceVectorInView x * (
 				distanceVectorInView z > 0 "Object is behind head -> should lock to peripheral vision"
@@ -144,7 +135,7 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 					ifFalse: [1]
 				) min: 0.5 max: -0.5
 			)
-			y: (distanceVectorInView y min: 0.25 max: -0.25) "height relative to head lookAt"
+			y: (distanceVectorInWorld y min: 0.25 max: -0.25) "height relative to head lookAt"
 			z: -1. "1m away from head"
 		indicatorTranslationWorld := (head get localTranslatedBy: indicatorTranslation) translation.
 		indicatorText := showDistance ifTrue: [
@@ -197,6 +188,12 @@ GRComponent >> getViewAngle: targetPosition [
 	cameraDirection := head get forwardRay direction.
 	
 	^ (objectDirection angleTo: cameraDirection) radiansToDegrees.
+]
+
+{ #category : #'*Dworphic-Attention' }
+GRComponent >> showMe [
+
+	^ self showMeNoDepthTest: false
 ]
 
 { #category : #'*Dworphic-Attention' }
