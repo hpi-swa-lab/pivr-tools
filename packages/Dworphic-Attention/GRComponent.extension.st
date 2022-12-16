@@ -117,14 +117,10 @@ GRComponent >> findMe [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat: repeat showDistance: showDistance [
 
-	| head targetPosition world log rlog radius sound angle idx audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView |
+	| head targetPosition world sound angle audioIsPlaying indicatorTranslation indicatorTranslationWorld indicatorText arrow targetDistance distanceVectorInView |
 
 	^ [
 		world := self useWorldPortal.
-	
-		log := self useLog.
-		rlog:= self replaceLog.
-		idx := self useMemo: [(log value: '') value] dependencies: #().
 	
 		head := self useProvidedRef: #headTransform.
 		targetPosition := self useState: (0 @ 0 @ 0).
@@ -138,7 +134,6 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 			useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/arrow.tres']
 			dependencies: #().
 	
-		radius := 0.01 * ((head get translation) distanceTo: (targetPosition get)).	
 		angle := self getViewAngle: targetPosition get.
 	
 		distanceVectorInView := self distanceVectorInView: targetPosition get.
@@ -159,9 +154,10 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 			].
 
 		{
-			"GDTimer new onTimeout: [rlog value: idx value: [distanceVectorInView asString]]; waitTime: 0.1; autostart: true." "Debug logging"
 			GDTimer new onTimeout: [audioIsPlaying set: true.]; waitTime: 2; autostart: enableSound.
 			GDSpatial new subscribeTo: #'global_translation' do: [:t | targetPosition set: t].
+			GDAudioStreamPlayer3D new stream: sound; autoplay: enableSound; playing: audioIsPlaying get; onFinished: [repeat ifTrue: [audioIsPlaying set: false.]].
+			self showMeNoDepthTest: disableDepthTest.
 			CMFReactNodePortal
 				child: (
 					angle > 40
@@ -185,19 +181,6 @@ GRComponent >> findMeNoDepthTest: disableDepthTest withSound: enableSound repeat
 									"rotation: ((0 @ 1 @ 0) rotationTo: (translation get - (head get localTranslatedBy: indicatorTranslation) translation normalized)) forwardRay direction)."
 							 }
 						]
-						"TODO also render beam / finder when object is not being looked at for 2d spectators?"
-						ifFalse:
-						[
-						GDMeshInstance new mesh: 
-							(GDCubeMesh new
-								size: (radius @ 1000 @ radius);
-								material: 
-									(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: disableDepthTest));
-								translation: (targetPosition get + (0 @ 500 @ 0));
-								children: {
-									GDAudioStreamPlayer3D new stream: sound; autoplay: enableSound; playing: audioIsPlaying get; onFinished: [repeat ifTrue: [audioIsPlaying set: false.]].
-								}
-						]
 				)
 				in: world.
 		}
@@ -214,4 +197,31 @@ GRComponent >> getViewAngle: targetPosition [
 	cameraDirection := head get forwardRay direction.
 	
 	^ (objectDirection angleTo: cameraDirection) radiansToDegrees.
+]
+
+{ #category : #'*Dworphic-Attention' }
+GRComponent >> showMeNoDepthTest: disableDepthTest [
+
+	| head targetPosition world radius |
+
+	^ [
+		world := self useWorldPortal.
+		targetPosition := self useState: (0 @ 0 @ 0).
+		head := self useProvidedRef: #headTransform.
+		radius := 0.01 * ((head get translation) distanceTo: (targetPosition get)).
+
+		{
+			GDSpatial new subscribeTo: #'global_translation' do: [:t | targetPosition set: t].
+			CMFReactNodePortal
+				child: (
+					GDMeshInstance new mesh: 
+							(GDCubeMesh new
+								size: (radius @ 1000 @ radius);
+								material: 
+									(GDSpatialMaterial new albedoColor: Color red; flagsNoDepthTest: disableDepthTest));
+								translation: (targetPosition get + (0 @ 500 @ 0))
+						)
+				in: world.
+		}
+	] asComponent.
 ]
