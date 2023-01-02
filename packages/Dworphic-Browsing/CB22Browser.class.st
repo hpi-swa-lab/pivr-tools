@@ -31,19 +31,19 @@ angle := degs degreesToRadians.
 CB22Browser >> render: props [
 
 	| methods currentClass selectedMethods method nextMethodId |
-	currentClass := BrowsingDworph.
-	methods := self useState: (currentClass methodDict values collect: [:sth | sth selector]).
+	currentClass := CB22Browser.
+	methods := self useState: (currentClass methodDict values collect: [:sth | sth selector]) sort.
 	selectedMethods := props at: #methods.
 	nextMethodId := props at: #nextMethodId.
 	
-	^ GDSpatial new children: {
-		GDLabel3D new text: 'Here be the Browser'.
-		
-		methods get collect: [:methodName |
+	^ GDSpatial new children: {		
+		methods get collect: [:methodName | | index |
+			index :=  (methods get indexOf: methodName).
 			(self methodAsComponent: #renderChoice:)
 				choice: methodName;
 				key: methodName;
-				angle: 360 / methods get size * (methods get indexOf: methodName);
+				angle: 360 / methods get size * index;
+				index: index;
 				action: [selectedMethods set: [:old | method := (currentClass methodDict at: methodName).
 						nextMethodId set: nextMethodId get + 1.
 						 old copyWith: {nextMethodId get. currentClass name. method selector. method getSource asString}]]]}
@@ -63,6 +63,8 @@ CB22Browser >> renderChoice: props [
 				onPress: (props at: #action);
 				translation: 0.02 @ 0 @ 0;
 				color: Color green};
-		transform: (Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: (props at: #angle) center: self circleCenter));
+		transform: ((Matrix4x4 withOffset:
+		 (self pointOnCircle: self circleRadius angle: (props at: #angle) center: self circleCenter))
+		 translatedBy: (0 @ (((props at: #index) \\ 2 == 0) ifTrue: [-0.05] ifFalse: [0.05]) @ 0));
 		yourself
 ]
