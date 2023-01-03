@@ -28,7 +28,7 @@ extends AudioStreamPlayer
 class_name GRVoiceRecognizer
 
 const bus_name = "SQUEAK_VOICE_RECORDER"
-const host = "http://127.0.0.1:8000/transcribe"
+const host = "http://', self url, ':', self port, '/transcribe"
 
 var is_recording setget set_recording
 
@@ -87,6 +87,20 @@ func set_recording(var is_recording: bool):
 ]
 
 { #category : #'as yet unclassified' }
+VoiceRecognizerDworph >> intentHandlersKeys: aCollectionOfIntentHandlerCollections [
+	| intentHandlerKeys |
+	intentHandlerKeys := {}.
+	aCollectionOfIntentHandlerCollections get do: 
+		[:aCollectionOfIntentHandlers | | intentGroup |
+			intentGroup := ''.
+			aCollectionOfIntentHandlers get keys do: [:intentString | 
+				intentGroup := (intentGroup, (intentGroup isEmpty ifTrue: [''] ifFalse: [', ']), intentString)].
+				intentHandlerKeys := intentHandlerKeys copyWith: intentGroup.
+		].
+	^ intentHandlerKeys
+]
+
+{ #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> match: aVoiceServerResultMatch on: aCollectionOfIntentHandlerCollections [
 
 	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aVoiceServerResultMatch intent = intentString ifTrue: [callback valueWithEnoughArguments: aVoiceServerResultMatch params]]]
@@ -98,20 +112,14 @@ VoiceRecognizerDworph >> match: aString withParams: aCollection on: aCollectionO
 	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback valueWithEnoughArguments: aCollection]]]
 ]
 
-{ #category : #components }
-VoiceRecognizerDworph >> recordingIndicator [
-	^ GDMeshInstance new  translation: -2 @ -1.5 @ -5; mesh: (GDSphereMesh new
-					radius: 0.06;
-					height: 0.06 * 2;
-					material: (GDSpatialMaterial new
-						albedoColor: Color red;
-						flagsUnshaded: true;
-						flagsNoDepthTest: true)).
+{ #category : #'as yet unclassified' }
+VoiceRecognizerDworph >> port [
+	^ 5000
 ]
 
 { #category : #components }
-VoiceRecognizerDworph >> recordingIndicatorActive: aBoolean [
-	^ GDMeshInstance new  translation: -2 @ -1.5 @ -5; mesh: (GDSphereMesh new
+VoiceRecognizerDworph >> recordingIndicator: aBoolean [
+	^ GDMeshInstance new  translation: -1.6 @ -0.3 @ -5; mesh: (GDSphereMesh new
 					radius: 0.06;
 					height: 0.06 * 2;
 					material: (GDSpatialMaterial new
@@ -123,11 +131,11 @@ VoiceRecognizerDworph >> recordingIndicatorActive: aBoolean [
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible log |
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible log|
 	log := self useLog.
 	isRecording := self useState: false.
 	script := self useState: nil.
-	lastText := self useState: 'Say "show" to show applications, and "hide" to hide them.'.
+	lastText := self useState: {'Say "show" to show applications, and "hide" to hide them.'}.
 	
 	intentHandlers := self useProvided: #voiceIntentHandlers.
 	visible := self useState: false.
@@ -145,7 +153,7 @@ VoiceRecognizerDworph >> render: props [
 	right := self useProvided: #rightControllerTransform.
 	headPortal := self useProvided: #headPortal.
 	distance := head translation distanceTo: right translation.
-	shouldRecord := distance < 0.3.
+	shouldRecord := distance < (0.2 m).
 	isVisible := shouldRecord or: [visible get].
 	
 	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
@@ -156,6 +164,10 @@ VoiceRecognizerDworph >> render: props [
 		release: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: false]]
 		axisChange: [:e | ]
 		side: #right.
+		
+	self useVoiceIntents: {
+		'help' -> [lastText set: (self intentHandlersKeys: intentHandlers)].
+	} key: ''.
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
@@ -163,9 +175,9 @@ VoiceRecognizerDworph >> render: props [
 				call: 'set_script' arguments: {script get};
 				set: #'is_recording' to: isRecording get;
 				set: #'text_recognized' to: [:text | | json matches |
-					visible set: true.
+					visible get ifFalse: [visible set: true].
 					json := Json readFrom: text utf8ToSqueak readStream.
-					lastText set: (json at: #text).
+					lastText set: {(json at: #text)}.
 					log value: 'detected text: ',(json at: #text).
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
 					matches do: [:m | log value: ('intent: ', (m intent), ';    accuracy: ', (m accuracy), ' %')].
@@ -174,16 +186,18 @@ VoiceRecognizerDworph >> render: props [
 			CMFReactNodePortal
 				child: (GDSpatial new children: (isVisible
 					ifTrue: [
-						{
-							self recordingIndicatorActive: isRecording get.
+						{self recordingIndicator: isRecording get},
+						{lastText get collectWithIndex: [:t :i |
 							GDLabel3D new
-								text: lastText get;
+								text: t;
 								noDepthTest: true;
-								translation: -1.9 @ -1.5 @ -5;
+								translation: -1.50 @ (-0.2 - (i m / 8)) @ -5;
 								horizontalAlignment: 0;
 								verticalAlignment: 0;
 								width: 400;
-								autowrap: true}]
+								shaded: true;
+								autowrap: ((i = 0) ifTrue: [true] ifFalse: [false]).
+							]}]
 					ifFalse: [{}]))
 				in: headPortal.
 			visible get ifTrue: [
@@ -200,7 +214,12 @@ VoiceRecognizerDworph >> setIntentHandlersOnServer: aCMFReactHookUseState [
 	intents := aCMFReactHookUseState get gather: [:handlerRef | handlerRef get keys].
 	[
 		WebClient new
-			httpPost: 'http://127.0.0.1:8000/initIntents'
+			httpPost: 'http://', self url, ':', self port, '/initIntents'
 			content: (JsonObject fromAssociations: {#intents -> intents}) asJsonString
 			type: 'application/json'] fork
+]
+
+{ #category : #'as yet unclassified' }
+VoiceRecognizerDworph >> url [
+	^ '127.0.0.1'
 ]
