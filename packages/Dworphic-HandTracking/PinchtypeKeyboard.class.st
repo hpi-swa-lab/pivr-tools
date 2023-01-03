@@ -13,7 +13,7 @@ PinchtypeKeyboard >> collisionShape [
 { #category : #'as yet unclassified' }
 PinchtypeKeyboard >> keySize [
 
-	^ 0.05
+	^ 0.1
 ]
 
 { #category : #'as yet unclassified' }
@@ -38,7 +38,7 @@ PinchtypeKeyboard >> render: props [
 	
 	
 	^ GRGrabbableArea new
-	"transform: (props at: #transform);"
+	"transform: ( ((Matrix4x4 new scaledBy: (Vector3 value: 3.0) )translation: 1@1@0));"
 		children: {
 			(self
 				cubeOfSize: (layout collect: #size) max * self keySize @ (layout size * self keySize) @ 0.01
@@ -80,7 +80,7 @@ PinchtypeKeyboard >> renderKey: props [
 			GDLabel3D new
 				translation: 0 @ 0 @ 0.011;
 				text: (props at: #letter) asString;
-				pixelSize: 0.001.
+				pixelSize: 0.003.
 			GDCollisionShape new shape: (GDBoxShape new extents: self keySize asPoint / 2 @ 0.01)};
 		translation: (props at: #position) @ 0 * self keySize
 ]

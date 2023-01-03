@@ -1,8 +1,24 @@
 Class {
 	#name : #TrackedHand,
 	#superclass : #GRComponent,
+	#classVars : [
+		'HandGripOnlyMode'
+	],
 	#category : #'Dworphic-HandTracking'
 }
+
+{ #category : #'as yet unclassified' }
+TrackedHand class >> handsGripOnlyMode [
+	<preference: 'Mark hands as in grip-only mode' category: 'GReaSe' description: 'When enabled, handtracking assumes that the hand is not fully tracked but only the degree of gripping the controller is.' type: #Boolean>
+
+	^ HandGripOnlyMode ifNil: [false]
+]
+
+{ #category : #'as yet unclassified' }
+TrackedHand class >> handsGripOnlyMode: aBoolean [
+	
+	HandGripOnlyMode := aBoolean
+]
 
 { #category : #'as yet unclassified' }
 TrackedHand >> area [
@@ -11,7 +27,7 @@ TrackedHand >> area [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> area: aColor ref: aRef [
-	^ GDArea new children: {self cubeOfSize: 0.011 color: aColor}; ref: aRef.
+	^ GDArea new children: {self cubeOfSize: 0.015 color: aColor}; ref: aRef.
 ]
 
 { #category : #'as yet unclassified' }
@@ -201,33 +217,35 @@ TrackedHand >> renderThumb: props [
 	thumbRef := self useProvided: #thumbRef.
 
 	self useEffect: [(props at: #side) = 'right' ifTrue: [thumbRef set: ref].]	dependencies: #().
-
-	^ props extract: [:log :tipRefs :side :proximalPos |
+	
+	^ props extract: [:log :tipRefs :side :proximalPos | | detector fingerBones |
+		detector :=  GDArea new
+			children: {self class handsGripOnlyMode ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color red) translation: 0 @ -0.03 @ -0.06] ifFalse: [self cubeOfSize: 0.015 color: Color red]};
+			ref: ref;
+			onAreaExited: [:other | (((tipRefs get
+					associationsSelect: [:asc | asc value get = other]) associations
+					isEmpty not) or: (other = thumbRef get get)) ifTrue: [ cooldown set: TimeStamp now.]
+					];
+			onAreaEntered: [:other | 
+				((TimeStamp now - cooldown get > (Duration milliSeconds: 100)) and: (proximalPos get = Vector3 zero) not) ifFalse: [log value: 'Prevented input due to cooldown']
+				ifTrue: [
+				(other = thumbRef get get ) ifTrue: [
+					currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
+					
+				(tipRefs get
+					associationsSelect: [:asc | asc value get = other]) associations
+					ifNotEmpty: [:list |
+						|inputString |
+						 inputString :=  list first key, side.
+						currentWord set: [:c | c copyWith: (self oldFingerCharacterMapping indexOf: inputString)].]]].
 		
-		self node name: 'ThumbMetacarpal';
-				 children: {self node name: 'ThumbProximal';
-					 children: {self node name: 'ThumbDistal';
-						 children: {self node name: 'ThumbTip';
-							 children: {self area
-							ref: ref;
-								onAreaExited: [:other | (((tipRefs get
-										associationsSelect: [:asc | asc value get = other]) associations
-										isEmpty not) or: (other = thumbRef get get)) ifTrue: [ cooldown set: TimeStamp now.]
-										];
-								onAreaEntered: [:other | 
-									((TimeStamp now - cooldown get > (Duration milliSeconds: 100)) and: (proximalPos get = Vector3 zero) not) ifFalse: [log value: 'Prevented input due to cooldown']
-									ifTrue: [
-									(other = thumbRef get get ) ifTrue: [
-										currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
-										
-									(tipRefs get
-										associationsSelect: [:asc | asc value get = other]) associations
-										ifNotEmpty: [:list |
-											|inputString |
-											 inputString :=  list first key, side.
-											currentWord set: [:c | c copyWith: (self oldFingerCharacterMapping indexOf: inputString)].]]]}}}}
-		].
-
+		fingerBones := self node name: 'ThumbMetacarpal';
+			 children: {self node name: 'ThumbProximal';
+				 children: {self node name: 'ThumbDistal';
+					 children: {self node name: 'ThumbTip';
+						 children: {self class handsGripOnlyMode ifTrue: [nil] ifFalse: [detector]}}}}.
+		
+		self class handsGripOnlyMode ifTrue: [{fingerBones. detector}] ifFalse: [fingerBones]]
 ]
 
 { #category : #'as yet unclassified' }
