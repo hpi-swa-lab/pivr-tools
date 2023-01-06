@@ -52,7 +52,7 @@ HighlightDworph >> render: props [
 						oldMat nextPass: mat.
 					].
 					[HighlightDworph highlightBeam] -> [
-						"Not implemented here for technical reasons"
+						"Can't be implemented outside of return statement"
 					]
 					}
 				]
@@ -61,6 +61,6 @@ HighlightDworph >> render: props [
 
 	^ GDSpatial new name: 'HighlightDworph'; 
 		subscribeCall: #'get_children' with: #() do: [:c | gdChildren set: c];
-		children: {children. (highlightMode = HighlightDworph highlightBeam) ifTrue: self showMe}
+		children: {children. (highlightMode = HighlightDworph highlightBeam) ifTrue: (active ifTrue: self showMe)}
 	
 ]
