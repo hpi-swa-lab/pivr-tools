@@ -7,26 +7,23 @@ Class {
 { #category : #'as yet unclassified' }
 HighlightDworph >> render: props [
 
-	| children gdChildren |
+	| children gdChildren highlightMaterial |
 	
 	children := props at: #children.
 	gdChildren := self useState: nil.
+	highlightMaterial := self useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/highlight_material.tres'] dependencies: #().
 
 	gdChildren get ifNotNil: [
 		gdChildren get do: [:c | 
 			((c grAsClass: #GDObject) getClass = 'MeshInstance') ifTrue: [
-					| meshInst mat |
+					| meshInst |
 					meshInst := c grAsClass: #GDMeshInstance.
-					mat := (meshInst mesh surfaceGetMaterialSurfIdx: 0) grAsClass: #GDSpatialMaterial.
-					mat albedoColor: Color red.
-					mat flagsNoDepthTest: true.
-					mat flagsUnshaded: true.
-					(meshInst mesh surfaceSetMaterialSurfIdx: 0 material: mat).
+					(meshInst mesh surfaceSetMaterialSurfIdx: 0 material: highlightMaterial).
 				]
 			]
 		].
 
-	^ GDSpatial new name: 'ShowMeDworph'; 
+	^ GDSpatial new name: 'HighlightDworph'; 
 		subscribeCall: #'get_children' with: #() do: [:c | gdChildren set: c];
 		children: children
 	
