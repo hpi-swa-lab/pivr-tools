@@ -98,7 +98,7 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 		shape: (GDSphereShape new radius: radius);
 		children: (GDMeshInstance new mesh: (GDSphereMesh new
 			material: (GDSpatialMaterial new
-				albedoTexture: (self useWinterTexture: true image: 'landscape');
+				albedoTexture: (self useSkyTexture: highQuality);
 				paramsCullMode: GDSpatialMaterial cullFront);
 			radius: radius;
 			height: radius * 2))
@@ -130,17 +130,6 @@ BrowsingDworph >> useTrashCanMesh [
 
 	^ self
 		useMemo: [GDResourceLoader instance loadPath: 'res://assets/models/trash_can/trash_can.tres']
-		dependencies: #()
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> useWinterTexture: highQuality [
-
-	^ self
-		useMemo: [
-			GDResourceLoader instance loadPath: (highQuality
-				ifFalse: ['res://assets/browsing/sky_slim_low_res.png']
-				ifTrue: ['res://assets/browsing/sky.jpg'])]
 		dependencies: #()
 ]
 
