@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh grabbedMethod|
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -35,6 +35,7 @@ BrowsingDworph >> render: props [
 	lastCreationEvent := self useRef: nil.
 	nextMethodId := self useState: 0.
 	trashCanMesh := self useTrashCanMesh.
+	grabbedMethod := self useState: nil.
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
 		release: [:e | ]
@@ -52,6 +53,7 @@ BrowsingDworph >> render: props [
 					class: desc second;
 					name: desc third;
 					text: desc fourth;
+					grabbedMethod: grabbedMethod;
 					lastCreationEvent: lastCreationEvent get].
 			GRInteractiveArea new
 				onButtonPress: [:e |
@@ -78,16 +80,18 @@ BrowsingDworph >> render: props [
 						pixelSize: 0.0035;
 						billboard: GDSpatialMaterial billboardEnabled;
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
-				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
+				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0).
 			GRInteractiveArea new
-				onButtonRelease: [:e | e isGrip ifTrue: [methods set: {[:old | old copyWithoutKey: e]}]];
+				onButtonRelease: [:e | e isGrip ifTrue: [[ methods set: [methods reject: [:it | it first == grabbedMethod]]].Transcript showln: grabbedMethod]];
 				children: {
-				GDMeshInstance new
-					mesh: trashCanMesh;
-					scale: 0.0015 asVector3;
-					rotation: -1.6 @ 0 @0 };
-				transform: (Matrix4x4 withOffset: 0 @ 0 @ 0).
-		self renderSphere: 5 highQuality: highQuality.
+					self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color blue.};
+				transform: (Matrix4x4 withOffset: 1 @ 1 @ 0).
+			GDMeshInstance new
+				mesh: trashCanMesh;
+				scale: 0.0015 asVector3;
+				rotation: -1.6 @ 0 @0 };
+			transform: (Matrix4x4 withOffset: 0 @ 0 @ 0).
+		 self renderSphere: 5 highQuality: highQuality.
 		browserVisible get ifTrue: [CB22Browser new methods: methods; nextMethodId: nextMethodId]}
 ]
 

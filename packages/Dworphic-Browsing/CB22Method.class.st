@@ -27,14 +27,15 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod |
+| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key|
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
-	grabbedMethod := self useState: nil.
 	world := self useWorldPortal.
 	text := (props at: #text) value.
 	name := (props at: #name) value.
+	grabbedMethod := (props at: #grabbedMethod) value.
+	key := (props at: #key).
 	morph := self useStyledTextMorph: text.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	transform := self useState: (Matrix4x4 identity
@@ -85,10 +86,12 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [
 			grabbed set: true.
-			onPinboard set: false];
+			onPinboard set: false.
+			grabbedMethod set: key];
 		onRelease: [:e |
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false]
+			grabbed set: false.
+			"grabbedMethod set: nil"]
 
 ]
 
