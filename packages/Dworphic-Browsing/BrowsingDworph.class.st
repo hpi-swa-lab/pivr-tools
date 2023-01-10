@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh grabbedMethod|
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh grabbedMethod activePackage activeClass |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -36,6 +36,9 @@ BrowsingDworph >> render: props [
 	nextMethodId := self useState: 0.
 	trashCanMesh := self useTrashCanMesh.
 	grabbedMethod := self useState: nil.
+	activePackage := self useState: nil.
+	activeClass := self useState: nil.
+	
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
 		release: [:e | ]
@@ -72,9 +75,9 @@ BrowsingDworph >> render: props [
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: 0 @ 1 @ 0).
 			GRInteractiveArea new
-				onButtonPress: [:e | e isGrip ifTrue: [methods set: {}]];
+				onButtonPress: [methods set: {}];
 				children: {
-					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color red.
+					self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: Color red.
 					GDLabel3D new
 						text: 'Delete all methods';
 						pixelSize: 0.0035;
@@ -82,17 +85,22 @@ BrowsingDworph >> render: props [
 						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
 				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0).
 			GRInteractiveArea new
-				onButtonRelease: [:e | e isGrip ifTrue: [[ methods set: [methods reject: [:it | it first == grabbedMethod]]].Transcript showln: grabbedMethod]];
+				onButtonRelease: [:e | e isGrip ifTrue: [methods set: [:list | list reject: [:method | method first = grabbedMethod get]]]];
 				children: {
-					self cubeOfSize: 0.3 @ 0.3 @ 0.1 color: Color blue.};
-				transform: (Matrix4x4 withOffset: 1 @ 1 @ 0).
-			GDMeshInstance new
-				mesh: trashCanMesh;
-				scale: 0.0015 asVector3;
-				rotation: -1.6 @ 0 @0 };
-			transform: (Matrix4x4 withOffset: 0 @ 0 @ 0).
+					GDCollisionShape new
+				shape: (GDCylinderShape new
+					height: 80cm;
+					radius: 20cm).
+					GDMeshInstance new
+						mesh: trashCanMesh;
+						scale: 0.0015 asVector3;
+						rotation: -1.6 @ 0 @0.};
+				transform: (Matrix4x4 withOffset: self trashCanPosition).}.
 		 self renderSphere: 5 highQuality: highQuality.
-		browserVisible get ifTrue: [CB22Browser new methods: methods; nextMethodId: nextMethodId]}
+		"TODO: Do not use state as parameter. Instead use getter and setter as parameter. (Maybe)"
+		browserVisible get ifTrue: [CB22PackageBrowser new activePackage: activePackage].
+		browserVisible get ifTrue: [CB22ClassBrowser new activePackage: activePackage get; activeClass: activeClass].
+		browserVisible get ifTrue: [CB22MethodBrowser new activeClass: activeClass get; methods: methods; nextMethodId: nextMethodId]}
 ]
 
 { #category : #'as yet unclassified' }
@@ -106,6 +114,12 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 				paramsCullMode: GDSpatialMaterial cullFront);
 			radius: radius;
 			height: radius * 2))
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> trashCanPosition [
+
+	^ 1 @ 0 @ 0.
 ]
 
 { #category : #'as yet unclassified' }
