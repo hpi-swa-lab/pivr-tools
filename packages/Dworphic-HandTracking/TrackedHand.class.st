@@ -58,7 +58,7 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease |
 	
 	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
@@ -71,6 +71,13 @@ TrackedHand >> render: props [
 			button: button;
 			handRef: handRef get.
 		eventReceivers get do: [:r | (r get at: #onButtonPress) cull: event]] dependencies: {}.
+	onButtonRelease := self useCallback: [:button | | event |
+		event := GRInteractiveAreaEventButton new
+			side: (props at: #side);
+			transform: transform get;
+			button: button;
+			handRef: handRef get.
+		eventReceivers get do: [:r | (r get at: #onButtonRelease) cull: event]] dependencies: {}.
 	self useRegisterHand: handRef.
 
 	
@@ -99,10 +106,18 @@ TrackedHand >> render: props [
 	metacarpalPos := self useState: Vector3 zero.
 	waitForRelease := self useState: false.
 	angle := self useMemo: [(tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get)] dependencies: {proximalPos get. metacarpalPos get. tipPos get.}.
-	self useEffect: [angle < 1 ifTrue: [
-			onButtonPress value: GDGlobalConstants joyVrTrigger]] dependencies: {angle}.
+	"Transcript showln: (angle < 1 and: waitForRelease get not) asString, ' ', (angle < 1) asString, ' ', (waitForRelease get) asString."
+	self useEffect: [
+		(angle < 1 and: waitForRelease get not) ifTrue: [
+			waitForRelease set: true.
+			onButtonPress value: GDGlobalConstants joyVrTrigger.
+			onButtonPress value: GDGlobalConstants joyVrGrip].
+		(angle > 2 and: waitForRelease get) ifTrue: [
+			waitForRelease set: false.
+			onButtonRelease value: GDGlobalConstants joyVrTrigger.
+			onButtonRelease value: GDGlobalConstants joyVrGrip]] dependencies: {angle}.
 	
-	(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
+	"(angle < 1 and: waitForRelease get not and: angle < 1) ifTrue: [
 		log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) .
 		replaceLog value: (logIndices get at: #result) value: [:prev | prev , ' ' ,((suggestions search: currentWord get) at: 1 ifAbsent: '')].
 		log value: 'resetting'.
@@ -111,7 +126,7 @@ TrackedHand >> render: props [
 		] .
 	self useEffect: [(angle > 2 and: waitForRelease get) ifTrue: [
 		waitForRelease set: false.
-		].] dependencies: {angle}.
+		].] dependencies: {angle}."
 		
 	finger := [:name | self node name: name , 'Metacarpal';
 				subscribeTo: #'global_transform' do: [:pos | name = 'Middle' ifTrue: [metacarpalPos set: pos translation] ];
@@ -134,9 +149,10 @@ TrackedHand >> render: props [
 	
 	self useRegisterHandsSide: (props at: #side) ref: rootRef.
 	
-	^ GDSpatial new ref: handRef; children: {
+	^ GDSpatial new children: {
 		GDSpatial new ref: rootRef; children: {
 			self node
+				ref: handRef;
 				subscribeTo: #global_transform do: transform setter;
 				name: 'Wrist';
 				children: {
@@ -147,10 +163,46 @@ TrackedHand >> render: props [
 						tipRefs: tipRefs;
 						proximalPos: proximalPos;
 						side: (props at: #side).
+					"((props at: #side) = 'right') ifTrue: [
+						(self methodAsComponent: #renderRightIndex:)
+							log: log;
+							tipRefs: tipRefs;
+							proximalPos: proximalPos;
+							side: (props at: #side).	
+					]; ifFalse: [finger value: 'Index'.]."
 					finger value: 'Index'.
 					finger value: 'Middle'.
 					finger value: 'Ring'.
 					finger value: 'Little'}}}
+]
+
+{ #category : #'as yet unclassified' }
+TrackedHand >> renderRightIndex: props [
+
+	|currentWord cooldown ref thumbRef |
+	
+	cooldown := self useState: TimeStamp now.
+
+	currentWord := self useProvided: #currentWord.
+	ref := self useGodotRef.
+	thumbRef := self useProvided: #thumbRef.
+
+	self useEffect: [(props at: #side) = 'right' ifTrue: [thumbRef set: ref].]	dependencies: #().
+
+	^ props extract: [:log :tipRefs :side :proximalPos |
+		
+		self node name: 'IndexMetacarpal';
+				 children: {self node name: 'IndexProximal';
+					 children: {self node name: 'IndexDistal';
+						 children: {self node name: 'IndexTip';
+							 children: {
+								self area
+								ref: ref;
+									onAreaExited: [:other | Transcript showln: 'Area exited'];
+									onAreaEntered: [:other | Transcript showln: 'Area entered']
+					}}}}
+		].
+
 ]
 
 { #category : #'as yet unclassified' }
