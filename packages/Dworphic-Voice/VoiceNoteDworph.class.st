@@ -22,6 +22,9 @@ VoiceNoteDworph >> render: props [
 	} key: 'note'.
 	
 	^ GDSpatial new children: {
-		LogDworph new
+		LogDworph new children: {
+			VoiceUI new
+				key: 'cube';
+				translation: -0.3 @ 0.3 @ 0}
 	}
 ]
