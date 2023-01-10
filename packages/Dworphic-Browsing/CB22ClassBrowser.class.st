@@ -21,6 +21,7 @@ CB22ClassBrowser >> render: props [
 				index := classes indexOf: className.
 				angle := 360 / classes size * index + browserRotation get \\ 360.
 				isActive := angle abs < (360 / classes size).
+				isActive ifTrue: [activeClass set: className].
 				(self methodAsComponent: #renderChoice:)
 					choice: className;
 					key: className;
@@ -32,7 +33,11 @@ CB22ClassBrowser >> render: props [
 		GRInteractiveArea new
 			onAxisChange: [:e | e isStickX ifTrue: [browserRotation set: browserRotation get + (e strength * 2)]];
 			transform: ((Matrix4x4 identity translatedBy: self circleCenter) translatedBy: 0.3 @ 0.3 @ 0.3);
-			children: {self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: Color white}}
+			children: {self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: Color white. GDLabel3D new
+						text: 'Scroll Classes';
+						pixelSize: 0.002;
+						billboard: GDSpatialMaterial billboardEnabled;
+						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)}}
 ]
 
 { #category : #'as yet unclassified' }
