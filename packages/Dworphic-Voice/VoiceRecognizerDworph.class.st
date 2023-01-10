@@ -131,8 +131,7 @@ VoiceRecognizerDworph >> recordingIndicator: aBoolean [
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible log|
-	log := self useLog.
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible|
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: {'Say "show" to show applications, and "hide" to hide them.'}.
@@ -178,9 +177,7 @@ VoiceRecognizerDworph >> render: props [
 					visible get ifFalse: [visible set: true].
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {(json at: #text)}.
-					log value: 'detected text: ',(json at: #text).
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
-					matches do: [:m | log value: ('intent: ', (m intent), ';    accuracy: ', (m accuracy), ' %')].
 					(matches isEmpty not and: [matches first accuracy > 50]) ifTrue: [self match: matches first on: intentHandlers]].
 			TestCubeVoice new.
 			CMFReactNodePortal

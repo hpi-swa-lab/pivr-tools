@@ -11,7 +11,7 @@ HandTracking class >> appDescription [
 	
 	^ DworphicApplicationDescription new
 		name: self name;
-		render: [PinchtypeKeyboard new];
+		render: [self new.];
 		renderController: [TrackedHand new.]
 
 	"^ super appDescription renderController: [TrackedHand new]."
@@ -48,15 +48,9 @@ HandTracking class >> fingerColor [
 { #category : #'as yet unclassified' }
 HandTracking >> render: props [
 
-	^nil.
-		"| inputIIndex log resultIndex suggestionsIndex logIndices |
-	log := self useLog.
-	suggestionsIndex := (log value: 'Start typing to see suggestions here') value.
-	inputIIndex := (log value: 'Start typing to see your input here') value.	
-	resultIndex := (log value: '') value.
+	| focus |
+	focus := (self useProvided: #textFocus) get.
 	
-	logIndices := self useProvided: #logIndices.
-	logIndices set: {#suggestions -> suggestionsIndex. #input -> inputIIndex. #result -> resultIndex} asDictionary.
-	
-	^ nil."
+	^ focus notNone ifTrue: [
+		PinchtypeKeyboard new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ -20 cm @ 5 cm).]
 ]
