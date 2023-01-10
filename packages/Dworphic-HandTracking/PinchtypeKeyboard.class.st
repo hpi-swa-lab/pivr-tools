@@ -20,7 +20,7 @@ PinchtypeKeyboard >> keySize [
 PinchtypeKeyboard >> layout: aBool [
 
 	^ {
-	aBool ifFalse: {'1'. '2'. '3'. '4'. '5'. '6'. '7'. '8'. '9'. '0'} ifTrue: {'!'. '"'. '§'. '$'. '%'. '&'. '/'. '('. ')'. '='}.
+	aBool ifFalse: {'1'. '2'. '3'. '4'. '4'. '5'. '5'. '6'. '7'. '7'} ifTrue: {'!'. '"'. '§'. '$'. '%'. '&'. '/'. '('. ')'. '='}.
 				{'Q'. 'W'. 'E'. 'R'. 'T'. 'Z'. 'U'. 'I'. 'O'. 'P'}.
 				{'A'. 'S'. 'D'. 'F'. 'G'. 'H'. 'J'. 'K'. 'L'}.
 	aBool ifFalse: {"'Shift'." 'Y'. 'X'. 'C'. 'V'. 'B'. 'N'. 'M'. 'Comma'. 'Period'. 'Minus'} ifTrue: {'Shift'. 'Y'. 'X'. 'C'. 'V'. 'B'. 'N'. 'M'. 'Semicolon'. 'Colon'. 'Underscore'}.
@@ -39,6 +39,7 @@ PinchtypeKeyboard >> render: props [
 	
 	^ GRGrabbableArea new
 	"transform: ( ((Matrix4x4 new scaledBy: (Vector3 value: 3.0) )translation: 1@1@0));"
+	transform: (props at: #transform);
 		children: {
 			(self
 				cubeOfSize: (layout collect: #size) max * self keySize @ (layout size * self keySize) @ 0.01
