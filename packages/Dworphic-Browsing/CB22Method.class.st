@@ -13,8 +13,8 @@ CB22Method >> collisionShape [
 { #category : #'as yet unclassified' }
 CB22Method >> getTextMorphExtent: morph [
 
-| extent |
-	extent := morph imageForm extent.
+	| extent |
+	extent := morph fullBounds extent.
 	^ 0.015 @ (extent x * 0.0005) @ (extent y * 0.0005)
 ]
 
