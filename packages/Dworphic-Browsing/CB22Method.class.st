@@ -7,7 +7,7 @@ Class {
 { #category : #'as yet unclassified' }
 CB22Method >> collisionShape [
 
-	^ (self godot: #BoxShape) extents: 0.06 @ 0.015 @ 0.07
+	^ (self godot: #BoxShape) extents: 0.06 @ 0.015 @ 0.07 
 ]
 
 { #category : #'as yet unclassified' }
@@ -15,27 +15,27 @@ CB22Method >> getTextMorphExtent: morph [
 
 	| extent |
 	extent := morph fullBounds extent.
-	^ 0.015 @ (extent x * 0.0005) @ (extent y * 0.0005)
+	^ 0.015 @ (extent x * 0.0005) @ (extent y * 0.0005) 
 ]
 
 { #category : #'as yet unclassified' }
 CB22Method >> getTextMorphShape: morph [
 
-	^ (self godot: #BoxShape) extents: (self getTextMorphExtent: morph)
+	^ (self godot: #BoxShape) extents: (self getTextMorphExtent: morph) 
 ]
 
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key|
+	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
 	world := self useWorldPortal.
-	text := (props at: #text) value.
+	text := (props at: #text) value. 
 	name := (props at: #name) value.
 	grabbedMethod := (props at: #grabbedMethod) value.
-	key := (props at: #key).
+	key := props at: #key.
 	morph := self useStyledTextMorph: text.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	transform := self useState: (Matrix4x4 identity
@@ -63,10 +63,10 @@ CB22Method >> render: props [
 			GDCollisionShape new
 				shape: (self getTextMorphShape: morph);
 				rotation: 4.2 @ 0 @ Float pi / 2.
-			((self renderMethodDisplayFar:  name extent: (self getTextMorphExtent: morph)) visible: (onPinboard get)).
+			(self renderMethodDisplayFar: name extent: (self getTextMorphExtent: morph)) visible: onPinboard get.
 			GDSpatial new
 				children: {
-					(self renderMethodDisplayNear: morph) visible: (onPinboard get not).
+					(self renderMethodDisplayNear: morph) visible: onPinboard get not.
 					GDMeshInstance new
 						mesh: (GDCubeMesh new
 							size: (self getTextMorphExtent: morph) * 2;
@@ -86,13 +86,11 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [
 			grabbed set: true.
-			onPinboard set: false.
 			grabbedMethod set: key];
 		onRelease: [:e |
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false.
+			grabbed set: false
 			"grabbedMethod set: nil"]
-
 ]
 
 { #category : #'as yet unclassified' }
@@ -104,16 +102,16 @@ CB22Method >> renderMethodDisplayFar: name extent: e [
 		autowrap: true;
 		width: 2000000;
 		translation: 0 @ 0 @ 0.02;
-		rotation: 0.4 @ 0 @ 0
+		rotation: 0.4 @ 0 @ 0 
 ]
 
 { #category : #'as yet unclassified' }
 CB22Method >> renderMethodDisplayNear: morph [
 
 	^ FormDworph new
-						morph: morph;
-						rotationDegrees: 0 @ 0 @ 0;
-						translation: 0 @ 0.017 @ 0.
+		morph: morph;
+		rotationDegrees: 0 @ 0 @ 0;
+		translation: 0 @ 0.017 @ 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -137,9 +135,11 @@ CB22Method >> transformInSphere: et center: c radius: r [
 { #category : #'as yet unclassified' }
 CB22Method >> transformOnPinboard: handTransform [
 
-	 ^ (handTransform forwardRay intersectSphere: BrowsingDworph pinboardCenter radius: BrowsingDworph pinboardRadius)
+	^ (handTransform forwardRay
+		intersectSphere: BrowsingDworph pinboardCenter
+		radius: BrowsingDworph pinboardRadius)
 		ifNotNil: [:i | (Matrix4x4 lookAt: i from: BrowsingDworph pinboardCenter up: 0 @ 1 @ 0) translation: i]
-		ifNil: [Matrix4x4 identity].
+		ifNil: [Matrix4x4 identity]
 ]
 
 { #category : #'as yet unclassified' }
