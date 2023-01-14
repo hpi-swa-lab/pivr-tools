@@ -27,12 +27,12 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key |
+	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
 	world := self useWorldPortal.
-	text := (props at: #text) value. 
+	text := (props at: #text) value.
 	name := (props at: #name) value.
 	grabbedMethod := (props at: #grabbedMethod) value.
 	key := props at: #key.
@@ -46,6 +46,7 @@ CB22Method >> render: props [
 	onPinboard := self useState: false.
 	endGrab := self useRef: nil.
 	api := Dictionary new.
+	colorMode := self useState: 'normal'.
 	
 	et := self useProvided: #rightControllerTransform.
 	t := self transformOnPinboard: et.
@@ -63,6 +64,14 @@ CB22Method >> render: props [
 			GDCollisionShape new
 				shape: (self getTextMorphShape: morph);
 				rotation: 4.2 @ 0 @ Float pi / 2.
+			GRInteractiveArea new
+				children: {
+					GDCollisionShape new
+						shape: (self getTextMorphShape: morph);
+						rotation: 4.2 @ 0 @ Float pi / 2};
+				onHover: [:e | "Code dup above"
+				grabbed get ifFalse: [colorMode set: 'grabbable']];
+				onBlur: [:e | grabbed get ifFalse: [colorMode set: 'normal']].
 			(self renderMethodDisplayFar: name extent: (self getTextMorphExtent: morph)) visible: onPinboard get.
 			GDSpatial new
 				children: {
@@ -70,7 +79,7 @@ CB22Method >> render: props [
 					GDMeshInstance new
 						mesh: (GDCubeMesh new
 							size: (self getTextMorphExtent: morph) * 2;
-							material: (GDSpatialMaterial new albedoColor: (grabbed get ifTrue: [Color lightBlue] ifFalse: [Color lightGray])));
+							material: (GDSpatialMaterial new albedoColor: (({'normal' -> Color lightGray. 'grabbable' -> Color lightBlue. 'grabbed' -> Color lightYellow} as: Dictionary) at: colorMode get)));
 						rotation: 0 @ 0 @ Float pi / 2;
 						scale: 1 @ 1 @ 1};
 				rotation: 90 @ 0 @ 0};
@@ -86,11 +95,21 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		onGrab: [
 			grabbed set: true.
+			colorMode set: 'grabbed'.
 			grabbedMethod set: key];
 		onRelease: [:e |
+			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
 			grabbed set: false
 			"grabbedMethod set: nil"]
+]
+
+{ #category : #'as yet unclassified' }
+CB22Method >> renderCollisionShape: morph [
+
+	GDCollisionShape new
+				shape: (self getTextMorphShape: morph);
+				rotation: 4.2 @ 0 @ Float pi / 2.
 ]
 
 { #category : #'as yet unclassified' }
