@@ -57,50 +57,27 @@ BrowsingDworph >> render: props [
 					name: desc third;
 					text: desc fourth;
 					grabbedMethod: grabbedMethod;
-					lastCreationEvent: lastCreationEvent get].
-			GRInteractiveArea new
-				onButtonPress: [:e |
-					e isGrip ifTrue: [
-						lastCreationEvent set: e.
-						methods set: [:old | | method |
-							nextMethodId set: nextMethodId get + 1.
-							method := (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value.
-							old copyWith: {nextMethodId get. CMFFiber name. method selector. method getSource asString}]]];
-				children: {
-					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color bubblegum.
-					GDLabel3D new
-						text: 'Create new random method';
-						pixelSize: 0.0035;
-						billboard: GDSpatialMaterial billboardEnabled;
-						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
-				transform: (Matrix4x4 withOffset: 0 @ 1 @ 0).
-			GRInteractiveArea new
-				onButtonPress: [methods set: {}];
-				children: {
-					self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: Color red.
-					GDLabel3D new
-						text: 'Delete all methods';
-						pixelSize: 0.0035;
-						billboard: GDSpatialMaterial billboardEnabled;
-						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
-				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0).
-			GRInteractiveArea new
-				onButtonRelease: [:e | e isGrip ifTrue: [methods set: [:list | list reject: [:method | method first = grabbedMethod get]]]];
-				children: {
-					GDCollisionShape new
-				shape: (GDCylinderShape new
-					height: 80cm;
-					radius: 20cm).
-					GDMeshInstance new
-						mesh: trashCanMesh;
-						scale: 0.0015 asVector3;
-						rotation: -1.6 @ 0 @0.};
-				transform: (Matrix4x4 withOffset: self trashCanPosition).}.
-		 self renderSphere: 5 highQuality: highQuality.
-		"TODO: Do not use state as parameter. Instead use getter and setter as parameter. (Maybe)"
-		browserVisible get ifTrue: [CB22PackageBrowser new activePackage: activePackage].
-		browserVisible get ifTrue: [CB22ClassBrowser new activePackage: activePackage get; activeClass: activeClass].
-		browserVisible get ifTrue: [CB22MethodBrowser new activeClass: activeClass get; methods: methods; nextMethodId: nextMethodId]}
+					lastCreationEvent: lastCreationEvent get]}.
+		CB22RandomMethodButton new
+			methods: methods;
+			nextMethodId: nextMethodId;
+			lastCreationEvent: lastCreationEvent.
+		CB22TrashCan new
+			methods: methods;
+			grabbedMethod: grabbedMethod.
+		CB22DeleteAllButton new methods: methods.
+		self renderSphere: 5 highQuality: highQuality.
+		browserVisible get ifTrue: ["TODO: Do not use state as parameter. Instead use getter and setter as parameter. (Maybe)"
+		CB22PackageBrowser new activePackage: activePackage].
+		browserVisible get ifTrue: [
+			CB22ClassBrowser new
+				activePackage: activePackage get;
+				activeClass: activeClass].
+		browserVisible get ifTrue: [
+			CB22MethodBrowser new
+				activeClass: activeClass get;
+				methods: methods;
+				nextMethodId: nextMethodId]}
 ]
 
 { #category : #'as yet unclassified' }
