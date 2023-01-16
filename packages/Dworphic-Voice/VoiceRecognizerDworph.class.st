@@ -170,7 +170,7 @@ VoiceRecognizerDworph >> render: props [
 	headPortal := self useProvided: #headPortal.
 	distance := head translation distanceTo: right translation.
 	shouldRecord := distance < (0.2 m).
-	isVisible := shouldRecord or: [visible get].
+	isVisible := (shouldRecord or: [visible get]) or: [isRecording get].
 	
 	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
 	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {shouldRecord}.
@@ -196,7 +196,7 @@ VoiceRecognizerDworph >> render: props [
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {(json at: #text)}.
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
-					(matches isEmpty not and: [matches first accuracy > 50]) 
+					(matches isEmpty not and: [matches first accuracy > 70]) 
 						ifTrue: [|undoBlocks| 
 							undoBlocks := self match: matches first on: intentHandlers.
 							undoBlocks do: [:block |

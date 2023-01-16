@@ -7,13 +7,14 @@ Class {
 { #category : #'as yet unclassified' }
 VoiceUI >> render: props [
 
-	^ props extract: [:key :rest | | handlers handlersKeys showKeys |
+	^ props extract: [:key :hovered :rest | | handlers handlersKeys showKeys |
 		handlers := self useProvided: #voiceIntentHandlers.
-		handlersKeys := (handlers get gather: [:ref | ref get keys]) select: [:intents | intents beginsWith: key].
+		handlersKeys := (handlers get gather: [:ref | ref get keys]) 
+			select: [:intents | intents beginsWith: key].
 		
-		"show all commands of key if key is said aloud"
+		"(key = ' ') ifTrue: [self halt]."
+		
 		showKeys := self useState: false.
-		self useVoiceIntents: {'' -> [showKeys set: true]} key: key.
 		
 		GDSpatial new
 			setAll: rest;
@@ -34,7 +35,7 @@ VoiceUI >> render: props [
 					translation: 0 @ 0 @ 0;
 					billboard: GDSpatialMaterial billboardEnabled;
 					noDepthTest: true.
-				showKeys get ifTrue: [
+				(showKeys get or: [hovered]) ifTrue: [
 					{
 						(handlersKeys select: [:intent | intent ~= key]) withIndexCollect: [:intent :i |
 							GDLabel3D new
