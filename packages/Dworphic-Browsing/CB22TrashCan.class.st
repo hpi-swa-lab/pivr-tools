@@ -15,7 +15,7 @@ trashCanMesh := self useTrashCanMesh.
 
 
 ^ GRInteractiveArea new
-				onButtonRelease: [:e | e isGrip ifTrue: [grabbedMethod get ifNotNil: [methods set: [:list | list reject: [:method | method first = grabbedMethod get]]. grabbedMethod set: nil]]];
+				onButtonRelease: [:e | e isGrip ifTrue: [e handle ifNotNil: [methods set: [:list | list reject: [:method | method first = e handle]]. grabbedMethod set: nil]]];
 				children: {
 					GDCollisionShape new
 				shape: (GDCylinderShape new
@@ -24,7 +24,7 @@ trashCanMesh := self useTrashCanMesh.
 					GDMeshInstance new
 						mesh: trashCanMesh;
 						scale: 0.0015 asVector3;
-						rotation: -1.6 @ 0 @0.};
+						rotation: Float pi / -2 @ 0 @0.};
 				transform: (Matrix4x4 withOffset: self trashCanPosition).
 
 ]

@@ -93,14 +93,15 @@ CB22Method >> render: props [
 				onPinboard set: false.
 				transform set: (self transformInSphere: et center: et translation radius: 2 cm)]];
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
-		onGrab: [
+		handle: key;
+		onGrab: [:e |
 			grabbed set: true.
 			colorMode set: 'grabbed'.
-			grabbedMethod set: key];
+			grabbedMethod set: key.];
 		onRelease: [:e |
 			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false
+			grabbed set: false.
 			"grabbedMethod set: nil"]
 ]
 

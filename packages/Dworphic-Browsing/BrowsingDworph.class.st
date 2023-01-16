@@ -27,14 +27,13 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh grabbedMethod activePackage activeClass |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	lastCreationEvent := self useRef: nil.
 	nextMethodId := self useState: 0.
-	trashCanMesh := self useTrashCanMesh.
 	grabbedMethod := self useState: nil.
 	activePackage := self useState: nil.
 	activeClass := self useState: nil.
@@ -67,7 +66,7 @@ BrowsingDworph >> render: props [
 			grabbedMethod: grabbedMethod.
 		CB22DeleteAllButton new methods: methods.
 		self renderSphere: 5 highQuality: highQuality.
-		browserVisible get ifTrue: ["TODO: Do not use state as parameter. Instead use getter and setter as parameter. (Maybe)"
+		browserVisible get ifTrue: [
 		CB22PackageBrowser new activePackage: activePackage].
 		browserVisible get ifTrue: [
 			CB22ClassBrowser new
@@ -94,12 +93,6 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 ]
 
 { #category : #'as yet unclassified' }
-BrowsingDworph >> trashCanPosition [
-
-	^ 1 @ 0 @ 0.
-]
-
-{ #category : #'as yet unclassified' }
 BrowsingDworph >> useSkyTexture: highQuality [
 
 	^ self
@@ -118,14 +111,6 @@ BrowsingDworph >> useStyledTextMorph: text [
 				styledTextFor: text asText) asMorph
 				backgroundColor: Color white;
 				yourself] dependencies: {text}
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> useTrashCanMesh [
-
-	^ self
-		useMemo: [GDResourceLoader instance loadPath: 'res://assets/models/trash_can/trash_can.tres']
-		dependencies: #()
 ]
 
 { #category : #'as yet unclassified' }
