@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -37,9 +37,14 @@ BrowsingDworph >> render: props [
 	grabbedMethod := self useState: nil.
 	activePackage := self useState: nil.
 	activeClass := self useState: nil.
+	browserCenter := self useState: nil.
+	headTransformRef := self useProvidedRef: #headTransform.
 	
 	self
-		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
+		useButtonPress: [:e |
+			e button = GDGlobalConstants joyOculusBy ifTrue: [
+				browserCenter set: headTransformRef get translation.
+				browserVisible set: browserVisible get not]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
@@ -67,16 +72,18 @@ BrowsingDworph >> render: props [
 		CB22DeleteAllButton new methods: methods.
 		self renderSphere: 5 highQuality: highQuality.
 		browserVisible get ifTrue: [
-		CB22PackageBrowser new activePackage: activePackage].
-		browserVisible get ifTrue: [
-			CB22ClassBrowser new
+			CB22PackageBrowser new
+				activePackage: activePackage;
+				center: browserCenter get.].
+		browserVisible get ifTrue: [CB22ClassBrowser new
 				activePackage: activePackage get;
-				activeClass: activeClass].
-		browserVisible get ifTrue: [
-			CB22MethodBrowser new
+				activeClass: activeClass;
+				center: browserCenter get.].
+			browserVisible get ifTrue: [CB22MethodBrowser new
 				activeClass: activeClass get;
 				methods: methods;
-				nextMethodId: nextMethodId]}
+				nextMethodId: nextMethodId;
+				center: browserCenter get]}
 ]
 
 { #category : #'as yet unclassified' }

@@ -61,15 +61,11 @@ CB22Method >> render: props [
 		api: api;
 		point: onPinboard get;
 		children: {
-			GDCollisionShape new
-				shape: (self getTextMorphShape: morph);
-				rotation: 4.2 @ 0 @ Float pi / 2.
+			self renderCollisionShape: morph.
 			GRInteractiveArea new
 				children: {
-					GDCollisionShape new
-						shape: (self getTextMorphShape: morph);
-						rotation: 4.2 @ 0 @ Float pi / 2};
-				onHover: [:e | "Code dup above"
+					self renderCollisionShape: morph};
+				onHover: [:e |
 				grabbed get ifFalse: [colorMode set: 'grabbable']];
 				onBlur: [:e | grabbed get ifFalse: [colorMode set: 'normal']].
 			(self renderMethodDisplayFar: name extent: (self getTextMorphExtent: morph)) visible: onPinboard get.
@@ -97,20 +93,20 @@ CB22Method >> render: props [
 		onGrab: [:e |
 			grabbed set: true.
 			colorMode set: 'grabbed'.
-			grabbedMethod set: key.];
+			grabbedMethod set: key];
 		onRelease: [:e |
 			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false.
+			grabbed set: false
 			"grabbedMethod set: nil"]
 ]
 
 { #category : #'as yet unclassified' }
 CB22Method >> renderCollisionShape: morph [
 
-	GDCollisionShape new
-				shape: (self getTextMorphShape: morph);
-				rotation: 4.2 @ 0 @ Float pi / 2.
+	^ GDCollisionShape new
+		shape: (self getTextMorphShape: morph);
+		rotation: 4.2 @ 0 @ Float pi / 2
 ]
 
 { #category : #'as yet unclassified' }

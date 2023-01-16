@@ -5,26 +5,29 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-CB22Browser >> circleCenter [
-
-	| center |
-	center := self useState: ((self useProvidedRef: #headTransform) get translation).
-	^ center get
-]
-
-{ #category : #'as yet unclassified' }
 CB22Browser >> circleRadius [
 
 	^ 1
 ]
 
 { #category : #'as yet unclassified' }
-CB22Browser >> pointOnCircle: radius angle: degs  center: c [
+CB22Browser >> cylinderScale [
 
+	^1.8 @ 0.5 @ 1.8
+]
 
-     | angle |
-angle := degs degreesToRadians.
-	^ c first + angle sin * radius @ 1.2 @ (c third + (angle cos * radius))
+{ #category : #'as yet unclassified' }
+CB22Browser >> cylinderTranslation: center [
+
+	^ center x @ (center y + self yOffset) @ center z
+]
+
+{ #category : #'as yet unclassified' }
+CB22Browser >> pointOnCircle: radius angle: degs center: c [
+
+	| angle |
+	angle := degs degreesToRadians.
+	^ c x + angle sin * radius @ c y @ (c z + (angle cos * radius))
 ]
 
 { #category : #'as yet unclassified' }
@@ -46,9 +49,7 @@ CB22Browser >> renderChoice: props [
 				onPress: (props at: #action);
 				translation: 0.02 @ 0 @ 0;
 				color: ((props at: #isActive) ifTrue: [Color red] ifFalse: [Color green])};
-		transform: ((Matrix4x4 withOffset:
-		 (self pointOnCircle: self circleRadius angle: (props at: #angle) center: self circleCenter))
-		 translatedBy: (0 @ (((props at: #index) \\ 2 == 0) ifTrue: [-0.05] ifFalse: [0.05]) + self yOffset @ 0));
+		transform: ((Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: (props at: #angle) center: (props at: #center))) translatedBy: 0 @ (((props at: #index) \\ 2 == 0 ifTrue: [-0.05] ifFalse: [0.05]) + self yOffset )@ 0);
 		yourself
 ]
 
