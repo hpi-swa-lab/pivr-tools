@@ -58,10 +58,10 @@ CB22MethodBrowser >> render: props [
 							nextMethodId set: nextMethodId get + 1.
 							old copyWith: {nextMethodId get. activeClass name. method selector. method getSource asString}]];
 					isActive: isActive]].
-		GDMeshInstance new
-			mesh: cylinderMesh;
-			translation: (self cylinderTranslation: center);
-			scale: self cylinderScale.
+		self renderCylinder: (Dictionary withAll: {
+			#center -> center.
+			#browserRotation -> browserRotation get.
+			#browserRotationSetter -> browserRotation setter}).
 		GRInteractiveArea new
 			onAxisChange: [:e | e isStickX ifTrue: [browserRotation set: browserRotation get + (e strength * 2)]];
 			transform: ((Matrix4x4 identity translatedBy: center) translatedBy: 0.3 @ 0.45 @ 0.3);

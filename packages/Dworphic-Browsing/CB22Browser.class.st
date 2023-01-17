@@ -54,6 +54,51 @@ CB22Browser >> renderChoice: props [
 ]
 
 { #category : #'as yet unclassified' }
+CB22Browser >> renderCylinder: props [
+
+	| browserRotation center cylinderMesh browserRotationSetter |
+	cylinderMesh := self useCylinderMesh.
+	browserRotation := props at: #browserRotation.
+	browserRotationSetter := props at: #browserRotationSetter.
+	center := props at: #center.
+	
+	^ GRInteractiveArea new
+		translation: (self cylinderTranslation: center);
+		scale: self cylinderScale;
+		onAxisChange: [:e | e isStickX ifTrue: [browserRotationSetter value: browserRotation + (e strength * 2)]];
+		point: true;
+		children: {GDMeshInstance new mesh: cylinderMesh. GDCollisionShape new shape: self useCylinderShape}
+	"self renderCylinderCollisionShape: {}"
+]
+
+{ #category : #'as yet unclassified' }
+CB22Browser >> renderCylinderCollisionShape: props [
+
+	^ GDCSGCombiner new
+		children: {
+			GDCSGCylinder new
+				radius: 0.75;
+				height: 0.5;
+				sides: 16.
+			GDCSGCylinder new
+				radius: 0.627;
+				height: 0.5;
+				sides: 16;
+				operation: GDCSGShape operationSubtraction};
+		useCollision: true;
+		collisionMask: 0;
+			collisionLayer: GRInteractiveArea pointLayer
+]
+
+{ #category : #'as yet unclassified' }
+CB22Browser >> useCylinderShape [
+
+	^ self
+		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/hollow_cylinder_convex_polygon_shape.tres']
+		dependencies: #()
+]
+
+{ #category : #'as yet unclassified' }
 CB22Browser >> yOffset [
  	 self subclassResponsibility
 ]

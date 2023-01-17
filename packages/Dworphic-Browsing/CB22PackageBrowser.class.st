@@ -38,10 +38,10 @@ CB22PackageBrowser >> render: props [
 					Transcript showln: packageName.
 					activePackage set: packageName];
 				isActive: isActive].
-		GDMeshInstance new
-			mesh: cylinderMesh;
-			translation: (self cylinderTranslation: center);
-			scale: self cylinderScale.
+		self renderCylinder: (Dictionary withAll: {
+			#center -> center.
+			#browserRotation -> browserRotation get.
+			#browserRotationSetter -> browserRotation setter}).
 		GRInteractiveArea new
 			onAxisChange: [:e | e isStickX ifTrue: [browserRotation set: browserRotation get + (e strength * 2)]];
 			transform: ((Matrix4x4 identity translatedBy: center) translatedBy: 0.3 @ 0.15 @ 0.3);
