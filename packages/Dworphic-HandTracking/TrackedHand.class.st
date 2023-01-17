@@ -60,7 +60,7 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus setFocus allFingerRefs |
 	
 	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
@@ -83,11 +83,14 @@ TrackedHand >> render: props [
 	self useRegisterHand: handRef.
 	
 	focus := (self useProvided: #textFocus) get.
+	setFocus := (self useProvided: #textFocus).
 	
 	suggestions := self useMemo: [FuzzySuggestions newFrom: FuzzySuggestions a1001CommonEnglishWordList] dependencies: #().
 	
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
+	allFingerRefs := self useProvided: #allFingerRefs.
+	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
 	
 	 "log := [:message | currentWordRef get set: [:word | word, message]]."
 	log := [:text | Transcript showln: text].
@@ -99,7 +102,6 @@ TrackedHand >> render: props [
 	currentWord := self useProvided: #currentWord.
 	self useEffect: [(props at: #side) = 'left' ifTrue: [
 			searchResults := suggestions search: currentWord get.
-			log value: currentWord get.
 			searchResults ifEmpty: [replaceLog value: (logIndices get at: #suggestions) value: ['No words found for this query']] ifNotEmpty: [replaceLog value: (logIndices get at: #suggestions) value: [(searchResults take: 10) asString]]].
 			replaceLog value: (logIndices get at: #input) value: [currentWord get asString].
 		.] dependencies: {currentWord get}.
@@ -116,10 +118,8 @@ TrackedHand >> render: props [
 			waitForRelease set: true.
 			onButtonPress value: GDGlobalConstants joyVrTrigger.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
-					log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) .
 		focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: 1 ifAbsent: ''), ' ').].
 		replaceLog value: (logIndices get at: #result) value: [:prev | prev , ' ' ,((suggestions search: currentWord get) at: 1 ifAbsent: '')].
-		log value: 'resetting'.
 		currentWord set: [:old | {}].].
 		(angle > 2 and: waitForRelease get) ifTrue: [
 			waitForRelease set: false.
@@ -155,6 +155,14 @@ TrackedHand >> render: props [
 				subscribeTo: #global_transform do: transform setter;
 				name: 'Wrist';
 				children: {
+					GDArea new children: {
+						(GDLabel3D new text: 'X') pixelSize: 0.1cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
+						(self cubeOfSize: 3 cm @ 0.5 cm @3 cm color: Color lightBlue)}; translation: 2cm @ -2cm @ 0 cm; onAreaEntered: [: other |
+						(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [ setFocus set: GRTextFocus none]].
+					GDArea new children: {
+					(GDLabel3D new text: 'AppControl') pixelSize: 0.05cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
+					(self cubeOfSize: 3 cm @ 0.5 cm @3 cm color: Color lightGreen)}; translation: -2cm @ -2cm @ 0 cm;onAreaEntered: [: other |
+						(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [Transcript showln: 'hi'. onButtonPress value: GDGlobalConstants joyOculusAx.]].
 					GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
 					GRPointer new handRef: handRef.
 					(self methodAsComponent: #renderThumb:)
@@ -221,7 +229,7 @@ TrackedHand >> renderThumb: props [
 	
 	^ props extract: [:log :tipRefs :side :proximalPos | | detector fingerBones |
 		detector :=  GDArea new
-			children: {self class handsGripOnlyMode ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color red) translation: 0 @ -0.03 @ -0.06] ifFalse: [self cubeOfSize: 0.015 color: Color red]};
+			children: {self class handsGripOnlyMode ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color gray) translation: 0 @ -0.03 @ -0.06] ifFalse: [self cubeOfSize: 0.015 color: Color gray]};
 			ref: ref;
 			subscribeTo: #'global_transform' do: [:pos | isTracked set: (pos = Vector3 zero) not];
 			onAreaExited: [:other | focus notNone ifTrue: [ (((tipRefs get
