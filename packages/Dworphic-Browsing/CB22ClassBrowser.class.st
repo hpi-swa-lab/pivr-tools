@@ -13,7 +13,7 @@ CB22ClassBrowser >> render: props [
 	activePackage := props at: #activePackage.
 	classes := self
 		useMemo: [activePackage ifNotNil: [((PackageInfo named: activePackage) classes collect: [:class | class name]) sort]]
-		dependencies: {activeClass get}.
+		dependencies: {activePackage}.
 	cylinderMesh := self useCylinderMesh.
 	center := props at: #center.
 	streamPlayerRef := self useGodotRef.
