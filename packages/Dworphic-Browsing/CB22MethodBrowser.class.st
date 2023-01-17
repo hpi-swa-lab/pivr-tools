@@ -62,16 +62,7 @@ CB22MethodBrowser >> render: props [
 			#center -> center.
 			#browserRotation -> browserRotation get.
 			#browserRotationSetter -> browserRotation setter}).
-		GRInteractiveArea new
-			onAxisChange: [:e | e isStickX ifTrue: [browserRotation set: browserRotation get + (e strength * 2)]];
-			transform: ((Matrix4x4 identity translatedBy: center) translatedBy: 0.3 @ 0.45 @ 0.3);
-			children: {
-				self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: (Color r: 1 g: 1 b: 1).
-				GDLabel3D new
-					text: 'Scroll Methods';
-					pixelSize: 0.002;
-					billboard: GDSpatialMaterial billboardEnabled;
-					transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)}}
+		}
 	"activeMethod get ifNotNil: [ |m | m:= activeMethod get.
 				(CB22Method new methodAsComponent: #render:)
 					key: m first;

@@ -47,18 +47,7 @@ CB22ClassBrowser >> render: props [
 		self renderCylinder: (Dictionary withAll: {
 			#center -> center.
 			#browserRotation -> browserRotation get.
-			#browserRotationSetter -> browserRotation setter}).
-		GRInteractiveArea new
-			onAxisChange: [:e | e isStickX ifTrue: [browserRotation set: browserRotation get + (e strength * 2)]];
-			point: true;
-			transform: ((Matrix4x4 identity translatedBy: center) translatedBy: 0.3 @ 0.3 @ 0.3);
-			children: {
-				self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: Color white.
-				GDLabel3D new
-					text: 'Scroll Classes';
-					pixelSize: 0.002;
-					billboard: GDSpatialMaterial billboardEnabled;
-					transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)}}
+			#browserRotationSetter -> browserRotation setter}).}
 ]
 
 { #category : #'as yet unclassified' }
