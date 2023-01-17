@@ -1,6 +1,9 @@
 Class {
 	#name : #SuggestionPanel,
 	#superclass : #GRComponent,
+	#instVars : [
+		'scrollContainer'
+	],
 	#category : #'Dworphic-HandTracking'
 }
 
@@ -19,11 +22,14 @@ SuggestionPanel >> panelSize [
 { #category : #'as yet unclassified' }
 SuggestionPanel >> render: props [
 
-	| entries viewportTex |
+	| entries viewportTex scrollPos |
 	
-	entries := #('hello' 'wasup').
+	entries := #('hello' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' 'wasup' ).
+
 	viewportTex := self useState: nil.
 	
+	scrollPos := (self useProvided: #scrollPos) get.
+
 	^ GRViewportTexture new
 		extent: self resolution;
 		children: (GDControl new
@@ -33,24 +39,30 @@ SuggestionPanel >> render: props [
 					rectSize: self resolution;
 					followFocus: true;
 					scrollHorizontalEnabled: false;
+					scrollVertical: (scrollPos * (30)) asFloat;
 					children: {
 						GDVBoxContainer new
 							rectSize: self resolution;
 							sizeFlagsHorizontal: GDVBoxContainer sizeExpandFill;
 							children: {
-								entries collect: [:entry |
+								entries withIndexCollect: [:entry :index |
 									{
 										GDLabel new
 											theme: (GDTheme new defaultFont: (GDDynamicFont new
 												fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
 												size: self fontSize));
-											autowrap: true;
-											text: entry.
+												autowrap: true;
+												text: ((index = scrollPos) ifTrue: ['>>>', entry] ifFalse: [entry]).
+										"GDRichTextLabel new
+											theme: (GDTheme new defaultFont: (GDDynamicFont new
+												fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+												size: self fontSize));
+												text: entry."
+											"text: ((index = scrollPos) ifTrue: ['[b]',entry, '[/b]'] ifFalse: [entry])."
 										GDHSeparator new sizeFlagsHorizontal: GDHSeparator sizeExpandFill}].
 								GDControl new
 									focusMode: GDControl focusAll;
-									subscribeCall: 'grab_focus' with: #() do: []}}
-									
+									subscribeCall: 'grab_focus' with: #() do: []}}.
 				});
 		meshDo: [:material |
 			GRGrabbableArea new children: {
