@@ -157,12 +157,15 @@ TrackedHand >> render: props [
 				children: {
 					GDArea new children: {
 						(GDLabel3D new text: 'X') pixelSize: 0.1cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
-						(self cubeOfSize: 3 cm @ 0.5 cm @3 cm color: Color lightBlue)}; translation: 2cm @ -2cm @ 0 cm; onAreaEntered: [: other |
-						(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [ setFocus set: GRTextFocus none]].
+						(self cubeOfSize: 3 cm @ 1 cm @3 cm color: Color lightBlue)}; 
+					translation: 2cm @ -2cm @ 0 cm; onAreaEntered: [: other |
+					(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [ setFocus set: GRTextFocus none]].
 					GDArea new children: {
-					(GDLabel3D new text: 'AppControl') pixelSize: 0.05cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
-					(self cubeOfSize: 3 cm @ 0.5 cm @3 cm color: Color lightGreen)}; translation: -2cm @ -2cm @ 0 cm;onAreaEntered: [: other |
-						(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [Transcript showln: 'hi'. onButtonPress value: GDGlobalConstants joyOculusAx.]].
+						(GDLabel3D new text: 'AppControl') pixelSize: 0.05cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
+						(self cubeOfSize: 3 cm @ 1 cm @3 cm color: Color lightGreen)};
+					translation: -2cm @ -2cm @ 0 cm;onAreaEntered: [: other |
+					(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [Transcript showln: eventReceivers get identityHash.Transcript showln: 'AppControl should be toggled'. onButtonPress value: GDGlobalConstants joyOculusAx.]].
+				
 					GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
 					GRPointer new handRef: handRef.
 					(self methodAsComponent: #renderThumb:)
