@@ -27,16 +27,24 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId trashCanMesh |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	lastCreationEvent := self useRef: nil.
 	nextMethodId := self useState: 0.
-	trashCanMesh := self useTrashCanMesh.
+	grabbedMethod := self useState: nil.
+	activePackage := self useState: nil.
+	activeClass := self useState: nil.
+	browserCenter := self useState: nil.
+	headTransformRef := self useProvidedRef: #headTransform.
+	
 	self
-		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [browserVisible set: browserVisible get not]]
+		useButtonPress: [:e |
+			e button = GDGlobalConstants joyOculusBy ifTrue: [
+				browserCenter set: headTransformRef get translation.
+				browserVisible set: browserVisible get not]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
@@ -52,43 +60,30 @@ BrowsingDworph >> render: props [
 					class: desc second;
 					name: desc third;
 					text: desc fourth;
-					lastCreationEvent: lastCreationEvent get].
-			GRInteractiveArea new
-				onButtonPress: [:e |
-					e isGrip ifTrue: [
-						lastCreationEvent set: e.
-						methods set: [:old | | method |
-							nextMethodId set: nextMethodId get + 1.
-							method := (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value.
-							old copyWith: {nextMethodId get. CMFFiber name. method selector. method getSource asString}]]];
-				children: {
-					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color bubblegum.
-					GDLabel3D new
-						text: 'Create new random method';
-						pixelSize: 0.0035;
-						billboard: GDSpatialMaterial billboardEnabled;
-						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
-				transform: (Matrix4x4 withOffset: 0 @ 1 @ 0).
-			GRInteractiveArea new
-				onButtonPress: [:e | e isGrip ifTrue: [methods set: {}]];
-				children: {
-					self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color red.
-					GDLabel3D new
-						text: 'Delete all methods';
-						pixelSize: 0.0035;
-						billboard: GDSpatialMaterial billboardEnabled;
-						transform: (Matrix4x4 withOffset: 0 @ 0.2 @ 0)};
-				transform: (Matrix4x4 withOffset: -1 @ 1 @ 0)}.
-			GRInteractiveArea new
-				onButtonRelease: [:e | e isGrip ifTrue: [methods set: {[:old | old copyWithoutKey: e]}]];
-				children: {
-				GDMeshInstance new
-					mesh: trashCanMesh;
-					scale: 0.0015 asVector3;
-					rotation: -1.6 @ 0 @0 };
-				transform: (Matrix4x4 withOffset: 0 @ 0 @ 0).
+					grabbedMethod: grabbedMethod;
+					lastCreationEvent: lastCreationEvent get]}.
+		CB22RandomMethodButton new
+			methods: methods;
+			nextMethodId: nextMethodId;
+			lastCreationEvent: lastCreationEvent.
+		CB22TrashCan new
+			methods: methods;
+			grabbedMethod: grabbedMethod.
+		CB22DeleteAllButton new methods: methods.
 		self renderSphere: 5 highQuality: highQuality.
-		browserVisible get ifTrue: [CB22Browser new methods: methods; nextMethodId: nextMethodId]}
+		browserVisible get ifTrue: [
+			CB22PackageBrowser new
+				activePackage: activePackage;
+				center: browserCenter get.].
+		browserVisible get ifTrue: [CB22ClassBrowser new
+				activePackage: activePackage get;
+				activeClass: activeClass;
+				center: browserCenter get.].
+			browserVisible get ifTrue: [CB22MethodBrowser new
+				activeClass: activeClass get;
+				methods: methods;
+				nextMethodId: nextMethodId;
+				center: browserCenter get]}
 ]
 
 { #category : #'as yet unclassified' }
@@ -123,14 +118,6 @@ BrowsingDworph >> useStyledTextMorph: text [
 				styledTextFor: text asText) asMorph
 				backgroundColor: Color white;
 				yourself] dependencies: {text}
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> useTrashCanMesh [
-
-	^ self
-		useMemo: [GDResourceLoader instance loadPath: 'res://assets/models/trash_can/trash_can.tres']
-		dependencies: #()
 ]
 
 { #category : #'as yet unclassified' }

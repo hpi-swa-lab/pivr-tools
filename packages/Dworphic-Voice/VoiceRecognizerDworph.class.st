@@ -102,8 +102,23 @@ VoiceRecognizerDworph >> intentHandlersKeys: aCollectionOfIntentHandlerCollectio
 
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> match: aVoiceServerResultMatch on: aCollectionOfIntentHandlerCollections [
+"triggers the matching intent of aCollectionOfIntentHandlerCollections and saves it for undo."
 
-	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aVoiceServerResultMatch intent = intentString ifTrue: [callback valueWithEnoughArguments: aVoiceServerResultMatch params]]]
+	| undoBlocks |
+	undoBlocks := {}.
+
+	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | 
+		aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | 
+			aVoiceServerResultMatch intent = intentString 
+				ifTrue: [ | undo |
+					"voice intent handlers potentially return a block that undos its changes"
+					undo := callback valueWithEnoughArguments: aVoiceServerResultMatch params.
+					undo ifNotNil: [undoBlocks := (undoBlocks copyWith: undo)].
+					]
+			]
+		].
+	
+	^ undoBlocks
 ]
 
 { #category : #'as yet unclassified' }
@@ -131,13 +146,15 @@ VoiceRecognizerDworph >> recordingIndicator: aBoolean [
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible|
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible undoStackState |
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: {'Say "show" to show applications, and "hide" to hide them.'}.
-	
+	 
 	intentHandlers := self useProvided: #voiceIntentHandlers.
 	visible := self useState: false.
+	
+	undoStackState := self useState: OrderedCollection new.
 	
 	self
 		useSingletonEffect: [
@@ -153,7 +170,7 @@ VoiceRecognizerDworph >> render: props [
 	headPortal := self useProvided: #headPortal.
 	distance := head translation distanceTo: right translation.
 	shouldRecord := distance < (0.2 m).
-	isVisible := shouldRecord or: [visible get].
+	isVisible := (shouldRecord or: [visible get]) or: [isRecording get].
 	
 	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
 	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {shouldRecord}.
@@ -166,6 +183,7 @@ VoiceRecognizerDworph >> render: props [
 		
 	self useVoiceIntents: {
 		'help' -> [lastText set: (self intentHandlersKeys: intentHandlers)].
+		'undo' -> [undoStackState set: [:s | s ifNotEmpty: [s removeLast value. s copy]]].
 	} key: ''.
 	
 	^ script get ifNotNil: [
@@ -178,8 +196,12 @@ VoiceRecognizerDworph >> render: props [
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {(json at: #text)}.
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
-					(matches isEmpty not and: [matches first accuracy > 50]) ifTrue: [self match: matches first on: intentHandlers]].
-			TestCubeVoice new.
+					(matches isEmpty not and: [matches first accuracy > 70]) 
+						ifTrue: [|undoBlocks| 
+							undoBlocks := self match: matches first on: intentHandlers.
+							undoBlocks do: [:block |
+								undoStackState set: [:s | s add: block. s copy]].
+							]].
 			CMFReactNodePortal
 				child: (GDSpatial new children: (isVisible
 					ifTrue: [
