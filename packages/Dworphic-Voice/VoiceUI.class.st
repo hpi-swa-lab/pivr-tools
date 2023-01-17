@@ -7,12 +7,10 @@ Class {
 { #category : #'as yet unclassified' }
 VoiceUI >> render: props [
 
-	^ props extract: [:key :hovered :rest | | handlers handlersKeys showKeys |
+	^ props extract: [:key :voiceIntents :hovered :rest | | handlers handlersKeys showKeys |
 		handlers := self useProvided: #voiceIntentHandlers.
 		handlersKeys := (handlers get gather: [:ref | ref get keys]) 
 			select: [:intents | intents beginsWith: key].
-		
-		"(key = ' ') ifTrue: [self halt]."
 		
 		showKeys := self useState: false.
 		
@@ -53,5 +51,5 @@ VoiceUI >> render: props [
 						GDTimer new
 							autostart: true;
 							waitTime: 5;
-							onTimeout: [showKeys set: false]}]}]
+							onTimeout: [showKeys set: false]}].}]
 ]

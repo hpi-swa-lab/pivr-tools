@@ -230,7 +230,7 @@ TrackedHand >> renderThumb: props [
 	
 	^ props extract: [:log :tipRefs :side :proximalPos | | detector fingerBones |
 		detector :=  GDArea new
-			children: {self class handsGripOnlyMode ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color red) translation: 0 @ -0.03 @ -0.06] ifFalse: [self cubeOfSize: 0.015 color: Color red]};
+			children: {self class handsGripOnlyMode ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color gray) translation: 0 @ -0.03 @ -0.06] ifFalse: [self cubeOfSize: 0.015 color: Color gray]};
 			ref: ref;
 			subscribeTo: #'global_transform' do: [:pos | isTracked set: (pos = Vector3 zero) not];
 			onAreaExited: [:other | focus notNone ifTrue: [ (((tipRefs get
