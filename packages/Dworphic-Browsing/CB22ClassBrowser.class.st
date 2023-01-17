@@ -7,23 +7,35 @@ Class {
 { #category : #'as yet unclassified' }
 CB22ClassBrowser >> render: props [
 
-	| classes browserRotation activeClass activePackage cylinderMesh center |
+	| classes browserRotation activeClass activePackage cylinderMesh center sound streamPlayerRef |
 	browserRotation := self useState: 0.
 	activeClass := props at: #activeClass.
 	activePackage := props at: #activePackage.
 	classes := self
 		useMemo: [activePackage ifNotNil: [((PackageInfo named: activePackage) classes collect: [:class | class name]) sort]]
-		dependencies: {activePackage}.
+		dependencies: {activeClass get}.
 	cylinderMesh := self useCylinderMesh.
 	center := props at: #center.
+	streamPlayerRef := self useGodotRef.
+	sound := self
+		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sounds/dup.wav']
+		dependencies: #().
+	self
+		useMemo: [streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
+		dependencies: {activeClass get}.
 	
 	^ GDSpatial new children: {
+		GDAudioStreamPlayer3D new
+			stream: sound;
+			autoplay: true;
+			ref: streamPlayerRef.
 		classes ifNotNil: [
 			classes collect: [:className | | index angle isActive |
 				index := classes indexOf: className.
 				angle := 360 / classes size * index + browserRotation get \\ 360.
 				isActive := angle abs < (360 / classes size).
-				isActive ifTrue: [activeClass set: className].
+				isActive ifTrue: [
+					activeClass set: className].
 				(self methodAsComponent: #renderChoice:)
 					choice: className;
 					key: className;

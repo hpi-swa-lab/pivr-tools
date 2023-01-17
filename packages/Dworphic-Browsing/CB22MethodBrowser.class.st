@@ -12,26 +12,39 @@ CB22MethodBrowser >> getClassNamed: name [
 { #category : #'as yet unclassified' }
 CB22MethodBrowser >> render: props [
 
-	| methods activeClass selectedMethods method nextMethodId browserRotation cylinderMesh center |
+	| methods activeClass selectedMethods method nextMethodId browserRotation cylinderMesh center activeMethod sound streamPlayerRef |
 	activeClass := props at: #activeClass.
 	methods := self
 		useMemo: [activeClass ifNotNil: [((self getClassNamed: activeClass) methodDict values collect: [:sth | sth selector]) sort]]
 		dependencies: {activeClass}.
 	selectedMethods := props at: #methods.
 	nextMethodId := props at: #nextMethodId.
+	activeMethod := props at: #activeMethod.
 	browserRotation := self useState: 0.
 	cylinderMesh := self useCylinderMesh.
 	
+	streamPlayerRef := self useGodotRef.
+	sound := self
+		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sounds/dup.wav']
+		dependencies: #().
+	self
+		useMemo: [Transcript showln: 'play Sound'. streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
+		dependencies: {activeMethod get}.
+	
 	center := props at: #center.
 	
-	"activeMethod := self useState: nil."
 	^ GDSpatial new children: {
+		GDAudioStreamPlayer3D new
+				stream: sound;
+				autoplay: true;
+				ref: streamPlayerRef.
 		methods ifNotNil: [
 			methods collect: [:methodName | | index angle isActive |
 				index := methods indexOf: methodName.
 				angle := 360 / methods size * index + browserRotation get \\ 360.
 				isActive := angle abs < (360 / methods size).
-				"isActive ifTrue: [activeMethod set: {nextMethodId .  currentClass name . methodName. (currentClass methodDict at: methodName) getSource asString}]."
+				isActive ifTrue: [activeMethod set: methodName].
+				"isActive ifTrue: [activeMethod set: {nextMethodId . activeClass . methodName. ((self getClassNamed: activeClass) methodDict at: methodName) getSource asString}]."
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;
 					key: methodName;
@@ -39,6 +52,7 @@ CB22MethodBrowser >> render: props [
 					center: center;
 					index: index;
 					action: [
+						activeMethod set: methodName.
 						selectedMethods set: [:old |
 							method := (self getClassNamed: activeClass) methodDict at: methodName.
 							nextMethodId set: nextMethodId get + 1.
@@ -52,7 +66,7 @@ CB22MethodBrowser >> render: props [
 			onAxisChange: [:e | e isStickX ifTrue: [browserRotation set: browserRotation get + (e strength * 2)]];
 			transform: ((Matrix4x4 identity translatedBy: center) translatedBy: 0.3 @ 0.45 @ 0.3);
 			children: {
-				self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: Color white.
+				self cubeOfSize: 0.1 @ 0.1 @ 0.1 color: (Color r: 1 g: 1 b: 1).
 				GDLabel3D new
 					text: 'Scroll Methods';
 					pixelSize: 0.002;
