@@ -173,7 +173,7 @@ VoiceRecognizerDworph >> render: props [
 	isVisible := (shouldRecord or: [visible get]) or: [isRecording get].
 	
 	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
-	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {shouldRecord}.
+	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {isRecording get}.
 	
 	self
 		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: true]]
@@ -196,8 +196,9 @@ VoiceRecognizerDworph >> render: props [
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {(json at: #text)}.
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
-					(matches isEmpty not and: [matches first accuracy > 70]) 
+					(matches isEmpty not and: [matches first accuracy > 65]) 
 						ifTrue: [|undoBlocks| 
+							lastText set: {matches first intent}.
 							undoBlocks := self match: matches first on: intentHandlers.
 							undoBlocks do: [:block |
 								undoStackState set: [:s | s add: block. s copy]].

@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -37,6 +37,7 @@ BrowsingDworph >> render: props [
 	grabbedMethod := self useState: nil.
 	activePackage := self useState: nil.
 	activeClass := self useState: nil.
+	activeMethod := self useState: nil.
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
@@ -81,6 +82,7 @@ BrowsingDworph >> render: props [
 				center: browserCenter get.].
 			browserVisible get ifTrue: [CB22MethodBrowser new
 				activeClass: activeClass get;
+				activeMethod: activeMethod;
 				methods: methods;
 				nextMethodId: nextMethodId;
 				center: browserCenter get]}
