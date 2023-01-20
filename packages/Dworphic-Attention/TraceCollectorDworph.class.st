@@ -11,10 +11,10 @@ TraceCollectorDworph >> render: props [
 	
 	traces := self useTraces.
 	child := props at: #child.
-	lastCollection := self useState: Time now.
+	lastCollection := self useState: Time millisecondClockValue.
 		
 	^ GDSpatial new
-		subscribeTo: #'global_translation' do: [:translation | (Time millisecondsSince: lastCollection get) > 500 ifTrue: [traces value: translation. lastCollection set: Time now]];
+		subscribeTo: #'global_translation' do: [:translation | (Time millisecondsSince: lastCollection get) > 100 ifTrue: [traces value: translation. lastCollection set: Time millisecondClockValue]];
 		children: {
 			child.
 		}
