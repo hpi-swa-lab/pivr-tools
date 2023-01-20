@@ -222,3 +222,12 @@ GRComponent >> showMeNoDepthTest: disableDepthTest [
 		}
 	] asComponent.
 ]
+
+{ #category : #'*Dworphic-Attention' }
+GRComponent >> useTraces [
+
+	| traces |
+	traces := self useProvidedRef: #traces.
+	
+	^ [:position | traces get set: [:pastTraces | (pastTraces last: (20 min: (pastTraces size))) copyWith: position.].] 
+]
