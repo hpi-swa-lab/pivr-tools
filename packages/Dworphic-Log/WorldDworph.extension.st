@@ -8,12 +8,3 @@ WorldDworph >> provideLogState [
 	logEntries := self useState: {}.
 	^ {#logEntries -> logEntries}
 ]
-
-{ #category : #'*Dworphic-Log' }
-WorldDworph >> provideTraceState [
-	<provider>
-
-	| traces |
-	traces := self useState: {}.
-	^ {#traces-> traces}
-]

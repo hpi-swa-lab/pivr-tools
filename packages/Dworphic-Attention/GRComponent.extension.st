@@ -226,8 +226,14 @@ GRComponent >> showMeNoDepthTest: disableDepthTest [
 { #category : #'*Dworphic-Attention' }
 GRComponent >> useTraces [
 
-	| traces |
+	| traces tracesOfObject |
 	traces := self useProvidedRef: #traces.
 	
-	^ [:position | traces get set: [:pastTraces | (pastTraces last: (20 min: (pastTraces size))) copyWith: position.].] 
+	^ [:newTrace | traces get set: [:pastTraces | 
+			tracesOfObject := pastTraces at: newTrace first ifAbsentPut: OrderedCollection new.
+			tracesOfObject size > 19 ifTrue: [tracesOfObject removeLast].
+			tracesOfObject addFirst: newTrace second.
+			pastTraces at: newTrace first put: tracesOfObject.
+			pastTraces
+			].] 
 ]
