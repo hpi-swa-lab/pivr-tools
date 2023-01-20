@@ -5,16 +5,22 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+TraceCollectorDworph class >> traceDistanceThreshold [
+
+	^ 1
+]
+
+{ #category : #'as yet unclassified' }
 TraceCollectorDworph >> render: props [
 
-	| traces child lastCollection |
+	| traces child lastTranslation |
 	
 	traces := self useTraces.
 	child := props at: #child.
-	lastCollection := self useState: Time millisecondClockValue.
+	lastTranslation := self useState: Vector3 new.
 		
 	^ GDSpatial new
-		subscribeTo: #'global_translation' do: [:translation | (Time millisecondsSince: lastCollection get) > 100 ifTrue: [traces value: translation. lastCollection set: Time millisecondClockValue]];
+		subscribeTo: #'global_translation' do: [:translation | ((lastTranslation get distanceTo: translation) > TraceCollectorDworph traceDistanceThreshold) ifTrue: [traces value: {child godotId. translation}. lastTranslation set: translation]];
 		children: {
 			child.
 		}

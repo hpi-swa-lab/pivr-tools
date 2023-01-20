@@ -18,5 +18,5 @@ TraceVisualizerDworph >> render: props [
 	
 	traces := self useProvided: #traces.
 	world := self useWorldPortal.
-	^ traces get collect: [:trace | CMFReactNodePortal child: ((self cubeVisualOfSize: 0.1 color: Color gray) globalTranslation: trace) in: world].
+	^ traces get collect: [:trace | CMFReactNodePortal child: ((self cubeVisualOfSize: 0.1 color: Color gray) globalTranslation: trace second) in: world].
 ]
