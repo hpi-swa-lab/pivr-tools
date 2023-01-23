@@ -5,6 +5,17 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+CB22Browser >> angle: angle isWithinInterval: i1 and: i2 [
+
+	| lowerBound upperBound |
+	lowerBound := self normalizeAngle: i1.
+	upperBound := self normalizeAngle: i2.
+	lowerBound < upperBound
+		ifTrue: [^ angle > lowerBound and: angle < upperBound]
+		ifFalse: [^ (angle > lowerBound and: angle < 360) or: angle < upperBound]
+]
+
+{ #category : #'as yet unclassified' }
 CB22Browser >> circleRadius [
 
 	^ 1
@@ -20,6 +31,12 @@ CB22Browser >> cylinderScale [
 CB22Browser >> cylinderTranslation: center [
 
 	^ center x @ (center y + self yOffset) @ center z
+]
+
+{ #category : #'as yet unclassified' }
+CB22Browser >> normalizeAngle: angle [
+
+	angle \\ 360 < 0 ifTrue: [^ angle + 360] ifFalse: [^ angle \\ 360]
 ]
 
 { #category : #'as yet unclassified' }

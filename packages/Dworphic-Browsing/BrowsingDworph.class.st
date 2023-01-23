@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod browserRotation |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -39,12 +39,15 @@ BrowsingDworph >> render: props [
 	activeClass := self useState: nil.
 	activeMethod := self useState: nil.
 	browserCenter := self useState: nil.
+	browserRotation := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
+	Transcript showln: (headTransformRef get rotation at: 2).
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
+				browserRotation set: (headTransformRef get rotation at: 3).
 				browserVisible set: browserVisible get not]]
 		release: [:e | ]
 		axisChange: [:e | ]
@@ -75,12 +78,15 @@ BrowsingDworph >> render: props [
 		browserVisible get ifTrue: [
 			CB22PackageBrowser new
 				activePackage: activePackage;
-				center: browserCenter get.].
-		browserVisible get ifTrue: [CB22ClassBrowser new
+				center: browserCenter get].
+		browserVisible get ifTrue: [
+			CB22ClassBrowser new
 				activePackage: activePackage get;
 				activeClass: activeClass;
-				center: browserCenter get.].
-			browserVisible get ifTrue: [CB22MethodBrowser new
+				center: browserCenter get;
+				rotation: browserRotation get].
+		browserVisible get ifTrue: [
+			CB22MethodBrowser new
 				activeClass: activeClass get;
 				activeMethod: activeMethod;
 				methods: methods;

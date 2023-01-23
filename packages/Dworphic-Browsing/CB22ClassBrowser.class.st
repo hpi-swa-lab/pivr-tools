@@ -7,7 +7,7 @@ Class {
 { #category : #'as yet unclassified' }
 CB22ClassBrowser >> render: props [
 
-	| classes browserRotation activeClass activePackage cylinderMesh center sound streamPlayerRef |
+	| classes browserRotation activeClass activePackage cylinderMesh center sound streamPlayerRef activeAngle activeAngleDiff |
 	browserRotation := self useState: 0.
 	activeClass := props at: #activeClass.
 	activePackage := props at: #activePackage.
@@ -24,6 +24,8 @@ CB22ClassBrowser >> render: props [
 		useMemo: [streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
 		dependencies: {activeClass get}.
 	
+	activeAngle := self normalizeAngle: (props at: #rotation).
+	
 	^ GDSpatial new children: {
 		GDAudioStreamPlayer3D new
 			stream: sound;
@@ -33,9 +35,13 @@ CB22ClassBrowser >> render: props [
 			classes collect: [:className | | index angle isActive |
 				index := classes indexOf: className.
 				angle := 360 / classes size * index + browserRotation get \\ 360.
-				isActive := angle abs < (360 / classes size).
-				isActive ifTrue: [
-					activeClass set: className].
+				activeAngleDiff := 360 / classes size / 2.
+				"isActive := angle abs < (360 / classes size)."
+				isActive := self
+					angle: angle
+					isWithinInterval: activeAngle - activeAngleDiff
+					and: activeAngle + activeAngleDiff.
+				isActive ifTrue: [activeClass set: className].
 				(self methodAsComponent: #renderChoice:)
 					choice: className;
 					key: className;
@@ -47,7 +53,7 @@ CB22ClassBrowser >> render: props [
 		self renderCylinder: (Dictionary withAll: {
 			#center -> center.
 			#browserRotation -> browserRotation get.
-			#browserRotationSetter -> browserRotation setter}).}
+			#browserRotationSetter -> browserRotation setter})}
 ]
 
 { #category : #'as yet unclassified' }
