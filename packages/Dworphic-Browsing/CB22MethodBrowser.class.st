@@ -48,10 +48,11 @@ CB22MethodBrowser >> render: props [
 				angle := 360 / methods size * index + browserRotation get \\ 360.
 				isActive := angle abs < (360 / methods size).
 				isActive ifTrue: [
-					activeMethod set: methodName.
-					nextMethodId set: nextMethodId get + 1.
-					method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
+					activeMethod get = methodName ifFalse: [
+						nextMethodId set: nextMethodId get + 1.
+						activeMethod set: methodName.method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
 					activeMethodDesc set: {nextMethodId get + 1. activeClass name. method selector. method getSource}].
+					].
 				"isActive ifTrue: [activeMethod set: {nextMethodId . activeClass . methodName. ((self getClassNamed: activeClass) methodDict at: methodName) getSource asString}]."
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;

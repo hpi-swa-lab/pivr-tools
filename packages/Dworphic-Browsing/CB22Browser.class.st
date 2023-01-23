@@ -43,7 +43,7 @@ CB22Browser >> renderChoice: props [
 			GDLabel3D new
 				horizontalAlignment: GDGlobalConstants halignRight;
 				pixelSize: 0.002;
-				billboard: GDSpatialMaterial billboardEnabled;
+				"billboard: GDSpatialMaterial billboardEnabled;"
 				text: (props at: #choice) value.
 			ButtonDworph new
 				onPress: (props at: #action);

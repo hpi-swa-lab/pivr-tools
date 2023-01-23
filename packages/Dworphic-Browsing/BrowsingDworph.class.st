@@ -42,6 +42,8 @@ BrowsingDworph >> render: props [
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
+	Transcript showln: (headTransformRef get rotation y).
+	
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
@@ -64,7 +66,7 @@ BrowsingDworph >> render: props [
 					text: desc fourth;
 					grabbedMethod: grabbedMethod;
 					lastCreationEvent: lastCreationEvent get].
-			"browserVisible get ifTrue: [
+			browserVisible get ifTrue: [
 				activeMethod get ifNotNil: [
 					activeMethodDesc get ifNotNil: [
 						(CB22Method new)
@@ -73,7 +75,7 @@ BrowsingDworph >> render: props [
 							name: activeMethodDesc get third;
 							text: activeMethodDesc get fourth;
 							grabbedMethod: grabbedMethod;
-							lastCreationEvent: nil]]]"}.
+							lastCreationEvent: nil]]]}.
 		CB22RandomMethodButton new
 			methods: methods;
 			nextMethodId: nextMethodId;
