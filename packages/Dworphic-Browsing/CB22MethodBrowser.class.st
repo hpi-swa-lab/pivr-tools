@@ -5,21 +5,23 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-CB22MethodBrowser >> getClassNamed: name [
-	^ Environment current classNamed: name
+CB22MethodBrowser class >> getClassNamed: name [
+
+	^ Environment current classNamed: name 
 ]
 
 { #category : #'as yet unclassified' }
 CB22MethodBrowser >> render: props [
 
-	| methods activeClass selectedMethods method nextMethodId browserRotation cylinderMesh center activeMethod sound streamPlayerRef |
+	| methods activeClass selectedMethods method nextMethodId browserRotation cylinderMesh center activeMethod sound streamPlayerRef activeMethodDesc |
 	activeClass := props at: #activeClass.
 	methods := self
-		useMemo: [activeClass ifNotNil: [((self getClassNamed: activeClass) methodDict values collect: [:sth | sth selector]) sort]]
+		useMemo: [activeClass ifNotNil: [((CB22MethodBrowser getClassNamed: activeClass) methodDict values collect: [:sth | sth selector]) sort]]
 		dependencies: {activeClass}.
 	selectedMethods := props at: #methods.
 	nextMethodId := props at: #nextMethodId.
 	activeMethod := props at: #activeMethod.
+	activeMethodDesc := props at: #activeMethodDesc.
 	browserRotation := self useState: 0.
 	cylinderMesh := self useCylinderMesh.
 	
@@ -28,22 +30,28 @@ CB22MethodBrowser >> render: props [
 		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sounds/dup.wav']
 		dependencies: #().
 	self
-		useMemo: [Transcript showln: 'play Sound'. streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
+		useMemo: [
+			Transcript showln: 'play Sound'.
+			streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
 		dependencies: {activeMethod get}.
 	
 	center := props at: #center.
 	
 	^ GDSpatial new children: {
 		GDAudioStreamPlayer3D new
-				stream: sound;
-				autoplay: true;
-				ref: streamPlayerRef.
+			stream: sound;
+			autoplay: true;
+			ref: streamPlayerRef.
 		methods ifNotNil: [
 			methods collect: [:methodName | | index angle isActive |
 				index := methods indexOf: methodName.
 				angle := 360 / methods size * index + browserRotation get \\ 360.
 				isActive := angle abs < (360 / methods size).
-				isActive ifTrue: [activeMethod set: methodName].
+				isActive ifTrue: [
+					activeMethod set: methodName.
+					nextMethodId set: nextMethodId get + 1.
+					method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
+					activeMethodDesc set: {nextMethodId get + 1. activeClass name. method selector. method getSource}].
 				"isActive ifTrue: [activeMethod set: {nextMethodId . activeClass . methodName. ((self getClassNamed: activeClass) methodDict at: methodName) getSource asString}]."
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;
@@ -52,17 +60,18 @@ CB22MethodBrowser >> render: props [
 					center: center;
 					index: index;
 					action: [
+						nextMethodId set: nextMethodId get + 1.
+						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
+						activeMethodDesc set: {nextMethodId get + 1. activeClass name. method selector. method getSource}.
 						activeMethod set: methodName.
 						selectedMethods set: [:old |
-							method := (self getClassNamed: activeClass) methodDict at: methodName.
 							nextMethodId set: nextMethodId get + 1.
 							old copyWith: {nextMethodId get. activeClass name. method selector. method getSource asString}]];
 					isActive: isActive]].
 		self renderCylinder: (Dictionary withAll: {
 			#center -> center.
 			#browserRotation -> browserRotation get.
-			#browserRotationSetter -> browserRotation setter}).
-		}
+			#browserRotationSetter -> browserRotation setter})}
 	"activeMethod get ifNotNil: [ |m | m:= activeMethod get.
 				(CB22Method new methodAsComponent: #render:)
 					key: m first;
