@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
 	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -39,18 +39,33 @@ BrowsingDworph >> render: props [
 	activeClass := self useState: nil.
 	activeMethod := self useState: nil.
 	browserCenter := self useState: nil.
+	sphereVisible := self useState: true.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
-				browserVisible set: browserVisible get not]]
+				browserVisible set: browserVisible get not].
+			 e button = GDGlobalConstants joyOculusAx ifTrue: [
+				sphereVisible set: sphereVisible get not]
+			]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
+		
+	self
+		useButtonPress: [:e |
+			 e button = GDGlobalConstants joyOculusAx ifTrue: [
+				sphereVisible set: sphereVisible get not]
+			]
+		release: [:e | ]
+		axisChange: [:e | ]
+		side: #left.
 	
-	os := self useMemo: [GDOS instance getName] dependencies: {}.
+	
+	"os := self useMemo: [GDOS instance getName] dependencies: {}."
+	os := 'Android'.
 	highQuality := os ~= 'Android'.
 	
 	^ GRProvider values: {#areaRef -> areaRef} children: {
@@ -71,7 +86,7 @@ BrowsingDworph >> render: props [
 			methods: methods;
 			grabbedMethod: grabbedMethod.
 		CB22DeleteAllButton new methods: methods.
-		self renderSphere: 5 highQuality: highQuality.
+		self renderSphere: 5 highQuality: highQuality visible: sphereVisible get.
 		browserVisible get ifTrue: [
 			CB22PackageBrowser new
 				activePackage: activePackage;
@@ -98,7 +113,20 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 				albedoTexture: (self useSkyTexture: highQuality);
 				paramsCullMode: GDSpatialMaterial cullFront);
 			radius: radius;
-			height: radius * 2))
+			height: radius * 2); visible: false)
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> renderSphere: radius highQuality: highQuality visible: visible [
+
+	^ GDCollisionShape new
+		shape: (GDSphereShape new radius: radius);
+		children: (GDMeshInstance new mesh: (GDSphereMesh new
+			material: (GDSpatialMaterial new
+				albedoTexture: (self useSkyTexture: highQuality);
+				paramsCullMode: GDSpatialMaterial cullFront);
+			radius: radius;
+			height: radius * 2); visible: visible)
 ]
 
 { #category : #'as yet unclassified' }
