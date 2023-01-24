@@ -114,7 +114,20 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality [
 				albedoTexture: (self useSkyTexture: highQuality);
 				paramsCullMode: GDSpatialMaterial cullFront);
 			radius: radius;
-			height: radius * 2))
+			height: radius * 2); visible: false)
+]
+
+{ #category : #'as yet unclassified' }
+BrowsingDworph >> renderSphere: radius highQuality: highQuality visible: visible [
+
+	^ GDCollisionShape new
+		shape: (GDSphereShape new radius: radius);
+		children: (GDMeshInstance new mesh: (GDSphereMesh new
+			material: (GDSpatialMaterial new
+				albedoTexture: (self useSkyTexture: highQuality);
+				paramsCullMode: GDSpatialMaterial cullFront);
+			radius: radius;
+			height: radius * 2); visible: visible)
 ]
 
 { #category : #'as yet unclassified' }
