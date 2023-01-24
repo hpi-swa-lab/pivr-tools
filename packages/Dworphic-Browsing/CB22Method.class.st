@@ -63,10 +63,8 @@ CB22Method >> render: props [
 		children: {
 			self renderCollisionShape: morph.
 			GRInteractiveArea new
-				children: {
-					self renderCollisionShape: morph};
-				onHover: [:e |
-				grabbed get ifFalse: [colorMode set: 'grabbable']];
+				children: {self renderCollisionShape: morph};
+				onHover: [:e | grabbed get ifFalse: [colorMode set: 'grabbable']];
 				onBlur: [:e | grabbed get ifFalse: [colorMode set: 'normal']].
 			(self renderMethodDisplayFar: name extent: (self getTextMorphExtent: morph)) visible: onPinboard get.
 			GDSpatial new
@@ -91,14 +89,16 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
+			onPinboard get ifTrue: [
+				onPinboard set: false.
+				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
 			grabbed set: true.
 			colorMode set: 'grabbed'.
 			grabbedMethod set: key];
 		onRelease: [:e |
 			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false
-			"grabbedMethod set: nil"]
+			grabbed set: false] 
 ]
 
 { #category : #'as yet unclassified' }
