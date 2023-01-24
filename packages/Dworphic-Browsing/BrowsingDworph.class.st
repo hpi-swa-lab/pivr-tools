@@ -27,7 +27,7 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod activeMethodDesc |
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod activeMethodDesc sphereVisible |
 	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
@@ -39,6 +39,7 @@ BrowsingDworph >> render: props [
 	activeClass := self useState: nil.
 	activeMethod := self useState: nil.
 	activeMethodDesc := self useState: nil.
+	sphereVisible := self useState: true.
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
@@ -48,10 +49,22 @@ BrowsingDworph >> render: props [
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
-				browserVisible set: browserVisible get not]]
+				browserVisible set: browserVisible get not].
+			 e button = GDGlobalConstants joyOculusAx ifTrue: [
+				sphereVisible set: sphereVisible get not]
+			]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
+		
+	self
+		useButtonPress: [:e |
+			 e button = GDGlobalConstants joyOculusAx ifTrue: [
+				sphereVisible set: sphereVisible get not]
+			]
+		release: [:e | ]
+		axisChange: [:e | ]
+		side: #left.
 	
 	os := self useMemo: [GDOS instance getName] dependencies: {}.
 	highQuality := os ~= 'Android'.
@@ -84,7 +97,7 @@ BrowsingDworph >> render: props [
 			methods: methods;
 			grabbedMethod: grabbedMethod.
 		CB22DeleteAllButton new methods: methods.
-		self renderSphere: 5 highQuality: highQuality.
+		self renderSphere: 5 highQuality: highQuality  visible: sphereVisible get.
 		browserVisible get ifTrue: [
 			CB22PackageBrowser new
 				activePackage: activePackage;
