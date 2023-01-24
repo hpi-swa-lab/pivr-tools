@@ -193,7 +193,7 @@ VoiceRecognizerDworph >> render: props [
 				set: #'text_recognized' to: [:text | | json matches |
 					visible get ifFalse: [visible set: true].
 					json := Json readFrom: text utf8ToSqueak readStream.
-					lastText set: {(json at: #text)}.
+					lastText set: {'No match! Understood: ', (json at: #text)}.
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
 					(matches isEmpty not and: [matches first accuracy > 65]) 
 						ifTrue: [|undoBlocks| 

@@ -8,7 +8,7 @@ Class {
 CB22PackageBrowser >> render: props [
 
 	| packages availablePackages browserRotation activePackage cylinderMesh center sound streamPlayerRef |
-	availablePackages := (Environment default packageOrganizer packages select: [:p | p name beginsWith: 'Dworphic']) collect: [:pi | pi name].
+	availablePackages := (Environment default packageOrganizer packages select: [:p | (p name beginsWith: 'Dworphic')]) collect: [:pi | pi name].
 	packages := self useState: availablePackages sort.
 	browserRotation := self useState: 0.
 	activePackage := props at: #activePackage.
@@ -35,7 +35,6 @@ CB22PackageBrowser >> render: props [
 				index: index;
 				center: center;
 				action: [
-					Transcript showln: packageName.
 					activePackage set: packageName];
 				isActive: isActive].
 		self renderCylinder: (Dictionary withAll: {

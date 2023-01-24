@@ -12,18 +12,22 @@ Class {
 
 { #category : #'as yet unclassified' }
 VoiceWorldBuilderGeometryMesh >> render: props [
-	| key delete meshUrl hovered voiceIntents x y z mesh aabb scale rotation |
+	| key delete meshUrl hovered voiceIntents x y z mesh aabb scale yRotation other xRotation zRotation ref |
 	key := props at: #key.
 	delete := props at: #delete.
 	meshUrl := props at: #meshUrl.
-	mesh := self useMemo: [GDResourceLoader instance loadPath: meshUrl] dependencies: #().
-	scale := self useState: (0.2 asVector3).
-	aabb := self useMemo: [(mesh grAsClass: #GDMesh) getAabb * (scale get)] dependencies: {mesh}.
 	
-	x := self useState: -3.
-	y := self useState: -2.
-	z := self useState: 1.
-	rotation := self useState: 0.
+	other := (props at: #other) asDictionary.
+	scale := self useState: (other at: #scale ifAbsent: [0.2 asVector3]).
+	x := self useState: (other at: #x ifAbsent: [-3]).
+	y := self useState: (other at: #y ifAbsent: [0]).
+	z := self useState: (other at: #z ifAbsent: [-3]).
+	xRotation := self useState: (other at: #xRotation ifAbsent: [0]).
+	yRotation := self useState: (other at: #yRotation ifAbsent: [0]).
+	zRotation := self useState: (other at: #zRotation ifAbsent: [0]).
+	
+	mesh := self useMemo: [GDResourceLoader instance loadPath: meshUrl] dependencies: #().
+	aabb := self useMemo: [(mesh grAsClass: #GDMesh) getAabb * (scale get)] dependencies: {mesh}.
 	
 	hovered := self useState: false.
 	
@@ -48,29 +52,36 @@ VoiceWorldBuilderGeometryMesh >> render: props [
 			[scale set: [:old | old * 2]]].
 		'delete' ->  delete.
 		'rotate \num' -> [:num | | rotationOld |
-			rotationOld := rotation get.
-			rotation set: [:old | (num ifNil: [0]) asNumber + rotationOld].
-			[rotation set: [:old | rotationOld - ((num ifNil: [0]) asNumber)]]]
+			rotationOld := yRotation get.
+			yRotation set: [:old | (num ifNil: [0]) asNumber + rotationOld].
+			[yRotation set: [:old | rotationOld - ((num ifNil: [0]) asNumber)]]]
 		}.
 
 	self useVoiceIntents: voiceIntents key: (hovered get ifTrue: [' '] ifFalse: [key]).
 	
-	^ GRInteractiveArea new point: true; 
+	ref := self useGodotRef.
+	
+	^ {GRInteractiveArea new point: true; 
 		onHover: [hovered set: true];
 		onBlur: [hovered set: false];
-		translation: x get @ y get @ z get;
+		areaRef: ref;
 		children: {
 			GDCollisionShape new
 				shape: (GDBoxShape new extents: aabb extents);
 				translation: aabb position + aabb extents.
 			GDMeshInstance new
 						mesh: mesh;
-						scale: scale get;
-						rotation: 0 @ (rotation get) @0.
+						scale: scale get.
 			VoiceUI new
 					voiceIntents: voiceIntents;
 					key: (hovered get ifTrue: [' '] ifFalse: [key]);
 					hovered: hovered get;
-					translation: 0 @ 3 @ 1.5
+					translation: aabb extents;
+					scale: (1 / (scale get));
+					rotation: ((xRotation get negated) @ 0 @ 0).
+			(self animate: #translation of: ref get to: (x get @ y get @ z get)) duration: 0.7.
+			(self animate: #scale of: ref get to: (scale get)) duration: 0.7.
+			(self animate: #rotation of: ref get to: (xRotation get @ yRotation get @ zRotation get)) duration: 0.7.
+			}.
 		}
 ]
