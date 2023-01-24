@@ -60,7 +60,7 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos cooldown |
 	
 	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
@@ -91,6 +91,7 @@ TrackedHand >> render: props [
 	
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
+	cooldown := self useState: 0.			
 	
 	 "log := [:message | currentWordRef get set: [:word | word, message]]."
 	log := [:text | Transcript showln: text].
@@ -131,9 +132,10 @@ TrackedHand >> render: props [
 			onButtonRelease value: GDGlobalConstants joyVrGrip]] dependencies: {angle}.
 	
 	
-	self useEffect: [(waitForRelease get) ifTrue: [
+	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 200))) ifTrue: [
 			((metacarpalPos get y - startPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: 13)]. 
 			((metacarpalPos get y - startPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: 13)].
+			cooldown set: TimeStamp now.
 			]] dependencies: {metacarpalPos get}.
 		
 	finger := [:name | self node name: name , 'Metacarpal';
