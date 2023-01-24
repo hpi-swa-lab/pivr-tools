@@ -27,7 +27,7 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode class |
+	| grabbed text pressed morph world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode class initialTransform |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
@@ -38,11 +38,13 @@ CB22Method >> render: props [
 	key := props at: #key.
 	class := props at: #class.
 	morph := self useStyledTextMorph: text.
-	debugPosition := self useState: 0 @ 0 @ 0.
-	transform := self useState: (Matrix4x4 identity
-		rotation: -180 around: 1 @ 0 @ 0;
-		rotation: 180 around: 0 @ 1 @ 0;
-		translation: 0 @ 1.5 @ 0.5).
+	
+	initialTransform := props at: #initialTransform ifAbsent: [
+		Matrix4x4 identity
+			rotation: -180 around: 1 @ 0 @ 0;
+			rotation: 180 around: 0 @ 1 @ 0;
+			translation: 0 @ 1.5 @ 0.5].
+	transform := self useState: initialTransform.
 	
 	onPinboard := self useState: false.
 	endGrab := self useRef: nil.
@@ -90,14 +92,13 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
-			(key == 0) ifTrue: [ | newId methods |
+			key == 0 ifTrue: [ | newId methods |
 				"Method is active method by browser"
-				newId := ((props at: #nextMethodId) get).
+				newId := (props at: #nextMethodId) get.
 				(props at: #nextMethodId) set: newId + 1.
 				key := newId.
-				methods:= props at: #methods.
-				methods set: ((methods get reject: [:desc | desc first == 0]) copyWith: {key . class. name . text} )
-				].
+				methods := props at: #methods.
+				methods set: ((methods get reject: [:desc | desc first == 0]) copyWith: {key. class. name. text. transform get})].
 			onPinboard get ifTrue: [
 				onPinboard set: false.
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
@@ -107,7 +108,7 @@ CB22Method >> render: props [
 		onRelease: [:e |
 			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
-			grabbed set: false] 
+			grabbed set: false]
 ]
 
 { #category : #'as yet unclassified' }

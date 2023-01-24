@@ -28,7 +28,7 @@ BrowsingDworph class >> pinboardRadius [
 BrowsingDworph >> render: props [
 
 	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
-	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'}}.
+	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'. nil}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
@@ -42,12 +42,12 @@ BrowsingDworph >> render: props [
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
-	
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
-				browserVisible set: browserVisible get not]]
+				browserVisible set: browserVisible get not.
+				methods set: (methods get reject: [:desc | desc first = 0])]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
@@ -69,6 +69,7 @@ BrowsingDworph >> render: props [
 					class: desc second;
 					name: desc third;
 					text: desc fourth;
+					initialTransform: desc fifth;
 					grabbedMethod: grabbedMethod;
 					methods: methods;
 					nextMethodId: nextMethodId;
@@ -79,10 +80,10 @@ BrowsingDworph >> render: props [
 		CB22DeleteAllButton new methods: methods.
 		self renderSphere: 5 highQuality: highQuality visible: sphereVisible get.
 		browserVisible get ifTrue: [
-			"CB22RandomMethodButton new
+			CB22RandomMethodButton new
 			methods: methods;
 			nextMethodId: nextMethodId;
-			lastCreationEvent: lastCreationEvent."
+			lastCreationEvent: lastCreationEvent.
 			CB22PackageBrowser new
 				activePackage: activePackage;
 				center: browserCenter get].
