@@ -60,7 +60,7 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos cooldown |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos cooldown suggestionEntries |
 	
 	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
@@ -101,6 +101,8 @@ TrackedHand >> render: props [
 	
 	
 	currentWord := self useProvided: #currentWord.
+	suggestionEntries := self useProvided: #suggestionEntries.
+	
 	self useEffect: [(props at: #side) = 'left' ifTrue: [
 			searchResults := suggestions search: currentWord get.
 			log value: currentWord get.
@@ -132,11 +134,17 @@ TrackedHand >> render: props [
 			onButtonRelease value: GDGlobalConstants joyVrGrip]] dependencies: {angle}.
 	
 	
-	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 200))) ifTrue: [
-			((metacarpalPos get y - startPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: 13)]. 
-			((metacarpalPos get y - startPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: 13)].
+	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 500))) ifTrue: [
+			((metacarpalPos get y - startPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
+			((metacarpalPos get y - startPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
 			cooldown set: TimeStamp now.
 			]] dependencies: {metacarpalPos get}.
+	
+	self useEffect: [
+		| sugg |
+		scrollPos set: 1.
+		sugg := suggestions search: currentWord get.
+		suggestionEntries set: ((sugg) first: (sugg size min: 10))] dependencies: {currentWord get}.
 		
 	finger := [:name | self node name: name , 'Metacarpal';
 				subscribeTo: #'global_transform' do: [:pos | name = 'Middle' ifTrue: [metacarpalPos set: pos translation] ];

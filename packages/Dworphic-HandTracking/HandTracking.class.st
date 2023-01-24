@@ -52,8 +52,9 @@ HandTracking >> render: props [
 	focus := (self useProvided: #textFocus) get.
 	
 	^ focus notNone ifTrue: [
-		"PinchtypeKeyboard new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ -30 cm @ 5 cm)."
-		SuggestionPanel new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ -30 cm @ 5 cm).
+		{SuggestionPanel new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ 40 cm @ 5 cm).
+		PinchtypeKeyboard new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ -30 cm @ 5 cm).}
+		
 	
 	]
 ]
