@@ -233,7 +233,6 @@ GRComponent >> useTraces [
 			tracesOfObject := pastTraces at: newTrace first ifAbsentPut: OrderedCollection new.
 			tracesOfObject size > 19 ifTrue: [tracesOfObject removeLast].
 			tracesOfObject addFirst: newTrace second.
-			pastTraces at: newTrace first put: tracesOfObject.
 			pastTraces
 			].] 
 ]
