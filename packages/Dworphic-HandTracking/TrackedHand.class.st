@@ -240,11 +240,10 @@ TrackedHand >> renderThumb: props [
 			onAreaEntered: [:other | 
 				isTracked get  ifTrue: [
 				focus notNone ifTrue: [
-						((TimeStamp now - cooldown get > (Duration milliSeconds: 100)) and: (proximalPos get = Vector3 zero) not) ifFalse: [log value: 'Prevented input due to cooldown']
-				ifTrue: [
-				(other = thumbRef get get ) ifTrue: [
-					currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
-					
+					((TimeStamp now - cooldown get > (Duration milliSeconds: 100)) and: (proximalPos get = Vector3 zero) not)
+						ifTrue: [
+							(other = thumbRef get get ) ifTrue: [
+								currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
 				(tipRefs get
 					associationsSelect: [:asc | asc value get = other]) associations
 					ifNotEmpty: [:list |
