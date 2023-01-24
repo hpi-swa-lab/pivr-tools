@@ -14,7 +14,7 @@ FormDworph >> render: props [
 		
 		self
 			useEffect: [
-				actualForm set: (morph ifNotNil: [morph imageForm] ifNil: [form]).
+				actualForm set: ((morph ifNotNil: [morph imageForm] ifNil: [form])).
 				image set: GDImage externalNew.
 				image get
 					createFromDataWidth: actualForm get width
@@ -34,13 +34,8 @@ FormDworph >> render: props [
 				setAll: rest;
 				mesh: (GDPlaneMesh new
 					size: actualForm get extent * 0.001;
-					material: (GDShaderMaterial new
+					material: (GDSpatialMaterial new albedoTexture: texture get) "Without the use of a shader, colors are off."
+					"material: (GDShaderMaterial new
 						call: 'set_shader_param' arguments: {'image'. texture get};
-						shader: (GDShader new code: 'shader_type spatial;
-
-uniform sampler2D image;
-
-void fragment() {
-	ALBEDO = texture(image, UV).bgr;
-}')))]]
+						shader: ())")]]
 ]

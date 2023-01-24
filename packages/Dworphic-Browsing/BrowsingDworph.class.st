@@ -27,20 +27,23 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
-	methods := self useState: {{0. 'NoClass'. 'debug'. 'self halt'}}.
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod activeMethodDesc sphereVisible |
+	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	lastCreationEvent := self useRef: nil.
-	nextMethodId := self useState: 0.
+	nextMethodId := self useState: 1.
 	grabbedMethod := self useState: nil.
 	activePackage := self useState: nil.
 	activeClass := self useState: nil.
 	activeMethod := self useState: nil.
-	browserCenter := self useState: nil.
+	activeMethodDesc := self useState: nil.
 	sphereVisible := self useState: true.
+	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
+	
+	Transcript showln: (headTransformRef get rotation y).
 	
 	self
 		useButtonPress: [:e |
@@ -63,21 +66,29 @@ BrowsingDworph >> render: props [
 		axisChange: [:e | ]
 		side: #left.
 	
-	
-	"os := self useMemo: [GDOS instance getName] dependencies: {}."
-	os := 'Android'.
+	os := self useMemo: [GDOS instance getName] dependencies: {}.
 	highQuality := os ~= 'Android'.
 	
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
 			methods get collect: [:desc |
-				(CB22Method new methodAsComponent: #render:)
+				(CB22Method new)
 					key: desc first;
 					class: desc second;
 					name: desc third;
 					text: desc fourth;
 					grabbedMethod: grabbedMethod;
-					lastCreationEvent: lastCreationEvent get]}.
+					lastCreationEvent: lastCreationEvent get].
+			browserVisible get ifTrue: [
+				activeMethod get ifNotNil: [
+					activeMethodDesc get ifNotNil: [
+						(CB22Method new)
+							key: activeMethodDesc get first;
+							class: activeMethodDesc get second;
+							name: activeMethodDesc get third;
+							text: activeMethodDesc get fourth;
+							grabbedMethod: grabbedMethod;
+							lastCreationEvent: nil]]]}.
 		CB22RandomMethodButton new
 			methods: methods;
 			nextMethodId: nextMethodId;
@@ -86,18 +97,21 @@ BrowsingDworph >> render: props [
 			methods: methods;
 			grabbedMethod: grabbedMethod.
 		CB22DeleteAllButton new methods: methods.
-		self renderSphere: 5 highQuality: highQuality visible: sphereVisible get.
+		self renderSphere: 5 highQuality: highQuality  visible: sphereVisible get.
 		browserVisible get ifTrue: [
 			CB22PackageBrowser new
 				activePackage: activePackage;
-				center: browserCenter get.].
-		browserVisible get ifTrue: [CB22ClassBrowser new
+				center: browserCenter get].
+		browserVisible get ifTrue: [
+			CB22ClassBrowser new
 				activePackage: activePackage get;
 				activeClass: activeClass;
-				center: browserCenter get.].
-			browserVisible get ifTrue: [CB22MethodBrowser new
+				center: browserCenter get].
+		browserVisible get ifTrue: [
+			CB22MethodBrowser new
 				activeClass: activeClass get;
 				activeMethod: activeMethod;
+				activeMethodDesc: activeMethodDesc;
 				methods: methods;
 				nextMethodId: nextMethodId;
 				center: browserCenter get]}
