@@ -13,23 +13,23 @@ VoiceUI >> render: props [
 			select: [:intents | intents beginsWith: key].
 		
 		showKeys := self useState: false.
-		
+	
 		GDSpatial new
 			setAll: rest;
 			children: {
 				GDMeshInstance new mesh: (GDSphereMesh new
 					radius: 0.1;
-					height: 0.1 * 2;
+					height: 0.2;
 					material: (GDSpatialMaterial new
 						albedoColor: Color red;
 						flagsUnshaded: true;
-						flagsNoDepthTest: false)).
+						flagsNoDepthTest: true)).
 				GDLabel3D new
 					text: key;
 					fixedSize: true;
 					horizontalAlignment: 0;
 					verticalAlignment: 0;
-					pixelSize: 0.003;
+					pixelSize: 0.001;
 					translation: 0 @ 0 @ 0;
 					billboard: GDSpatialMaterial billboardEnabled;
 					noDepthTest: true.
@@ -39,11 +39,11 @@ VoiceUI >> render: props [
 							GDLabel3D new
 								key: intent;
 								text: intent;
-								pixelSize: 0.003;
+								pixelSize: 0.001;
 								billboard: GDSpatialMaterial billboardEnabled;
 								fixedSize: true;
 								noDepthTest: true;
-								translation: 0 @ (i * -0.2) @ 0;
+								translation: 0 @ (i * -0.1) @ 0;
 								horizontalAlignment: 0;
 								verticalAlignment: 0;
 								width: 300;

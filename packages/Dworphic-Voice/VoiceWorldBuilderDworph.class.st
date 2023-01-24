@@ -27,12 +27,12 @@ VoiceWorldBuilderDworph >> render: props [
 	
 	"This is a block which returns a block suitable as voice intent action. The voice intent action block returned returns a block itself
 	which does the teardown."
-	creationBlock := [:keyBase :meshUrl | |oldIndex mesh|
+	creationBlock := [:keyBase :meshUrl :other | |oldIndex mesh|
 				[oldIndex := keyIndex get.
 				keyIndex set: [:o | o + 1].
 				
 				elements set: [:oldElements |
-					mesh := VoiceWorldBuilderGeometryMesh new key: (keyBase, oldIndex); meshUrl: meshUrl;
+					mesh := VoiceWorldBuilderGeometryMesh new key: (keyBase, oldIndex); meshUrl: meshUrl; other: other;
 						delete: [
 							elements set: [:old | old copyWithout: mesh].
 							[elements set: [:old | old copyWith: mesh]]].
@@ -42,11 +42,14 @@ VoiceWorldBuilderDworph >> render: props [
 			].
 	
 	self useVoiceIntents: {
-		'create cow' -> (creationBlock value: 'cow ' value: 'res://assets/voice/cow.obj').
-		'create field' -> (creationBlock value: 'field ' value: 'res://assets/voice/Farmland_Wheat.obj').
-		'create windmill' -> (creationBlock value: 'windmill ' value: 'res://assets/voice/Farmland_Windmill.obj').
-		'create house' -> (creationBlock value: 'house ' value: 'res://assets/voice/Farmland_House.obj').
-		'create american barn' -> (creationBlock value: 'american barn ' value: 'res://assets/voice/american_barn.obj').
+		'create cow' -> (creationBlock value: 'cow ' value: 'res://assets/voice/cow/cow.mesh' value: {
+			#xRotation -> (Float halfPi negated). #y -> 0. #scale -> 0.35 asVector3.}).
+		'create american barn' -> (creationBlock value: 'american barn ' value: 'res://assets/voice/american_old_barn/american_old_barn.mesh' value: {
+			#xRotation -> (Float halfPi negated).
+			#y -> -1.
+			#x -> 20.
+			#z -> 20}).
+		'create sheep' -> (creationBlock value: 'sheep ' value: 'res://assets/voice/sheep/sheep.mesh' value: {#scale -> 0.1 asVector3.}).
 		'open' -> [showTutorial set: true].
 		'show' -> [showTutorial set: true].
 	} key: 'world'. "global commands"
