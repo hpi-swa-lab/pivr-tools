@@ -27,7 +27,7 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode |
+	| grabbed text pressed morph debugPosition world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode class |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	initialized := self useState: false.
@@ -36,6 +36,7 @@ CB22Method >> render: props [
 	name := (props at: #name) value.
 	grabbedMethod := (props at: #grabbedMethod) value.
 	key := props at: #key.
+	class := props at: #class.
 	morph := self useStyledTextMorph: text.
 	debugPosition := self useState: 0 @ 0 @ 0.
 	transform := self useState: (Matrix4x4 identity
@@ -89,6 +90,14 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
+			(key == 0) ifTrue: [ | newId methods |
+				"Method is active method by browser"
+				newId := ((props at: #nextMethodId) get).
+				(props at: #nextMethodId) set: newId + 1.
+				key := newId.
+				methods:= props at: #methods.
+				methods set: ((methods get reject: [:desc | desc first == 0]) copyWith: {key . class. name . text} )
+				].
 			onPinboard get ifTrue: [
 				onPinboard set: false.
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
