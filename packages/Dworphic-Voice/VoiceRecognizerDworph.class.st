@@ -182,7 +182,6 @@ VoiceRecognizerDworph >> render: props [
 		side: #right.
 		
 	self useVoiceIntents: {
-		'help' -> [lastText set: (self intentHandlersKeys: intentHandlers)].
 		'undo' -> [undoStackState set: [:s | s ifNotEmpty: [s removeLast value. s copy]]].
 	} key: ''.
 	
@@ -224,7 +223,8 @@ VoiceRecognizerDworph >> render: props [
 				GDTimer new
 					autostart: true;
 					waitTime: 10;
-					onTimeout: [visible set: false]]}]
+					onTimeout: [visible set: false]].
+			VoiceComandsList new.}]
 ]
 
 { #category : #'as yet unclassified' }
