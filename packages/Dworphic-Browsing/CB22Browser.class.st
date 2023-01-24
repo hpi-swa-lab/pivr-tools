@@ -38,18 +38,24 @@ CB22Browser >> render: props [
 { #category : #'as yet unclassified' }
 CB22Browser >> renderChoice: props [
 
+	| transform center |
+	center := props at: #center.
+	transform := (Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: (props at: #angle) center: center)) translatedBy: 0 @ (((props at: #index) \\ 2 == 0 ifTrue: [-0.05] ifFalse: [0.05]) + self yOffset) @ 0. 
 	^ GDSpatial new
 		children: {
 			GDLabel3D new
 				horizontalAlignment: GDGlobalConstants halignRight;
 				pixelSize: 0.002;
-				"billboard: GDSpatialMaterial billboardEnabled;"
-				text: (props at: #choice) value.
+				text: (props at: #choice) value;
+				doubleSided: true;
+				transform: ((Matrix4x4 lookAt: center from: transform translation up: 0 @ 1 @ 0)
+					rotatedLocalBy: 180
+					around: 0 @ 1 @ 0).
 			ButtonDworph new
 				onPress: (props at: #action);
 				translation: 0.02 @ 0 @ 0;
-				color: ((props at: #isActive) ifTrue: [Color red] ifFalse: [Color green])};
-		transform: ((Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: (props at: #angle) center: (props at: #center))) translatedBy: 0 @ (((props at: #index) \\ 2 == 0 ifTrue: [-0.05] ifFalse: [0.05]) + self yOffset )@ 0);
+				color: ((props at: #isActive) ifTrue: [Color red] ifFalse: [Color green]);
+				transform: transform};
 		yourself
 ]
 

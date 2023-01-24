@@ -50,8 +50,6 @@ BrowsingDworph >> render: props [
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
 				browserVisible set: browserVisible get not].
-			 e button = GDGlobalConstants joyOculusAx ifTrue: [
-				sphereVisible set: sphereVisible get not]
 			]
 		release: [:e | ]
 		axisChange: [:e | ]
@@ -89,10 +87,10 @@ BrowsingDworph >> render: props [
 							text: activeMethodDesc get fourth;
 							grabbedMethod: grabbedMethod;
 							lastCreationEvent: nil]]]}.
-		CB22RandomMethodButton new
+		"CB22RandomMethodButton new
 			methods: methods;
 			nextMethodId: nextMethodId;
-			lastCreationEvent: lastCreationEvent.
+			lastCreationEvent: lastCreationEvent."
 		CB22TrashCan new
 			methods: methods;
 			grabbedMethod: grabbedMethod.
