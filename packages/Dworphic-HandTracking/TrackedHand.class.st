@@ -123,15 +123,17 @@ TrackedHand >> render: props [
 			startPos set: metacarpalPos get.
 			onButtonPress value: GDGlobalConstants joyVrTrigger.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
-					log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) .
-		focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: 1 ifAbsent: ''), ' ').].
+					"log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) ."
+		
 		replaceLog value: (logIndices get at: #result) value: [:prev | prev , ' ' ,((suggestions search: currentWord get) at: 1 ifAbsent: '')].
-		log value: 'resetting'.
-		currentWord set: [:old | {}].].
+		"log value: 'resetting'."
+		].
 		(angle > 2 and: waitForRelease get) ifTrue: [
 			waitForRelease set: false.
+			focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: scrollPos get ifAbsent: ''), ' ').].
 			onButtonRelease value: GDGlobalConstants joyVrTrigger.
-			onButtonRelease value: GDGlobalConstants joyVrGrip]] dependencies: {angle}.
+			onButtonRelease value: GDGlobalConstants joyVrGrip.
+			currentWord set: [:old | {}].]] dependencies: {angle}.
 	
 	
 	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 500))) ifTrue: [
