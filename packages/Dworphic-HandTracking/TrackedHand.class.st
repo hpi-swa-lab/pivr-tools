@@ -60,13 +60,40 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs setFocus |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs |
 	
 	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
 	eventReceivers := self useProvided: #eventReceivers.
 	transform := self useState: Matrix4x4 new.
 	startPos := self useState: Vector3 zero.
+
+	self useRegisterHand: handRef.
+	
+	focus := (self useProvided: #textFocus) get.
+	
+	scrollPos := self useProvided: #scrollPos.
+	suggestions := self useMemo: [FuzzySuggestions newFrom: FuzzySuggestions a1001CommonEnglishWordList] dependencies: #().
+	
+	tipRefs := self
+				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
+	cooldown := self useState: 0.
+	
+	allFingerRefs := self useProvided: #allFingerRefs.
+	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
+
+	
+	
+	currentWord := self useProvided: #currentWord.
+	suggestionEntries := self useProvided: #suggestionEntries.
+
+	
+	tipPos := self useState: Vector3 zero.
+	proximalPos := self useState: Vector3 zero.
+	metacarpalPos := self useState: Vector3 zero.
+	waitForRelease := self useState: false.
+	angle := self useMemo: [(tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get)] dependencies: {proximalPos get. metacarpalPos get. tipPos get.}.
+	
 	onButtonPress := self useCallback: [:button | | event |
 		event := GRInteractiveAreaEventButton new
 			side: (props at: #side);
@@ -81,56 +108,14 @@ TrackedHand >> render: props [
 			button: button;
 			handRef: handRef get.
 		eventReceivers get do: [:r | (r get at: #onButtonRelease) cull: event]] dependencies: {}.
-	self useRegisterHand: handRef.
 	
-	focus := (self useProvided: #textFocus) get.
-	setFocus := (self useProvided: #textFocus).
-	
-	scrollPos := self useProvided: #scrollPos.
-	
-	suggestions := self useMemo: [FuzzySuggestions newFrom: FuzzySuggestions a1001CommonEnglishWordList] dependencies: #().
-	
-	tipRefs := self
-				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
-	cooldown := self useState: 0.
-	
-	allFingerRefs := self useProvided: #allFingerRefs.
-	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
-	
-	 "log := [:message | currentWordRef get set: [:word | word, message]]."
-	log := [:text | Transcript showln: text].
-	"log := self useLog."
-	logIndices := self useProvided: #logIndices.
-	replaceLog := self replaceLog.
-	
-	
-	currentWord := self useProvided: #currentWord.
-	suggestionEntries := self useProvided: #suggestionEntries.
-	
-	self useEffect: [(props at: #side) = 'left' ifTrue: [
-			searchResults := suggestions search: currentWord get.
-			log value: currentWord get.
-			searchResults ifEmpty: [replaceLog value: (logIndices get at: #suggestions) value: ['No words found for this query']] ifNotEmpty: [replaceLog value: (logIndices get at: #suggestions) value: [(searchResults take: 10) asString]]].
-			replaceLog value: (logIndices get at: #input) value: [currentWord get asString].
-		.] dependencies: {currentWord get}.
-	
-	tipPos := self useState: Vector3 zero.
-	proximalPos := self useState: Vector3 zero.
-	metacarpalPos := self useState: Vector3 zero.
-	waitForRelease := self useState: false.
-	angle := self useMemo: [(tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get)] dependencies: {proximalPos get. metacarpalPos get. tipPos get.}.
 	"Transcript showln: (angle < 1 and: waitForRelease get not) asString, ' ', (angle < 1) asString, ' ', (waitForRelease get) asString."
 	self useEffect: [
 
 		(angle < 1 and: waitForRelease get not) ifTrue: [
 			waitForRelease set: true.
 			startPos set: metacarpalPos get.
-			onButtonPress value: GDGlobalConstants joyVrTrigger.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
-					"log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) ."
-		
-		replaceLog value: (logIndices get at: #result) value: [:prev | prev , ' ' ,((suggestions search: currentWord get) at: 1 ifAbsent: '')].
-		"log value: 'resetting'."
 		].
 		(angle > 2 and: waitForRelease get) ifTrue: [
 			waitForRelease set: false.
@@ -150,7 +135,8 @@ TrackedHand >> render: props [
 		| sugg |
 		scrollPos set: 1.
 		sugg := suggestions search: currentWord get.
-		suggestionEntries set: ((sugg) first: (sugg size min: 10))] dependencies: {currentWord get}.
+		"suggestionEntries set: sugg."
+		suggestionEntries set: ((sugg) first: (sugg size min: 15))] dependencies: {currentWord get}.
 		
 	finger := [:name | self node name: name , 'Metacarpal';
 				subscribeTo: #'global_transform' do: [:pos | name = 'Middle' ifTrue: [metacarpalPos set: pos translation] ];
@@ -159,49 +145,33 @@ TrackedHand >> render: props [
 					 children: {self node name: name , 'Intermediate';
 						 children: {self node name: name , 'Distal';
 							 children: {self node name: name , 'Tip';
-								subscribeTo: #'global_transform' do: [:pos | name = 'Middle' ifTrue: [tipPos set: pos translation] ];
+								subscribeTo: #'global_transform' do: [:pos | name = 'Middle' ifTrue: [tipPos set: pos translation.] ];
 								 children: {
 											self area: (self fingerColorForName: name side: (props at: #side) isTyping: focus notNone)
-									ref: (tipRefs get at: name).
-									GDLabel3D new 
-										billboard: GDSpatialMaterial billboardEnabled;
-										noDepthTest: true;
-										fixedSize: true;
-										pixelSize: 0.005;
-										translation: 0 @ 0.01 @ 0; text: (self oldFingerCharacterMapping indexOf: (name, (props at: #side)))}}}}}].
+									ref: (tipRefs get at: name).}}}}}].
 	rootRef := self useGodotRef.
 	
 	self useRegisterHandsSide: (props at: #side) ref: rootRef.
 	
-	^ GDSpatial new children: {
-		GDSpatial new ref: rootRef; children: {
-			self node
-				ref: handRef;
-				subscribeTo: #global_transform do: transform setter;
-				name: 'Wrist';
-				children: {
-					GDArea new children: {
-						(GDLabel3D new text: 'X') pixelSize: 0.1cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
-						(self cubeOfSize: 3 cm @ 1 cm @3 cm color: Color lightBlue)}; 
-					translation: 2cm @ -2cm @ 0 cm; onAreaEntered: [: other |
-					(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [ setFocus set: GRTextFocus none]].
-					GDArea new children: {
-						(GDLabel3D new text: 'AppControl') pixelSize: 0.05cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
-						(self cubeOfSize: 3 cm @ 1 cm @3 cm color: Color lightGreen)};
-					translation: -2cm @ -2cm @ 0 cm;onAreaEntered: [: other |
-					(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [Transcript showln: eventReceivers get identityHash.Transcript showln: 'AppControl should be toggled'. onButtonPress value: GDGlobalConstants joyOculusAx.]].
-				
-						GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
-						GRPointer new handRef: handRef.
-						(self methodAsComponent: #renderThumb:)
-							log: log;
-							tipRefs: tipRefs;
-							proximalPos: proximalPos;
-							side: (props at: #side).
-						finger value: 'Index'.
-						finger value: 'Middle'.
-						finger value: 'Ring'.
-						finger value: 'Little'}}}
+	^ (GDSpatial new ref: rootRef; children: {
+		self node
+			ref: handRef;
+			subscribeTo: #global_transform do: transform setter;
+			name: 'Wrist';
+			children: {
+				WristMenu new onButtonPress: onButtonPress; onButtonRelease: onButtonRelease; pos: tipPos get.		
+				GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
+				GRPointer new handRef: handRef.
+				(self methodAsComponent: #renderThumb:)
+					tipRefs: tipRefs;
+					proximalPos: proximalPos;
+					onButtonRelease: onButtonRelease;
+					onButtonPress: onButtonPress;
+					side: (props at: #side).
+				finger value: 'Index'.
+				finger value: 'Middle'.
+				finger value: 'Ring'.
+				finger value: 'Little'}})
 ]
 
 { #category : #'as yet unclassified' }
@@ -248,19 +218,28 @@ TrackedHand >> renderThumb: props [
 
 	self useEffect: [(props at: #side) = 'right' ifTrue: [thumbRef set: ref].]	dependencies: #().
 	
-	^ props extract: [:log :tipRefs :side :proximalPos | | detector fingerBones |
+	^ props extract: [ :tipRefs :side :proximalPos :onButtonPress :onButtonRelease | | detector fingerBones |
 		detector :=  GDArea new
-			children: {self class handsGripOnlyMode ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color gray) translation: 0 @ -0.03 @ -0.06] ifFalse: [self cubeOfSize: 0.015 color: Color gray]};
+			children: {
+				self class handsGripOnlyMode 
+					ifTrue: [(self cubeOfSize: 0.1 @ 0.02 @ 0.02 color: Color gray) 
+						translation: 0 @ -0.03 @- 0.06] 
+					ifFalse: [self cubeOfSize: 0.015 color: Color gray]
+					};
 			ref: ref;
 			subscribeTo: #'global_transform' do: [:pos | isTracked set: (pos = Vector3 zero) not];
-			onAreaExited: [:other | focus notNone ifTrue: [ (((tipRefs get
-					associationsSelect: [:asc | asc value get = other]) associations
-					isEmpty not) or: (other = thumbRef get get)) ifTrue: [ cooldown set: TimeStamp now.]]
-					];
+			onAreaExited: [:other |  (((tipRefs get
+				associationsSelect: [:asc | asc value get = other]) associations
+				isEmpty not) or: (other = thumbRef get get)) 
+					ifTrue: [ 
+						focus notNone ifTrue: [
+							cooldown set: TimeStamp now.]
+						ifFalse: [onButtonRelease value: GDGlobalConstants joyVrTrigger.]]
+				];
 			onAreaEntered: [:other | 
 				isTracked get  ifTrue: [
-				focus notNone ifTrue: [
-					((TimeStamp now - cooldown get > (Duration milliSeconds: 100)) and: (proximalPos get = Vector3 zero) not)
+					((TimeStamp now - cooldown get > (Duration milliSeconds: 100)) 
+						and: (proximalPos get = Vector3 zero) not)
 						ifTrue: [
 							(other = thumbRef get get ) ifTrue: [
 								currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
@@ -269,8 +248,14 @@ TrackedHand >> renderThumb: props [
 					ifNotEmpty: [:list |
 						|inputString |
 						 inputString :=  list first key, side.
-						currentWord set: [:c | c copyWith: (self oldFingerCharacterMapping indexOf: inputString)].]]].
-					].
+						focus notNone 
+							ifTrue: [
+								currentWord set: [:c | c copyWith: (
+								self oldFingerCharacterMapping indexOf: inputString)].]
+							ifFalse: [
+								onButtonPress value: GDGlobalConstants joyVrTrigger.
+									]]].
+				].
 			].
 		
 		fingerBones := self node name: 'ThumbMetacarpal';

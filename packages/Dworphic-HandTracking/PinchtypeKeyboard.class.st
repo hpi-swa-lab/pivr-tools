@@ -17,10 +17,18 @@ PinchtypeKeyboard >> keySize [
 ]
 
 { #category : #'as yet unclassified' }
+PinchtypeKeyboard >> layout [
+
+	^ {
+				{'Q'. 'W'. 'E'. 'R'. 'T'. 'Z'. 'U'. 'I'. 'O'. 'P'}.
+				{'A'. 'S'. 'D'. 'F'. 'G'. 'H'. 'J'. 'K'. 'L'}.
+	 {"'Shift'." 'Y'. 'X'. 'C'. 'V'. 'B'. 'N'. 'M'. 'Comma'. 'Period'. 'Minus'}}
+]
+
+{ #category : #'as yet unclassified' }
 PinchtypeKeyboard >> layout: aBool [
 
 	^ {
-	aBool ifFalse: {'1'. '2'. '3'. '4'. '4'. '5'. '5'. '6'. '7'. '7'} ifTrue: {'!'. '"'. '§'. '$'. '%'. '&'. '/'. '('. ')'. '='}.
 				{'Q'. 'W'. 'E'. 'R'. 'T'. 'Z'. 'U'. 'I'. 'O'. 'P'}.
 				{'A'. 'S'. 'D'. 'F'. 'G'. 'H'. 'J'. 'K'. 'L'}.
 	aBool ifFalse: {"'Shift'." 'Y'. 'X'. 'C'. 'V'. 'B'. 'N'. 'M'. 'Comma'. 'Period'. 'Minus'} ifTrue: {'Shift'. 'Y'. 'X'. 'C'. 'V'. 'B'. 'N'. 'M'. 'Semicolon'. 'Colon'. 'Underscore'}.
@@ -30,9 +38,8 @@ PinchtypeKeyboard >> layout: aBool [
 { #category : #'as yet unclassified' }
 PinchtypeKeyboard >> render: props [
 
-	| layout shiftPressed fingerMap colors |
-	shiftPressed := self useState: false.
-	layout := self layout: shiftPressed get.
+	| layout fingerMap colors |
+	layout := self layout.
 	fingerMap := self useMemo: [HandTracking fingerCharacterMapping] dependencies: #().
 	colors := self useMemo: [HandTracking fingerColor] dependencies: #().
 	
@@ -44,6 +51,7 @@ PinchtypeKeyboard >> render: props [
 			(self
 				cubeOfSize: (layout collect: #size) max * self keySize @ (layout size * self keySize) @ 0.01
 				color: (Color r: 0.37 g: 0.37 b: 0.37)) children: {
+				self methodAsComponent: #renderCurrentInput:.
 				GDSpatial new
 					translation: (layout collect: #size) max - 1 * self keySize / -2 @ (self keySize / -2 * (layout size + 1)) @ 0;
 					children: (layout withIndexCollect: [:row :rowIndex |
@@ -54,12 +62,26 @@ PinchtypeKeyboard >> render: props [
 								color: (colors at: (fingerMap at: ((self scancodeName: keyCode) asCharacter asLowercase) ifAbsent: [8]));
 								letter: (self scancodeName: keyCode);
 								position: columnIndex - 1 @ (layout size - (rowIndex - 1));
-								onPressed: [
-									keyCode = GDGlobalConstants keyShift
-										ifTrue: [shiftPressed set: shiftPressed not]
-										ifFalse: [
-											"(props at: #onTextEntered) get value: letter.
-											shiftPressed set: false"]]]])}}
+								onPressed: ["text entering handled by pinch gestures"
+								]]])}}
+]
+
+{ #category : #'as yet unclassified' }
+PinchtypeKeyboard >> renderCurrentInput: props [
+	
+	| layout width currentWord colors |
+	layout := self layout.
+	currentWord := self useProvided: #currentWord.
+	colors := self useMemo: [HandTracking fingerColor] dependencies: #().
+	width := (layout collect: #size) max * self keySize.
+	^ GDSpatial new   translation: 0 * self keySize / -2 @ (self keySize / 2 * (layout size + 1)) @ 0; children:{
+	(self cubeOfSize:  width  @ self keySize @ 0.02 color: Color gray).
+	GDLabel3D new text: 'Current Input:'; translation: width / -2.5 @ 0 @ 1.1cm; pixelSize: 0.2cm.
+	currentWord get withIndexCollect: [:group : index | 
+		(self cubeOfSize: self keySize asPoint * 0.7 @ 0.02 
+			color: (colors at: group))
+			translation: (width / -3.0) + (self keySize * index) @ 0 @ 0.1cm.].
+	}
 ]
 
 { #category : #'as yet unclassified' }
