@@ -60,7 +60,7 @@ TrackedHand >> oldFingerCharacterMapping [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos cooldown suggestionEntries |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle log suggestions handRef eventReceivers onButtonPress transform currentWord replaceLog logIndices searchResults onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs setFocus |
 	
 	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
@@ -84,6 +84,7 @@ TrackedHand >> render: props [
 	self useRegisterHand: handRef.
 	
 	focus := (self useProvided: #textFocus) get.
+	setFocus := (self useProvided: #textFocus).
 	
 	scrollPos := self useProvided: #scrollPos.
 	
@@ -91,7 +92,10 @@ TrackedHand >> render: props [
 	
 	tipRefs := self
 				useState: (Dictionary newFromPairs: {'Index'. self useGodotRef. 'Middle'. self useGodotRef. 'Ring'. self useGodotRef. 'Little'. self useGodotRef}).
-	cooldown := self useState: 0.			
+	cooldown := self useState: 0.
+	
+	allFingerRefs := self useProvided: #allFingerRefs.
+	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
 	
 	 "log := [:message | currentWordRef get set: [:word | word, message]]."
 	log := [:text | Transcript showln: text].
@@ -123,15 +127,17 @@ TrackedHand >> render: props [
 			startPos set: metacarpalPos get.
 			onButtonPress value: GDGlobalConstants joyVrTrigger.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
-					log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) .
-		focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: 1 ifAbsent: ''), ' ').].
+					"log value: 'Suggestions recieved for input: ', currentWord get , 'are: ', (suggestions search: currentWord get) ."
+		
 		replaceLog value: (logIndices get at: #result) value: [:prev | prev , ' ' ,((suggestions search: currentWord get) at: 1 ifAbsent: '')].
-		log value: 'resetting'.
-		currentWord set: [:old | {}].].
+		"log value: 'resetting'."
+		].
 		(angle > 2 and: waitForRelease get) ifTrue: [
 			waitForRelease set: false.
+			focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: scrollPos get ifAbsent: ''), ' ').].
 			onButtonRelease value: GDGlobalConstants joyVrTrigger.
-			onButtonRelease value: GDGlobalConstants joyVrGrip]] dependencies: {angle}.
+			onButtonRelease value: GDGlobalConstants joyVrGrip.
+			currentWord set: [:old | {}].]] dependencies: {angle}.
 	
 	
 	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 500))) ifTrue: [
@@ -174,24 +180,28 @@ TrackedHand >> render: props [
 				subscribeTo: #global_transform do: transform setter;
 				name: 'Wrist';
 				children: {
-					GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
-					GRPointer new handRef: handRef.
-					(self methodAsComponent: #renderThumb:)
-						log: log;
-						tipRefs: tipRefs;
-						proximalPos: proximalPos;
-						side: (props at: #side).
-					"((props at: #side) = 'right') ifTrue: [
-						(self methodAsComponent: #renderRightIndex:)
+					GDArea new children: {
+						(GDLabel3D new text: 'X') pixelSize: 0.1cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
+						(self cubeOfSize: 3 cm @ 1 cm @3 cm color: Color lightBlue)}; 
+					translation: 2cm @ -2cm @ 0 cm; onAreaEntered: [: other |
+					(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [ setFocus set: GRTextFocus none]].
+					GDArea new children: {
+						(GDLabel3D new text: 'AppControl') pixelSize: 0.05cm; rotationDegrees: 90 @ 0 @ 180; translation: 0 @ -0.5 cm @ 0.
+						(self cubeOfSize: 3 cm @ 1 cm @3 cm color: Color lightGreen)};
+					translation: -2cm @ -2cm @ 0 cm;onAreaEntered: [: other |
+					(allFingerRefs get anySatisfy: [:ref | ref get = other]) ifTrue: [Transcript showln: eventReceivers get identityHash.Transcript showln: 'AppControl should be toggled'. onButtonPress value: GDGlobalConstants joyOculusAx.]].
+				
+						GRActingArea new point: false; touch: true; handRef: handRef; children: (GDCollisionShape new shape: (GDSphereShape new radius: 5 cm)).
+						GRPointer new handRef: handRef.
+						(self methodAsComponent: #renderThumb:)
 							log: log;
 							tipRefs: tipRefs;
 							proximalPos: proximalPos;
-							side: (props at: #side).	
-					]; ifFalse: [finger value: 'Index'.]."
-					finger value: 'Index'.
-					finger value: 'Middle'.
-					finger value: 'Ring'.
-					finger value: 'Little'}}}
+							side: (props at: #side).
+						finger value: 'Index'.
+						finger value: 'Middle'.
+						finger value: 'Ring'.
+						finger value: 'Little'}}}
 ]
 
 { #category : #'as yet unclassified' }

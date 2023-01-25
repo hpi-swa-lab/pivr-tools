@@ -13,14 +13,17 @@ TraceCollectorDworph class >> traceDistanceThreshold [
 { #category : #'as yet unclassified' }
 TraceCollectorDworph >> render: props [
 
-	| traces child lastTranslation |
+	| traces child lastTranslation ref |
 	
 	traces := self useTraces.
 	child := props at: #child.
+	ref := self useGodotRef.
+	child ref: ref.
 	lastTranslation := self useState: Vector3 new.
 		
 	^ GDSpatial new
-		subscribeTo: #'global_translation' do: [:translation | ((lastTranslation get distanceTo: translation) > TraceCollectorDworph traceDistanceThreshold) ifTrue: [traces value: {child godotId. translation}. lastTranslation set: translation]];
+		subscribeTo: #'global_translation' do:
+			[:translation | ((lastTranslation get distanceTo: translation) > TraceCollectorDworph traceDistanceThreshold) ifTrue: [traces value: {ref get. translation}. lastTranslation set: translation]];
 		children: {
 			child.
 		}

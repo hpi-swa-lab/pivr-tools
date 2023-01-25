@@ -27,8 +27,8 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod activeMethodDesc sphereVisible |
-	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'}}.
+	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
+	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'. nil}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	debugPosition := self useState: 0 @ 0 @ 0.
@@ -38,28 +38,22 @@ BrowsingDworph >> render: props [
 	activePackage := self useState: nil.
 	activeClass := self useState: nil.
 	activeMethod := self useState: nil.
-	activeMethodDesc := self useState: nil.
 	sphereVisible := self useState: true.
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
-	
-	Transcript showln: (headTransformRef get rotation y).
 	
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
-				browserVisible set: browserVisible get not].
-			]
+				browserVisible set: browserVisible get not.
+				methods set: (methods get reject: [:desc | desc first = 0])]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
-		
+	
 	self
-		useButtonPress: [:e |
-			 e button = GDGlobalConstants joyOculusAx ifTrue: [
-				sphereVisible set: sphereVisible get not]
-			]
+		useButtonPress: [:e | e button = GDGlobalConstants joyOculusAx ifTrue: [sphereVisible set: sphereVisible get not]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #left.
@@ -70,33 +64,26 @@ BrowsingDworph >> render: props [
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
 			methods get collect: [:desc |
-				(CB22Method new)
+				CB22Method new
 					key: desc first;
 					class: desc second;
 					name: desc third;
 					text: desc fourth;
+					initialTransform: desc fifth;
 					grabbedMethod: grabbedMethod;
-					lastCreationEvent: lastCreationEvent get].
-			browserVisible get ifTrue: [
-				activeMethod get ifNotNil: [
-					activeMethodDesc get ifNotNil: [
-						(CB22Method new)
-							key: activeMethodDesc get first;
-							class: activeMethodDesc get second;
-							name: activeMethodDesc get third;
-							text: activeMethodDesc get fourth;
-							grabbedMethod: grabbedMethod;
-							lastCreationEvent: nil]]]}.
-		"CB22RandomMethodButton new
-			methods: methods;
-			nextMethodId: nextMethodId;
-			lastCreationEvent: lastCreationEvent."
+					methods: methods;
+					nextMethodId: nextMethodId;
+					lastCreationEvent: lastCreationEvent get]}.
 		CB22TrashCan new
 			methods: methods;
 			grabbedMethod: grabbedMethod.
 		CB22DeleteAllButton new methods: methods.
-		self renderSphere: 5 highQuality: highQuality  visible: sphereVisible get.
+		self renderSphere: 5 highQuality: highQuality visible: sphereVisible get.
 		browserVisible get ifTrue: [
+			CB22RandomMethodButton new
+			methods: methods;
+			nextMethodId: nextMethodId;
+			lastCreationEvent: lastCreationEvent.
 			CB22PackageBrowser new
 				activePackage: activePackage;
 				center: browserCenter get].
@@ -109,7 +96,6 @@ BrowsingDworph >> render: props [
 			CB22MethodBrowser new
 				activeClass: activeClass get;
 				activeMethod: activeMethod;
-				activeMethodDesc: activeMethodDesc;
 				methods: methods;
 				nextMethodId: nextMethodId;
 				center: browserCenter get]}
@@ -147,7 +133,7 @@ BrowsingDworph >> useSkyTexture: highQuality [
 	^ self
 		useMemo: [
 			GDResourceLoader instance loadPath: (highQuality
-				ifFalse: ['res://assets/browsing/sky_slim_low_res.png']
+				ifFalse: ['res://assets/browsing/sky_slim_low_res.jpg']
 				ifTrue: ['res://assets/browsing/sky.jpg'])]
 		dependencies: #()
 ]

@@ -2,7 +2,7 @@ Extension { #name : #WorldDworph }
 
 { #category : #'*Dworphic-HandTracking' }
 WorldDworph >> provideHandtrackingState [
-	| word logIndices thumbRef scrollPos suggestionEntries |
+	| word logIndices thumbRef scrollPos suggestionEntries allFingerRefs |
 	<provider>
 	
 	logIndices := self useState: Dictionary new.
@@ -10,6 +10,7 @@ WorldDworph >> provideHandtrackingState [
 	word := self useState: {}.
 	scrollPos := self useState: 0.
 	suggestionEntries := self useState: {}.
+	allFingerRefs := self useState: {}.
 	
-	^ {#currentWord -> word. #logIndices -> logIndices. #thumbRef -> thumbRef. #scrollPos -> scrollPos. #suggestionEntries -> suggestionEntries}.
+	^ {#currentWord -> word. #logIndices -> logIndices. #thumbRef -> thumbRef. #scrollPos -> scrollPos. #suggestionEntries -> suggestionEntries. #allFingerRefs -> allFingerRefs}.
 ]
