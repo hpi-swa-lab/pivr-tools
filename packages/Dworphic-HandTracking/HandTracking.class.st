@@ -52,9 +52,10 @@ HandTracking >> render: props [
 	focus := (self useProvided: #textFocus) get.
 	
 	^ focus notNone ifTrue: [
-		{SuggestionPanel new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ 40 cm @ 5 cm).
-		PinchtypeKeyboard new transform: (focus textAreaBottomCenter localTranslatedBy: 0 @ -30 cm @ 5 cm).}
+		GDSpatial new transform: focus textAreaBottomCenter; children: {
+		PinchtypeKeyboard new transform: (Matrix4x4 identity translation: 20cm @ -25cm @ 5 cm).
+		SuggestionPanel new transform: (Matrix4x4 identity translation: -40cm @ -25cm @ 5 cm).
+		}.
 		
-	
 	]
 ]
