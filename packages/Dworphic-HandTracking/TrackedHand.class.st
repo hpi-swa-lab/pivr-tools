@@ -62,7 +62,6 @@ TrackedHand >> node [
 TrackedHand >> render: props [ 
 	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs |
 	
-	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
 	eventReceivers := self useProvided: #eventReceivers.
 	transform := self useState: Matrix4x4 new.
@@ -139,7 +138,6 @@ TrackedHand >> render: props [
 		| sugg |
 		scrollPos set: 1.
 		sugg := suggestions search: currentWord get.
-		"suggestionEntries set: sugg."
 		suggestionEntries set: ((sugg) first: (sugg size min: 15))] dependencies: {currentWord get}.
 		
 	finger := [:name | self node name: name , 'Metacarpal';
@@ -157,7 +155,7 @@ TrackedHand >> render: props [
 	
 	self useRegisterHandsSide: (props at: #side) ref: rootRef.
 	
-	^ (GDSpatial new ref: rootRef; children: {
+	^ {(GDSpatial new ref: rootRef; children: {
 		self node
 			ref: handRef;
 			subscribeTo: #global_transform do: transform setter;
@@ -175,7 +173,18 @@ TrackedHand >> render: props [
 				finger value: 'Index'.
 				finger value: 'Middle'.
 				finger value: 'Ring'.
-				finger value: 'Little'}})
+				finger value: 'Little'.
+				}}).
+				(waitForRelease get) ifTrue: [
+					GDMeshInstance new mesh: (GDSphereMesh new
+					radius: 1cm;
+					height: 2cm ;
+					material: (GDSpatialMaterial new
+						albedoColor: Color red darker;
+						flagsUnshaded: true));
+					translation: startPos get
+				].
+		}
 ]
 
 { #category : #'as yet unclassified' }
