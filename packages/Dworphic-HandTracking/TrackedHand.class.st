@@ -125,11 +125,15 @@ TrackedHand >> render: props [
 			currentWord set: [:old | {}].]] dependencies: {angle}.
 	
 	
-	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 500))) ifTrue: [
-			((metacarpalPos get y - startPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
-			((metacarpalPos get y - startPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
-			cooldown set: TimeStamp now.
-			]] dependencies: {metacarpalPos get}.
+	self useEffect: [
+		| deltaY duration |
+		deltaY := metacarpalPos get y - startPos get y.
+		duration := (50.0 / ((deltaY abs) max: 0.1)) clampLow: 0 high: 500.
+		((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: duration))) ifTrue: [
+			(deltaY < 0.05) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
+			(deltaY > -0.05) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
+		cooldown set: TimeStamp now.
+		]] dependencies: {metacarpalPos get}.
 	
 	self useEffect: [
 		| sugg |
