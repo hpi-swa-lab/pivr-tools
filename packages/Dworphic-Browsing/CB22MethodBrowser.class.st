@@ -11,6 +11,27 @@ CB22MethodBrowser class >> getClassNamed: name [
 ]
 
 { #category : #'as yet unclassified' }
+CB22MethodBrowser >> activeMethodTransform: angle center: center [
+	"(Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: angle center: center)) translatedBy: 0 @ self methodYOffset @ 0"
+
+	| translation |
+	translation := self pointOnCircle: self circleRadius angle: angle center: center.
+	
+	^ (Matrix4x4
+		lookAt: center
+		from: translation x @ (translation y + self methodYOffset) @ translation z
+		up: 0 @ 1 @ 0)
+		rotatedLocalBy: 180
+		around: 0 @ 1 @ 0
+]
+
+{ #category : #'as yet unclassified' }
+CB22MethodBrowser >> methodYOffset [
+	
+	^ self yOffset + 20cm
+]
+
+{ #category : #'as yet unclassified' }
 CB22MethodBrowser >> render: props [
 
 	| methods activeClass selectedMethods method nextMethodId browserRotation cylinderMesh center activeMethod sound streamPlayerRef |
@@ -30,7 +51,6 @@ CB22MethodBrowser >> render: props [
 		dependencies: #().
 	self
 		useMemo: [
-			Transcript showln: 'play Sound'.
 			streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
 		dependencies: {activeMethod get}.
 	
@@ -49,7 +69,7 @@ CB22MethodBrowser >> render: props [
 				isActive ifTrue: [
 					activeMethod get = methodName ifFalse: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource}).
+						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource. self activeMethodTransform: angle center: center}).
 						activeMethod set: methodName]].
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;
@@ -59,7 +79,7 @@ CB22MethodBrowser >> render: props [
 					index: index;
 					action: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource}).
+						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource. nil}).
 						activeMethod set: methodName];
 					isActive: isActive]].
 		self renderCylinder: (Dictionary withAll: {
