@@ -105,7 +105,7 @@ PinchTypeTutorial >> renderPhase3: props [
 		showPart1 get ifTrue: [self label: (focus notNone ifFalse: ['Select the text field once more to get started.']
 			ifTrue: ['Now try to type the word "hello" by pinching the finger tip with the correct color for each letter with the thumb of that hand, one letter at a time. You will see which character you entered at the top. To delete a character, touch your thumbs toghether. When hello is the only word in the suggestion list on your left, close your first to send the word. ']) .].
 			(showPart1 get not and: showContinue get not) ifTrue: [
-				self label: 'Awesome, now try inserting the word ‘world’ !'.
+				self label: 'Awesome, now try inserting the word "world" !'.
 			].
 		showContinue get ifTrue: [self label: 'Fantastic! Now close the keyboard again and press continue'.].
 		
@@ -135,6 +135,18 @@ PinchTypeTutorial >> renderPhase4: props [
 		ifTrue: ['Awesome! This is the end for now.']).
 		self showTextbox onTextEntered: [:t | (t includesSubstring: 'candidate') ifTrue: [hasTypedCorrectWord set: true].].
 		hasTypedCorrectWord get ifTrue:  [(self methodAsComponent: #renderContinueButton:)onPhaseChange: onPhaseChange.].
+	}]
+]
+
+{ #category : #'as yet unclassified' }
+PinchTypeTutorial >> renderPhase5: props [
+
+	| hasTypedCorrectWord |
+	hasTypedCorrectWord := self useState: false.
+	^ props extract: [:onPhaseChange | {
+		self label: 'Finally, let"s try to write an entire sentence. Plase write the following sentence. Use the first box for testing, and then let us see how fast you can go!',Character linefeed, Character linefeed, 'The quick brown fox jumps over the lazy dog'.
+		self showTextbox.
+		TextInputDworph new translation: 0 @ -40cm @ 2cm 
 	}]
 ]
 

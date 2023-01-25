@@ -1012,6 +1012,11 @@ FuzzySuggestions class >> a1001CommonEnglishWordList [
 	'young'.
 	'your'.
 	'yourself'.
+	'quick'.
+	'brown'.
+	'fox'.
+	'jumps'.
+	'lazy'
 }
 ]
 

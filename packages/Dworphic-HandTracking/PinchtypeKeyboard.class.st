@@ -38,11 +38,8 @@ PinchtypeKeyboard >> layout: aBool [
 { #category : #'as yet unclassified' }
 PinchtypeKeyboard >> render: props [
 
-	| layout fingerMap colors |
+	| layout |
 	layout := self layout.
-	fingerMap := self useMemo: [HandTracking fingerCharacterMapping] dependencies: #().
-	colors := self useMemo: [HandTracking fingerColor] dependencies: #().
-	
 	
 	^ GRGrabbableArea new
 	"transform: ( ((Matrix4x4 new scaledBy: (Vector3 value: 3.0) )translation: 1@1@0));"
@@ -59,7 +56,6 @@ PinchtypeKeyboard >> render: props [
 							keyCode := GDGlobalConstants perform: ('key{1}' format: {letter}) asSymbol.
 							(self methodAsComponent: #renderKey:)
 								key: letter;
-								color: (colors at: (fingerMap at: ((self scancodeName: keyCode) asCharacter asLowercase) ifAbsent: [8]));
 								letter: (self scancodeName: keyCode);
 								position: columnIndex - 1 @ (layout size - (rowIndex - 1));
 								onPressed: ["text entering handled by pinch gestures"
@@ -87,25 +83,26 @@ PinchtypeKeyboard >> renderCurrentInput: props [
 { #category : #'as yet unclassified' }
 PinchtypeKeyboard >> renderKey: props [
 
-	| hovered |
-	hovered := self useState: false.
+	| color charGroup currentCharGroup |
+	^ props extract: [:letter |
+		charGroup := self useMemo: [HandTracking fingerCharacterMapping at: ((props at: #letter)  asCharacter asLowercase) ifAbsent: [8].] dependencies: #().
+	color := self useMemo: [HandTracking fingerColor at: charGroup] dependencies: #().
+	currentCharGroup := self useProvided: #currentCharGroup.
 	
-	^ GRInteractiveArea new
-		touch: true;
-		point: true;
-		onButtonPress: [:e | e isTrigger ifTrue: [(props at: #onPressed) value]];
-		onHover: [hovered set: true];
-		onBlur: [hovered set: false];
+	
+	^ GDSpatial new
 		children: {
-			self cubeOfSize: self keySize asPoint @ 0.02 color: (hovered get
-				ifTrue: [props at: #color]
-				ifFalse: [(props at: #color) darker]).
+			self cubeOfSize: self keySize asPoint @ 0.02 color: (currentCharGroup get = charGroup
+				ifTrue: [color lighter]
+				ifFalse: [color darker]).
 			GDLabel3D new
 				translation: 0 @ 0 @ 0.011;
 				text: (props at: #letter) asString;
 				pixelSize: 0.003.
 			GDCollisionShape new shape: (GDBoxShape new extents: self keySize asPoint / 2 @ 0.01)};
 		translation: (props at: #position) @ 0 * self keySize
+		].
+	
 ]
 
 { #category : #'as yet unclassified' }

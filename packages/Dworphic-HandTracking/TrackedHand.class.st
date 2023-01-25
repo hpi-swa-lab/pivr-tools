@@ -33,18 +33,12 @@ TrackedHand >> area: aColor ref: aRef [
 { #category : #'as yet unclassified' }
 TrackedHand >> fingerColorForName: name side: side isTyping: isTyping [
 	^isTyping
-		ifTrue: [ HandTracking fingerColor at: (self oldFingerCharacterMapping indexOf: (name, side)).] 
+		ifTrue: [ HandTracking fingerColor at: (self fingerIndexOf: (name, side)).] 
 		ifFalse: [Color gray.]
 ]
 
 { #category : #'as yet unclassified' }
-TrackedHand >> node [
-	^ GDMeshInstance new
-				mesh: (GDCubeMesh new size: 0.01 asVector3)
-]
-
-{ #category : #'as yet unclassified' }
-TrackedHand >> oldFingerCharacterMapping [
+TrackedHand >> fingerIndexOf: aFingerName [
 
 	^ {
 		'Littleleft'. 
@@ -55,19 +49,23 @@ TrackedHand >> oldFingerCharacterMapping [
 		'Middleright'. 
 		'Ringright'. 
 		'Littleright'. 
-	}
+	} indexOf: aFingerName
+]
+
+{ #category : #'as yet unclassified' }
+TrackedHand >> node [
+	^ GDMeshInstance new
+				mesh: (GDCubeMesh new size: 0.01 asVector3)
 ]
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos fistClosedPos cooldown suggestionEntries allFingerRefs |
 	
-	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
 	eventReceivers := self useProvided: #eventReceivers.
 	transform := self useState: Matrix4x4 new.
-	startPos := self useState: Vector3 zero.
-
+	fistClosedPos := self useState: Vector3 zero.
 	self useRegisterHand: handRef.
 	
 	focus := (self useProvided: #textFocus) get.
@@ -81,13 +79,10 @@ TrackedHand >> render: props [
 	
 	allFingerRefs := self useProvided: #allFingerRefs.
 	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
-
-	
 	
 	currentWord := self useProvided: #currentWord.
 	suggestionEntries := self useProvided: #suggestionEntries.
 
-	
 	tipPos := self useState: Vector3 zero.
 	proximalPos := self useState: Vector3 zero.
 	metacarpalPos := self useState: Vector3 zero.
@@ -114,20 +109,19 @@ TrackedHand >> render: props [
 
 		(angle < 1 and: waitForRelease get not) ifTrue: [
 			waitForRelease set: true.
-			startPos set: metacarpalPos get.
+			fistClosedPos set: metacarpalPos get.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
 		].
 		(angle > 2 and: waitForRelease get) ifTrue: [
 			waitForRelease set: false.
 			focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: scrollPos get ifAbsent: ''), ' ').].
-			onButtonRelease value: GDGlobalConstants joyVrTrigger.
 			onButtonRelease value: GDGlobalConstants joyVrGrip.
 			currentWord set: [:old | {}].]] dependencies: {angle}.
 	
 	
 	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 500))) ifTrue: [
-			((metacarpalPos get y - startPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
-			((metacarpalPos get y - startPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
+			((metacarpalPos get y - fistClosedPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
+			((metacarpalPos get y - fistClosedPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
 			cooldown set: TimeStamp now.
 			]] dependencies: {metacarpalPos get}.
 	
@@ -175,38 +169,9 @@ TrackedHand >> render: props [
 ]
 
 { #category : #'as yet unclassified' }
-TrackedHand >> renderRightIndex: props [
-
-	|currentWord cooldown ref thumbRef |
-	
-	cooldown := self useState: TimeStamp now.
-
-	currentWord := self useProvided: #currentWord.
-	ref := self useGodotRef.
-	thumbRef := self useProvided: #thumbRef.
-
-	self useEffect: [(props at: #side) = 'right' ifTrue: [thumbRef set: ref].]	dependencies: #().
-
-	^ props extract: [:log :tipRefs :side :proximalPos |
-		
-		self node name: 'IndexMetacarpal';
-				 children: {self node name: 'IndexProximal';
-					 children: {self node name: 'IndexDistal';
-						 children: {self node name: 'IndexTip';
-							 children: {
-								self area
-								ref: ref;
-									onAreaExited: [:other | Transcript showln: 'Area exited'];
-									onAreaEntered: [:other | Transcript showln: 'Area entered']
-					}}}}
-		].
-
-]
-
-{ #category : #'as yet unclassified' }
 TrackedHand >> renderThumb: props [
 
-	|currentWord cooldown ref thumbRef focus isTracked |
+	|currentWord cooldown ref thumbRef focus isTracked currentChar |
 	
 	cooldown := self useState: TimeStamp now.
 
@@ -214,6 +179,7 @@ TrackedHand >> renderThumb: props [
 	ref := self useGodotRef.
 	thumbRef := self useProvided: #thumbRef.
 	focus := (self useProvided: #textFocus) get.
+	currentChar := self useProvided: #currentCharGroup.
 	isTracked := self useState: true.
 
 	self useEffect: [(props at: #side) = 'right' ifTrue: [thumbRef set: ref].]	dependencies: #().
@@ -233,6 +199,7 @@ TrackedHand >> renderThumb: props [
 				isEmpty not) or: (other = thumbRef get get)) 
 					ifTrue: [ 
 						focus notNone ifTrue: [
+							currentChar set: nil.
 							cooldown set: TimeStamp now.]
 						ifFalse: [onButtonRelease value: GDGlobalConstants joyVrTrigger.]]
 				];
@@ -242,16 +209,17 @@ TrackedHand >> renderThumb: props [
 						and: (proximalPos get = Vector3 zero) not)
 						ifTrue: [
 							(other = thumbRef get get ) ifTrue: [
+								Transcript showln: TimeStamp now asString, ': Pinchtype corrected one character: ', (currentWord get ifNotEmpty: [currentWord get last] ifEmpty: ['<already empty>']).
 								currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
 				(tipRefs get
 					associationsSelect: [:asc | asc value get = other]) associations
 					ifNotEmpty: [:list |
-						|inputString |
-						 inputString :=  list first key, side.
+						|input |
+						 input := self fingerIndexOf: list first key, side.
 						focus notNone 
 							ifTrue: [
-								currentWord set: [:c | c copyWith: (
-								self oldFingerCharacterMapping indexOf: inputString)].]
+								currentChar set: input.
+								currentWord set: [:c | c copyWith: input].]
 							ifFalse: [
 								onButtonPress value: GDGlobalConstants joyVrTrigger.
 									]]].
@@ -265,23 +233,6 @@ TrackedHand >> renderThumb: props [
 						 children: {self class handsGripOnlyMode ifTrue: [nil] ifFalse: [detector]}}}}.
 		
 		self class handsGripOnlyMode ifTrue: [{fingerBones. detector}] ifFalse: [fingerBones]]
-]
-
-{ #category : #'as yet unclassified' }
-TrackedHand >> useInitLogForSide: side [
-| log logIndices|
-log := self useLog.
-logIndices := self useProvided: #logIndices.
-	self useEffect: [
-			| inputIIndex resultIndex suggestionsIndex |
-	side = #left ifTrue: [
-		logIndices get at: #suggestions ifAbsent: [
-			suggestionsIndex := (log value: 'Start typing to see suggestions here') value.
-	inputIIndex := (log value: 'Start typing to see your input here') value.	
-	resultIndex := (log value: '') value.
-	logIndices set: {#suggestions -> suggestionsIndex. #input -> inputIIndex. #result -> resultIndex} asDictionary.]]
-	] dependencies: #().
-	 
 ]
 
 { #category : #'as yet unclassified' }

@@ -41,7 +41,7 @@ SuggestionPanel >> render: props [
 			children: {
 				GDScrollContainer new
 					rectSize: self resolution;
-					followFocus: true;
+					followFocus: false;
 					scrollHorizontalEnabled: false;
 					scrollVertical: ((scrollPos - 5) * (self resolution y / 9)) asFloat;
 					children: {
