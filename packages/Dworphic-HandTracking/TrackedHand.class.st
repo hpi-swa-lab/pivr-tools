@@ -60,12 +60,14 @@ TrackedHand >> node [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos fistClosedPos cooldown suggestionEntries allFingerRefs |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs |
 	
+	self useInitLogForSide: (props at: #side).
 	handRef := self useRef: nil.
 	eventReceivers := self useProvided: #eventReceivers.
 	transform := self useState: Matrix4x4 new.
-	fistClosedPos := self useState: Vector3 zero.
+	startPos := self useState: Vector3 zero.
+
 	self useRegisterHand: handRef.
 	
 	focus := (self useProvided: #textFocus) get.
@@ -79,10 +81,13 @@ TrackedHand >> render: props [
 	
 	allFingerRefs := self useProvided: #allFingerRefs.
 	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
+
+	
 	
 	currentWord := self useProvided: #currentWord.
 	suggestionEntries := self useProvided: #suggestionEntries.
 
+	
 	tipPos := self useState: Vector3 zero.
 	proximalPos := self useState: Vector3 zero.
 	metacarpalPos := self useState: Vector3 zero.
@@ -109,21 +114,26 @@ TrackedHand >> render: props [
 
 		(angle < 1 and: waitForRelease get not) ifTrue: [
 			waitForRelease set: true.
-			fistClosedPos set: metacarpalPos get.
+			startPos set: metacarpalPos get.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
 		].
 		(angle > 2 and: waitForRelease get) ifTrue: [
 			waitForRelease set: false.
 			focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: scrollPos get ifAbsent: ''), ' ').].
+			onButtonRelease value: GDGlobalConstants joyVrTrigger.
 			onButtonRelease value: GDGlobalConstants joyVrGrip.
 			currentWord set: [:old | {}].]] dependencies: {angle}.
 	
 	
-	self useEffect: [((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: 500))) ifTrue: [
-			((metacarpalPos get y - fistClosedPos get y) < 0.1) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
-			((metacarpalPos get y - fistClosedPos get y) > -0.1) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
-			cooldown set: TimeStamp now.
-			]] dependencies: {metacarpalPos get}.
+	self useEffect: [
+		| deltaY duration |
+		deltaY := metacarpalPos get y - startPos get y.
+		duration := (50.0 / ((deltaY abs) max: 0.1)) clampLow: 0 high: 500.
+		((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: duration))) ifTrue: [
+			(deltaY < 0.05) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
+			(deltaY > -0.05) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
+		cooldown set: TimeStamp now.
+		]] dependencies: {metacarpalPos get}.
 	
 	self useEffect: [
 		| sugg |

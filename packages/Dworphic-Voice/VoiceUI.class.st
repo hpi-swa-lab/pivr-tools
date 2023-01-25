@@ -5,14 +5,24 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+VoiceUI >> reduce: aCollectionOfStrings [
+	| acc |
+	acc := ''.
+	aCollectionOfStrings do: [:s | acc := (acc,s, String lf)].
+	^ acc
+]
+
+{ #category : #'as yet unclassified' }
 VoiceUI >> render: props [
 
+	| text |
 	^ props extract: [:key :voiceIntents :hovered :rest | | handlers handlersKeys showKeys |
 		handlers := self useProvided: #voiceIntentHandlers.
 		handlersKeys := (handlers get gather: [:ref | ref get keys]) 
 			select: [:intents | intents beginsWith: key].
 		
 		showKeys := self useState: false.
+		text := self useState: key.
 	
 		GDSpatial new
 			setAll: rest;
@@ -25,7 +35,9 @@ VoiceUI >> render: props [
 						flagsUnshaded: true;
 						flagsNoDepthTest: true)).
 				GDLabel3D new
-					text: key;
+					text: ((showKeys get or: [hovered]) 
+						ifTrue: [self reduce: handlersKeys] 
+						ifFalse: [key]);
 					fixedSize: true;
 					horizontalAlignment: 0;
 					verticalAlignment: 0;
@@ -33,23 +45,9 @@ VoiceUI >> render: props [
 					translation: 0 @ 0 @ 0;
 					billboard: GDSpatialMaterial billboardEnabled;
 					noDepthTest: true.
-				(showKeys get or: [hovered]) ifTrue: [
-					{
-						(handlersKeys select: [:intent | intent ~= key]) withIndexCollect: [:intent :i |
-							GDLabel3D new
-								key: intent;
-								text: intent;
-								pixelSize: 0.001;
-								billboard: GDSpatialMaterial billboardEnabled;
-								fixedSize: true;
-								noDepthTest: true;
-								translation: 0 @ (i * -0.1) @ 0;
-								horizontalAlignment: 0;
-								verticalAlignment: 0;
-								width: 300;
-								autowrap: true].
-						GDTimer new
+				(showKeys get or: [hovered]) ifTrue: [ GDTimer new
 							autostart: true;
 							waitTime: 5;
-							onTimeout: [showKeys set: false]}].}]
+							onTimeout: [showKeys set: false]
+					]}]
 ]

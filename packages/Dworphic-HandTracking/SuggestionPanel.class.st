@@ -59,12 +59,6 @@ SuggestionPanel >> render: props [
 														size: self fontSize));
 											autowrap: true;
 											text: ((index = scrollPos) ifTrue: ['>>>', entry] ifFalse: [entry]).
-										"GDRichTextLabel new
-											theme: (GDTheme new defaultFont: (GDDynamicFont new
-												fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
-												size: self fontSize));
-												text: entry."
-											"text: ((index = scrollPos) ifTrue: ['[b]',entry, '[/b]'] ifFalse: [entry])."
 										GDHSeparator new sizeFlagsHorizontal: GDHSeparator sizeExpandFill}].
 								GDControl new
 									focusMode: GDControl focusAll;
