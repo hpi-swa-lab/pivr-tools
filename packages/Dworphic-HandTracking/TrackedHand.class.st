@@ -60,7 +60,7 @@ TrackedHand >> node [
 
 { #category : #'as yet unclassified' }
 TrackedHand >> render: props [ 
-	| finger rootRef tipRefs metacarpalPos proximalPos tipPos waitForRelease angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs |
+	| finger rootRef tipRefs metacarpalPos proximalPos tipPos areFistsClosed angle suggestions handRef eventReceivers onButtonPress transform currentWord onButtonRelease focus scrollPos startPos cooldown suggestionEntries allFingerRefs isFistClosed |
 	
 	handRef := self useRef: nil.
 	eventReceivers := self useProvided: #eventReceivers.
@@ -80,17 +80,16 @@ TrackedHand >> render: props [
 	
 	allFingerRefs := self useProvided: #allFingerRefs.
 	self useEffect: [allFingerRefs set: [:old | old, tipRefs get values] ] dependencies: #().
-
-	
 	
 	currentWord := self useProvided: #currentWord.
 	suggestionEntries := self useProvided: #suggestionEntries.
 
-	
 	tipPos := self useState: Vector3 zero.
 	proximalPos := self useState: Vector3 zero.
 	metacarpalPos := self useState: Vector3 zero.
-	waitForRelease := self useState: false.
+	areFistsClosed := self useProvided: #areFistsClosed.
+	self useEffect: [areFistsClosed set: [:d | d copyAt: (props at: #side) put: false].] dependencies: #().
+	isFistClosed := self useMemo: [areFistsClosed get at: (props at: #side) ifAbsent: [false].] dependencies: {areFistsClosed get}.
 	angle := self useMemo: [(tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get)] dependencies: {proximalPos get. metacarpalPos get. tipPos get.}.
 	
 	onButtonPress := self useCallback: [:button | | event |
@@ -111,13 +110,13 @@ TrackedHand >> render: props [
 	"Transcript showln: (angle < 1 and: waitForRelease get not) asString, ' ', (angle < 1) asString, ' ', (waitForRelease get) asString."
 	self useEffect: [
 
-		(angle < 1 and: waitForRelease get not) ifTrue: [
-			waitForRelease set: true.
+		(angle < 1 and: isFistClosed not) ifTrue: [
+			areFistsClosed set: [:d | d copyAt: (props at: #side) put: true].
 			startPos set: metacarpalPos get.
 			onButtonPress value: GDGlobalConstants joyVrGrip.
 		].
-		(angle > 2 and: waitForRelease get) ifTrue: [
-			waitForRelease set: false.
+		(angle > 2 and: isFistClosed) ifTrue: [
+			areFistsClosed set: [:d | d copyAt: (props at: #side) put: false].
 			focus notNone ifTrue: 	[focus textEnteredCallback get value: (((suggestions search: currentWord get) at: scrollPos get ifAbsent: ''), ' ').].
 			onButtonRelease value: GDGlobalConstants joyVrTrigger.
 			onButtonRelease value: GDGlobalConstants joyVrGrip.
@@ -128,7 +127,7 @@ TrackedHand >> render: props [
 		| deltaY duration |
 		deltaY := metacarpalPos get y - startPos get y.
 		duration := (50.0 / ((deltaY abs) max: 0.1)) clampLow: 0 high: 500.
-		((waitForRelease get) and: (TimeStamp now - cooldown get > (Duration milliSeconds: duration))) ifTrue: [
+		((isFistClosed) and: (TimeStamp now - cooldown get > (Duration milliSeconds: duration))) ifTrue: [
 			(deltaY < 0.05) ifTrue: [scrollPos set: ((scrollPos get + 1) clampLow: 1 high: (suggestionEntries get size))]. 
 			(deltaY > -0.05) ifTrue: [scrollPos set: ((scrollPos get - 1) clampLow: 1 high: (suggestionEntries get size))].
 		cooldown set: TimeStamp now.
@@ -175,7 +174,7 @@ TrackedHand >> render: props [
 				finger value: 'Ring'.
 				finger value: 'Little'.
 				}}).
-				(waitForRelease get) ifTrue: [
+				(isFistClosed and: focus notNone) ifTrue: [
 					GDMeshInstance new mesh: (GDSphereMesh new
 					radius: 1cm;
 					height: 2cm ;
@@ -190,7 +189,7 @@ TrackedHand >> render: props [
 { #category : #'as yet unclassified' }
 TrackedHand >> renderThumb: props [
 
-	|currentWord cooldown ref thumbRef focus isTracked currentChar |
+	|currentWord cooldown ref thumbRef focus isTracked currentChar areFistsClosed isAnyFistClosed |
 	
 	cooldown := self useState: TimeStamp now.
 
@@ -199,6 +198,8 @@ TrackedHand >> renderThumb: props [
 	thumbRef := self useProvided: #thumbRef.
 	focus := (self useProvided: #textFocus) get.
 	currentChar := self useProvided: #currentCharGroup.
+	areFistsClosed := self useProvided: #areFistsClosed.
+	isAnyFistClosed := self useMemo: [areFistsClosed get values anySatisfy: [:a | a].] dependencies: {areFistsClosed get}.
 	isTracked := self useState: true.
 
 	self useEffect: [(props at: #side) = 'right' ifTrue: [thumbRef set: ref].]	dependencies: #().
@@ -237,8 +238,9 @@ TrackedHand >> renderThumb: props [
 						 input := self fingerIndexOf: list first key, side.
 						focus notNone 
 							ifTrue: [
-								currentChar set: input.
-								currentWord set: [:c | c copyWith: input].]
+								isAnyFistClosed ifFalse: [
+									currentChar set: input.
+									currentWord set: [:c | c copyWith: input].]]
 							ifFalse: [
 								onButtonPress value: GDGlobalConstants joyVrTrigger.
 									]]].
