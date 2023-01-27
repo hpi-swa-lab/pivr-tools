@@ -21,10 +21,8 @@ TraceCollectorDworph >> render: props [
 	child ref: ref.
 	lastTranslation := self useState: Vector3 new.
 		
-	^ GDSpatial new
-		subscribeTo: #'global_translation' do:
-			[:translation | ((lastTranslation get distanceTo: translation) > TraceCollectorDworph traceDistanceThreshold) ifTrue: [traces value: {ref get. translation}. lastTranslation set: translation]];
-		children: {
-			child.
-		}
+	child subscribeTo: #'global_translation' do:
+			[:translation | ((lastTranslation get distanceTo: translation) > TraceCollectorDworph traceDistanceThreshold) ifTrue: [traces value: {ref get. translation}. lastTranslation set: translation]].
+		
+	^ child
 ]

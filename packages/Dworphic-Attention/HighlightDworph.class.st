@@ -59,10 +59,11 @@ HighlightDworph >> render: props [
 			]
 		].
 		
-		children do: [:child | child subscribeCall: #'get_children' with: #() do: [:c | gdChildren set: (gdChildren get, c)]].
+		active ifTrue: [
+		children do: [:child | child subscribeCall: #'get_children' with: #() do: [:c | gdChildren set: (gdChildren get, c)]].].
 		
 	^ {
-		children. (highlightMode = HighlightDworph highlightBeam) ifTrue: (active ifTrue: self showMe).
+		children. (highlightMode = HighlightDworph highlightBeam) ifTrue: (active ifTrue: [self showMe]).
 	}
 	
 ]
