@@ -30,7 +30,7 @@ HighlightDworph >> render: props [
 	children := props at: #children.
 	active := props at: #active ifAbsent: true.
 	highlightMode := props at: #mode ifAbsent: HighlightDworph highlightSurface.
-	gdChildren := self useState: nil.
+	gdChildren := self useState: {}.
 	highlightMaterial := self useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/highlight_material.tres'] dependencies: #().
 	outlineMaterial := self useMemo: [GDResourceLoader instance loadPath: 'res://assets/attention-direction/outline_material.tres'] dependencies: #().
 
@@ -58,9 +58,11 @@ HighlightDworph >> render: props [
 				]
 			]
 		].
-
-	^ GDSpatial new name: 'HighlightDworph'; 
-		subscribeCall: #'get_children' with: #() do: [:c | gdChildren set: c];
-		children: {children. (highlightMode = HighlightDworph highlightBeam) ifTrue: (active ifTrue: self showMe)}
+		
+		children do: [:child | child subscribeCall: #'get_children' with: #() do: [:c | gdChildren set: (gdChildren get, c)]].
+		
+	^ {
+		children. (highlightMode = HighlightDworph highlightBeam) ifTrue: (active ifTrue: self showMe).
+	}
 	
 ]
