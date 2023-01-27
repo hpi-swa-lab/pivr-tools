@@ -32,8 +32,7 @@ VoiceUI >> render: props [
 					height: 0.2;
 					material: (GDSpatialMaterial new
 						albedoColor: Color red;
-						flagsUnshaded: true;
-						flagsNoDepthTest: true)).
+						flagsUnshaded: true)).
 				GDLabel3D new
 					text: ((showKeys get or: [hovered]) 
 						ifTrue: [self reduce: handlersKeys] 

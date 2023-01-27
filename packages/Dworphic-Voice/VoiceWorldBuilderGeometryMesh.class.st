@@ -44,6 +44,18 @@ VoiceWorldBuilderGeometryMesh >> render: props [
 			zOld := z get.
 			z set: [:old | (num ifNil: [zOld]) asNumber]. 
 			[z set: [:new | zOld]]].
+		'move x \num' -> [:num | | xOld | 
+			xOld := x get.
+			x set: [:old | xOld + (num ifNil: [xOld]) asNumber]. 
+			[x set: [:new | xOld]]].
+		'move y \num' -> [:num | | yOld | 
+			yOld := y get.
+			y set: [:old | yOld + (num ifNil: [yOld]) asNumber]. 
+			[y set: [:new | yOld]]].
+		'move z \num' -> [:num | | zOld | 
+			zOld := z get.
+			z set: [:old | zOld + (num ifNil: [zOld]) asNumber]. 
+			[z set: [:new | zOld]]].
 		'bigger' -> [
 			scale set: [:old | old * 2].
 			[scale set: [:old | old / 2]]].
@@ -53,8 +65,8 @@ VoiceWorldBuilderGeometryMesh >> render: props [
 		'delete' ->  delete.
 		'rotate \num' -> [:num | | rotationOld |
 			rotationOld := yRotation get.
-			yRotation set: [:old | (num ifNil: [0]) asNumber + rotationOld].
-			[yRotation set: [:old | rotationOld - ((num ifNil: [0]) asNumber)]]]
+			yRotation set: [:old | (num ifNil: [0]) asNumber degreesToRadians + rotationOld].
+			[yRotation set: [:old | rotationOld - ((num ifNil: [0]) asNumber degreesToRadians)]]]
 		}.
 
 	self useVoiceIntents: voiceIntents key: (hovered get ifTrue: [' '] ifFalse: [key]).

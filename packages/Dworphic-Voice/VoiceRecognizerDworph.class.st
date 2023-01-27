@@ -222,7 +222,7 @@ VoiceRecognizerDworph >> render: props [
 			visible get ifTrue: [
 				GDTimer new
 					autostart: true;
-					waitTime: 10;
+					waitTime: 15;
 					onTimeout: [visible set: false]].
 			VoiceComandsList new.}]
 ]
