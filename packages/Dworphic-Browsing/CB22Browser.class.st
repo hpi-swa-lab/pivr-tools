@@ -27,12 +27,7 @@ CB22Browser >> pointOnCircle: radius angle: degs center: c [
 
 	| angle |
 	angle := degs degreesToRadians.
-	^ c x + angle sin * radius @ c y @ (c z + (angle cos * radius))
-]
-
-{ #category : #'as yet unclassified' }
-CB22Browser >> render: props [
-	self subclassResponsibility
+	^ (c x + angle sin * radius) @ c y @ (c z + (angle cos * radius))
 ]
 
 { #category : #'as yet unclassified' }
@@ -75,25 +70,6 @@ CB22Browser >> renderCylinder: props [
 		point: true;
 		children: {GDMeshInstance new mesh: cylinderMesh. GDCollisionShape new shape: self useCylinderShape}
 	"self renderCylinderCollisionShape: {}"
-]
-
-{ #category : #'as yet unclassified' }
-CB22Browser >> renderCylinderCollisionShape: props [
-
-	^ GDCSGCombiner new
-		children: {
-			GDCSGCylinder new
-				radius: 0.75;
-				height: 0.5;
-				sides: 16.
-			GDCSGCylinder new
-				radius: 0.627;
-				height: 0.5;
-				sides: 16;
-				operation: GDCSGShape operationSubtraction};
-		useCollision: true;
-		collisionMask: 0;
-			collisionLayer: GRInteractiveArea pointLayer
 ]
 
 { #category : #'as yet unclassified' }

@@ -34,15 +34,14 @@ CB22MethodBrowser >> methodYOffset [
 { #category : #'as yet unclassified' }
 CB22MethodBrowser >> render: props [
 
-	| methods activeClass selectedMethods method nextMethodId browserRotation cylinderMesh center activeMethod sound streamPlayerRef |
+	| methods activeClass selectedMethods method browserRotation cylinderMesh center activeMethod sound streamPlayerRef |
 	activeClass := props at: #activeClass.
 	methods := self
 		useMemo: [activeClass ifNotNil: [((CB22MethodBrowser getClassNamed: activeClass) methodDict values collect: [:sth | sth selector]) sort]]
 		dependencies: {activeClass}.
 	selectedMethods := props at: #methods.
-	nextMethodId := props at: #nextMethodId.
 	activeMethod := props at: #activeMethod.
-	browserRotation := self useState: 0.
+	browserRotation := self useState: 0. 
 	cylinderMesh := self useCylinderMesh.
 	
 	streamPlayerRef := self useGodotRef.
@@ -50,8 +49,7 @@ CB22MethodBrowser >> render: props [
 		useMemo: [GDResourceLoader instance loadPath: 'res://assets/browsing/sounds/dup.wav']
 		dependencies: #().
 	self
-		useMemo: [
-			streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
+		useMemo: [streamPlayerRef ifNotNil: [streamPlayerRef get ifNotNil: [streamPlayerRef get play]]]
 		dependencies: {activeMethod get}.
 	
 	center := props at: #center.

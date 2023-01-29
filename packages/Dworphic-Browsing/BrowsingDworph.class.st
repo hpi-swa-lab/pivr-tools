@@ -27,11 +27,10 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef debugPosition browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
+	| methods areaRef browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
 	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'. nil}}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
-	debugPosition := self useState: 0 @ 0 @ 0.
 	lastCreationEvent := self useRef: nil.
 	nextMethodId := self useState: 1.
 	grabbedMethod := self useState: nil.
@@ -80,10 +79,6 @@ BrowsingDworph >> render: props [
 		CB22DeleteAllButton new methods: methods.
 		self renderSphere: 5 highQuality: highQuality visible: sphereVisible get.
 		browserVisible get ifTrue: [
-			CB22RandomMethodButton new
-			methods: methods;
-			nextMethodId: nextMethodId;
-			lastCreationEvent: lastCreationEvent.
 			CB22PackageBrowser new
 				activePackage: activePackage;
 				center: browserCenter get].
@@ -97,21 +92,7 @@ BrowsingDworph >> render: props [
 				activeClass: activeClass get;
 				activeMethod: activeMethod;
 				methods: methods;
-				nextMethodId: nextMethodId;
 				center: browserCenter get]}
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> renderSphere: radius highQuality: highQuality [
-
-	^ GDCollisionShape new
-		shape: (GDSphereShape new radius: radius);
-		children: (GDMeshInstance new mesh: (GDSphereMesh new
-			material: (GDSpatialMaterial new
-				albedoTexture: (self useSkyTexture: highQuality);
-				paramsCullMode: GDSpatialMaterial cullFront);
-			radius: radius;
-			height: radius * 2); visible: false)
 ]
 
 { #category : #'as yet unclassified' }

@@ -141,16 +141,6 @@ CB22Method >> renderMethodDisplayNear: morph [
 ]
 
 { #category : #'as yet unclassified' }
-CB22Method >> transformAfterBeam [
-
-	| head et transform |
-	head := self useHeadTransform.
-	et := self useProvided: #rightControllerTransform.
-	transform := self transformInSphere: et center: et translation radius: 0.1.
-	^ Matrix4x4 lookAt: head from: transform translate up: 0 @ 1 @ 0
-]
-
-{ #category : #'as yet unclassified' }
 CB22Method >> transformInSphere: et center: c radius: r [
 
 	^ (et forwardRay intersectSphere: c radius: r)
