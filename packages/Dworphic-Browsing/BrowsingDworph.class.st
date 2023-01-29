@@ -27,12 +27,13 @@ BrowsingDworph class >> pinboardRadius [
 { #category : #'as yet unclassified' }
 BrowsingDworph >> render: props [
 
-	| methods areaRef browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
-	methods := self useState: {{1. 'NoClass'. 'debug'. 'self halt'. nil}}.
+	| selectedMethods areaRef browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
+	selectedMethods := self useState: {
+		{#key -> 1. #class -> 'NoClass'. #name -> 'Debug'. #text -> 'self halt'. #initialTransform -> nil} asDictionary}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	lastCreationEvent := self useRef: nil.
-	nextMethodId := self useState: 1.
+	nextMethodId := self useState: 2.
 	grabbedMethod := self useState: nil.
 	activePackage := self useState: nil.
 	activeClass := self useState: nil.
@@ -41,12 +42,14 @@ BrowsingDworph >> render: props [
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
+	"Transcript showln: selectedMethods get."
+	
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
 				browserVisible set: browserVisible get not.
-				methods set: (methods get reject: [:desc | desc first = 0])]]
+				selectedMethods set: (selectedMethods get reject: [:desc | (desc at: #key) = 0])]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
@@ -62,21 +65,17 @@ BrowsingDworph >> render: props [
 	
 	^ GRProvider values: {#areaRef -> areaRef} children: {
 		GDSpatial new children: {
-			methods get collect: [:desc |
+			selectedMethods get collect: [:desc |
 				CB22Method new
-					key: desc first;
-					class: desc second;
-					name: desc third;
-					text: desc fourth;
-					initialTransform: desc fifth;
+					desc: desc;
 					grabbedMethod: grabbedMethod;
-					methods: methods;
+					selectedMethods: selectedMethods;
 					nextMethodId: nextMethodId;
 					lastCreationEvent: lastCreationEvent get]}.
 		CB22TrashCan new
-			methods: methods;
+			selectedMethods: selectedMethods;
 			grabbedMethod: grabbedMethod.
-		CB22DeleteAllButton new methods: methods.
+		CB22DeleteAllButton new selectedMethods: selectedMethods.
 		self renderSphere: 5 highQuality: highQuality visible: sphereVisible get.
 		browserVisible get ifTrue: [
 			CB22PackageBrowser new
@@ -91,7 +90,7 @@ BrowsingDworph >> render: props [
 			CB22MethodBrowser new
 				activeClass: activeClass get;
 				activeMethod: activeMethod;
-				methods: methods;
+				selectedMethods: selectedMethods;
 				center: browserCenter get]}
 ]
 

@@ -39,9 +39,9 @@ CB22MethodBrowser >> render: props [
 	methods := self
 		useMemo: [activeClass ifNotNil: [((CB22MethodBrowser getClassNamed: activeClass) methodDict values collect: [:sth | sth selector]) sort]]
 		dependencies: {activeClass}.
-	selectedMethods := props at: #methods.
+	selectedMethods := props at: #selectedMethods.
 	activeMethod := props at: #activeMethod.
-	browserRotation := self useState: 0. 
+	browserRotation := self useState: 0.
 	cylinderMesh := self useCylinderMesh.
 	
 	streamPlayerRef := self useGodotRef.
@@ -67,7 +67,12 @@ CB22MethodBrowser >> render: props [
 				isActive ifTrue: [
 					activeMethod get = methodName ifFalse: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource. self activeMethodTransform: angle center: center}).
+						selectedMethods set: ((selectedMethods get reject: [:desc | (desc at: #key) = 0]) copyWith: {
+							#key -> 0.
+							#class -> activeClass.
+							#name -> method selector.
+							#text -> method getSource.
+							#initialTransform -> (self activeMethodTransform: angle center: center)} asDictionary).
 						activeMethod set: methodName]].
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;
@@ -77,7 +82,7 @@ CB22MethodBrowser >> render: props [
 					index: index;
 					action: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource. nil}).
+						selectedMethods set: ((selectedMethods get reject: [:desc | (desc at: #key) = 0]) copyWith: {#key -> 0. #class -> activeClass name. #name -> method selector. #text -> method getSource} asDictionary).
 						activeMethod set: methodName];
 					isActive: isActive]].
 		self renderCylinder: (Dictionary withAll: {
