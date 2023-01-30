@@ -38,7 +38,7 @@ VoiceComandsList >> render: props [
 			'help me' -> [
 				commandStrings set: (self intentHandlersKeys: intentHandlers).
 				visible set: true.
-				self halt.]}
+				Transcript showln: 'help me']}
 		key: ' '.
 	
 	^ visible get
@@ -58,12 +58,12 @@ VoiceComandsList >> render: props [
 										rectSize: self resolution;
 										sizeFlagsHorizontal: GDVBoxContainer sizeExpandFill;
 										children: {
-										GDLabel new
-													theme: (GDTheme new defaultFont: (GDDynamicFont new
-														fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
-														size: self fontSize));
-													autowrap: true;
-													text: 'You can say the following commands:'.
+											GDLabel new
+												theme: (GDTheme new defaultFont: (GDDynamicFont new
+													fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+													size: self fontSize));
+												autowrap: true;
+												text: 'You can say the following commands:'.
 											commandStrings get collect: [:entry |
 												GDLabel new
 													theme: (GDTheme new defaultFont: (GDDynamicFont new
@@ -72,7 +72,7 @@ VoiceComandsList >> render: props [
 													autowrap: true;
 													text: entry]}}});
 					meshDo: [:material |
-						GRGrabbableArea new children: {
+						{
 							GDCollisionShape new shape: (GDBoxShape new extents: 1.5 @ 1 @ 0.1).
 							GDMeshInstance new
 								translation: 0 @ 1.5 @ 2;
@@ -84,11 +84,7 @@ VoiceComandsList >> render: props [
 								mesh: (GDQuadMesh new
 									size: 1.5 @ 1;
 									material: material);
-								rotationDegrees: 0 @ 180 @ 0}].
-				GDTimer new
-					autostart: true;
-					waitTime: 10;
-					onTimeout: [visible set: true]}]
+								rotationDegrees: 0 @ 180 @ 0}]}]
 		ifFalse: [{}]
 ]
 

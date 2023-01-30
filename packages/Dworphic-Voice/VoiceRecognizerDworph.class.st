@@ -150,7 +150,7 @@ VoiceRecognizerDworph >> render: props [
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: {'Say "show" to show applications, and "hide" to hide them.'}.
-	 
+	
 	intentHandlers := self useProvided: #voiceIntentHandlers.
 	visible := self useState: false.
 	
@@ -169,7 +169,7 @@ VoiceRecognizerDworph >> render: props [
 	right := self useProvided: #rightControllerTransform.
 	headPortal := self useProvided: #headPortal.
 	distance := head translation distanceTo: right translation.
-	shouldRecord := distance < (0.2 m).
+	shouldRecord := distance < 0.2 m.
 	isVisible := (shouldRecord or: [visible get]) or: [isRecording get].
 	
 	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
@@ -180,10 +180,15 @@ VoiceRecognizerDworph >> render: props [
 		release: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: false]]
 		axisChange: [:e | ]
 		side: #right.
-		
-	self useVoiceIntents: {
-		'undo' -> [undoStackState set: [:s | s ifNotEmpty: [s removeLast value. s copy]]].
-	} key: ''.
+	
+	self
+		useVoiceIntents: {
+			'undo' -> [
+				undoStackState set: [:s |
+					s ifNotEmpty: [
+						s removeLast value.
+						s copy]]]}
+		key: ''.
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
@@ -195,36 +200,27 @@ VoiceRecognizerDworph >> render: props [
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {'No match! Understood: ', (json at: #text)}.
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
-					(matches isEmpty not and: [matches first accuracy > 65]) 
-						ifTrue: [|undoBlocks| 
-							lastText set: {matches first intent}.
-							undoBlocks := self match: matches first on: intentHandlers.
-							undoBlocks do: [:block |
-								undoStackState set: [:s | s add: block. s copy]].
-							]].
+					(matches isEmpty not and: [matches first accuracy > 65]) ifTrue: [ | undoBlocks |
+						lastText set: {matches first intent}.
+						undoBlocks := self match: matches first on: intentHandlers.
+						undoBlocks do: [:block |
+							undoStackState set: [:s |
+								s add: block.
+								s copy]]]].
 			CMFReactNodePortal
-				child: (GDSpatial new children: (isVisible
-					ifTrue: [
-						{self recordingIndicator: isRecording get},
-						{lastText get collectWithIndex: [:t :i |
-							GDLabel3D new
-								text: t;
-								noDepthTest: true;
-								translation: -1.50 @ (-0.2 - (i m / 8)) @ -5;
-								horizontalAlignment: 0;
-								verticalAlignment: 0;
-								width: 400;
-								shaded: true;
-								autowrap: ((i = 0) ifTrue: [true] ifFalse: [false]).
-							]}]
-					ifFalse: [{}]))
+				child: (GDSpatial new children: {self recordingIndicator: isRecording get}, {
+					lastText get collectWithIndex: [:t :i |
+						GDLabel3D new
+							text: t;
+							noDepthTest: true;
+							translation: -1.5 @ (-0.2 - (i m / 8)) @ -5;
+							horizontalAlignment: 0;
+							verticalAlignment: 0;
+							width: 400;
+							shaded: true;
+							autowrap: (i = 0 ifTrue: [true] ifFalse: [false])]})
 				in: headPortal.
-			visible get ifTrue: [
-				GDTimer new
-					autostart: true;
-					waitTime: 15;
-					onTimeout: [visible set: false]].
-			VoiceComandsList new.}]
+			VoiceComandsList new}]
 ]
 
 { #category : #'as yet unclassified' }

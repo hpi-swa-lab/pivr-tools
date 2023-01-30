@@ -15,8 +15,8 @@ VoiceTutorialDworph >> render: props [
 
 	| headPortal |
 	headPortal := self useProvided: #headPortal.
-
-	^ CMFReactNodePortal child: {GRViewportTexture new
+	
+	^ GRViewportTexture new
 		extent: self resolution;
 		children: (GDControl new
 			rectSize: self resolution;
@@ -43,20 +43,14 @@ VoiceTutorialDworph >> render: props [
 									focusMode: GDControl focusAll;
 									subscribeCall: 'grab_focus' with: #() do: []}}});
 		meshDo: [:material |
-			GRGrabbableArea new children: {
-				GDCollisionShape new shape: (GDBoxShape new extents: 1.5 @ 1 @ 0.1).
+			{
+				GDCollisionShape new shape: (GDBoxShape new extents: 1 @ 1 @ 0.1).
 				GDMeshInstance new
-				translation: 0@0@ (-2);
-					mesh: (GDQuadMesh new
-						size: 1.5 @ 1;
-						material: material).
-				GDMeshInstance new
-					translation: 0 @ 1 @ 0;
+					translation: 1 @ 1.1 @ -1;
 					mesh: (GDQuadMesh new
 						size: 1.5 @ 1;
 						material: material);
-					rotationDegrees: 0 @ 180 @ 0}]}
-				in: headPortal.
+					rotationDegrees: 0 @ -30 @ 0}]
 ]
 
 { #category : #'as yet unclassified' }
@@ -67,16 +61,15 @@ VoiceTutorialDworph >> resolution [
 
 { #category : #'as yet unclassified' }
 VoiceTutorialDworph >> tutorialText [
+
 	^ {
-	'Welcome to world builder!'. 
-	'This app allows you to build a world interactively. It is completely voice-controlled. To trigger voice commands, either '.
-	'move either hand to your mouth (like a microphone),'.
-	'or  press "B" on either joystick (thats the main button further away)'.
-	''.
-	'Most objects you can interact with have a label attached to them. Voice commands follow the simple form:'.
-	'"<Label> messageToLabel"'.
-	'If you just say the objects label, it will display all possible voice commands. If you just say "help me", all commands are shown.'.
-	'If you point your finger on an object, you can say its voice commands without the <Label>.'.
-	''.
-	'To close this window, say "tutorial finish".'}
+		'Welcome to world builder!'.
+		'This app allows you to build a world interactively. It is completely voice-controlled. To trigger voice commands, either '.
+		'1. move either hand to your mouth (like a microphone) to record, and move it back away to stop recording.'.
+		'2. or  press "B" on either joystick (thats the main button further away)'.
+		''.
+		'Note: If you say "help me", all commands are shown.'.
+		'If you point on an object, you can see the object''s voice commands and can give them directly.'.
+		''.
+		'To start your journey, say "tutorial finish".'}
 ]

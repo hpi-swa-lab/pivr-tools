@@ -19,7 +19,6 @@ VoiceWorldBuilderDworph >> render: props [
 	self useVoiceIntents: {
 		'finish' -> [showTutorial set: false].
 		'open' -> [showTutorial set: true].
-		'show' -> [showTutorial set: true].
 	} key: 'tutorial'.
 	
 	keyIndex := self useState: 1.
@@ -50,8 +49,6 @@ VoiceWorldBuilderDworph >> render: props [
 			#x -> 20.
 			#z -> 20}).
 		'create sheep' -> (creationBlock value: 'sheep ' value: 'res://assets/voice/sheep/sheep.mesh' value: {#scale -> 0.1 asVector3.}).
-		'open' -> [showTutorial set: true].
-		'show' -> [showTutorial set: true].
 	} key: 'world'. "global commands"
 	
 	^ {
