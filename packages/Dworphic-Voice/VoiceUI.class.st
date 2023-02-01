@@ -41,6 +41,7 @@ VoiceUI >> render: props [
 					horizontalAlignment: 0;
 					verticalAlignment: 0;
 					pixelSize: 0.001;
+					shaded: true;
 					translation: 0 @ 0 @ 0;
 					billboard: GDSpatialMaterial billboardEnabled;
 					noDepthTest: true.

@@ -38,7 +38,7 @@ VoiceTutorialDworph >> render: props [
 												size: self fontSize));
 											autowrap: true;
 											text: entry.
-										GDHSeparator new sizeFlagsHorizontal: GDHSeparator sizeExpandFill}].
+									}].
 								GDControl new
 									focusMode: GDControl focusAll;
 									subscribeCall: 'grab_focus' with: #() do: []}}});

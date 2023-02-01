@@ -209,7 +209,7 @@ VoiceRecognizerDworph >> render: props [
 								s copy]]]].
 			CMFReactNodePortal
 				child: (GDSpatial new children: {self recordingIndicator: isRecording get}, {
-					lastText get collectWithIndex: [:t :i |
+					(isRecording get ifTrue: [{'Recording...'}] ifFalse: [lastText get]) collectWithIndex: [:t :i |
 						GDLabel3D new
 							text: t;
 							noDepthTest: true;

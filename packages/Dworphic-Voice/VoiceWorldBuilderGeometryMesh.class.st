@@ -13,7 +13,7 @@ Class {
 { #category : #'as yet unclassified' }
 VoiceWorldBuilderGeometryMesh >> render: props [
 
-	| key delete meshUrl hovered voiceIntents x y z mesh aabb scale yRotation other xRotation zRotation ref |
+	| key delete meshUrl hovered voiceIntents x y z mesh aabb scale yRotation other xRotation zRotation ref controllerTransform floorRef |
 	key := props at: #key.
 	delete := props at: #delete.
 	meshUrl := props at: #meshUrl.
@@ -32,7 +32,15 @@ VoiceWorldBuilderGeometryMesh >> render: props [
 	
 	hovered := self useState: false.
 	
+	controllerTransform := self useProvided: #rightControllerTransform.
+	floorRef := self useProvided: #floorRef.
+	
 	voiceIntents := {
+		'move bitch' -> [ | intersection |
+			"wip doesnt work because always empty"
+				intersection := floorRef get getWorld directSpaceState intersectRayFrom: controllerTransform forwardRay origin to: (controllerTransform forwardRay pointFromOrigin: 30 m).
+				intersection ifNotEmpty: [:is | is at: 'position'. self halt] ifEmpty: [self halt.]
+			].
 		'x \num' -> [:num | | xOld |
 			xOld := x get.
 			x set: [:old | (num ifNil: [xOld]) asNumber].
