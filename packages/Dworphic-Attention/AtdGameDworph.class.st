@@ -20,19 +20,23 @@ AtdGameDworph >> render: props [
 { #category : #'as yet unclassified' }
 AtdGameDworph >> renderFull: props [
 
-	| trees |
+	| trees hits |
+	hits := self useState: 0.
+	
 	trees := self
 		useMemo: [
 			Array streamContents: [:stream |
 				56 timesRepeat: [
 					stream nextPut: {
-						#position -> (Point r: (10 to: 30) atRandom degrees: 360 atRandom).
+						#position -> (Point r: (5 to: 20) atRandom degrees: 360 atRandom).
 						#scale -> (1.0 mix: 1.3 alpha: ThreadSafeRandom next).
-						#rotaion -> 360 atRandom}]]]
+						#rotaion -> 360 atRandom.
+						#onHitCallback -> [hits set: (hits get) + 1. Transcript showln: 'Hit']
+						}]]]
 		dependencies: {}.
-	^ {
-		GDStaticBody new children: (self cubeOfSize: 30 @ 0.1 @ 30 color: (Color r: 0.542 g: 0.321 b: 0.134)).
-		AtdBowDworph new}, (trees collect: [:tree | AtdTreeDworph new props: (tree as: Dictionary)])
+	^ {GDStaticBody new children: (self cubeOfSize: 30 @ 0.1 @ 30 color: (Color r: 0.542 g: 0.321 b: 0.134)).
+		AtdBowDworph new}, (trees collect: [:tree | AtdTreeDworph new props: (tree as: Dictionary)]),
+		{(hits get >= 5) ifTrue: [NotificationDworph new message: 'You won!']}
 ]
 
 { #category : #'as yet unclassified' }

@@ -60,7 +60,7 @@ LogDworph >> render: props [
 									subscribeCall: 'grab_focus' with: #() do: []}}});
 		meshDo: [:material |
 			GRGrabbableArea new children: {
-				GDCollisionShape new shape: (GDBoxShape new extents: 1.5 @ 1 @ 0.1).
+				GDCollisionShape new shape: (GDBoxShape new extents: 0.75 @ 0.5 @ 0.1); translation: 0 @ 1 @ 0.
 				GDMeshInstance new
 				translation: 0@1@0;
 					mesh: (GDQuadMesh new
