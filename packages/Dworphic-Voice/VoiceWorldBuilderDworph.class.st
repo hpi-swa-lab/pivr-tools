@@ -30,7 +30,15 @@ VoiceWorldBuilderDworph >> centerSize [
 { #category : #seasonalFloor }
 VoiceWorldBuilderDworph >> floorWithColor: aColor [
 
-	^ self cubeOfSize: self centerSize @ (-1 cm) @ self centerSize * 10 color: aColor
+	^ (self cubeOfSize: 100m @ 1cm @ 100m color: aColor) translation: 0 @ -0.5cm @ 0
+]
+
+{ #category : #seasonalFloor }
+VoiceWorldBuilderDworph >> light [
+
+	^ GDDirectionalLight new
+		shadowEnabled: true;
+		transform: (Matrix4x4 lookAt: 0 @ 0 @ 0 from: 10 @ 10 @ 10 up: 0 @ 1 @ 0)
 ]
 
 { #category : #'as yet unclassified' }
@@ -82,6 +90,10 @@ VoiceWorldBuilderDworph >> render: props [
 				value: 'sheep '
 				value: 'res://assets/voice/sheep/sheep.mesh'
 				value: {#scale -> 0.1 asVector3}).
+			'create daniel' -> (creationBlock
+				value: 'daniel '
+				value: 'res://assets/voice/daniel/daniel.mesh'
+				value: {#y -> 1.5. #scale -> 1. #xRotation -> (-63 degreesToRadians). #yRotation -> Float halfPi. #zRotation -> Float halfPi negated.}).
 			'season winter' -> [ | oldFloor oldSky |
 				oldFloor := floorColor get.
 				floorColor set: self winterColor.
@@ -116,7 +128,8 @@ VoiceWorldBuilderDworph >> render: props [
 	} children: {
 		showTutorial get ifTrue: [VoiceTutorialDworph new].
 		elements get.
-		GDSpatial new children: {self floorWithColor: floorColor get}; ref: floorRef.
+		GDStaticBody new children: {self floorWithColor: floorColor get}; ref: floorRef.
+		self light.
 		GDWorldEnvironment new environment: (GDEnvironment new
 			backgroundMode: 2;
 			backgroundSky: sky get;

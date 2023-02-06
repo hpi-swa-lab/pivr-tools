@@ -146,7 +146,7 @@ VoiceRecognizerDworph >> recordingIndicator: aBoolean [
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible undoStackState |
+	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible undoStackState font |
 	isRecording := self useState: false.
 	script := self useState: nil.
 	lastText := self useState: {'Say "show" to show applications, and "hide" to hide them.'}.
@@ -189,6 +189,8 @@ VoiceRecognizerDworph >> render: props [
 						s removeLast value.
 						s copy]]]}
 		key: ''.
+		
+	font := self useProvided: #dejaVuSansOutline.
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
@@ -212,12 +214,13 @@ VoiceRecognizerDworph >> render: props [
 					(isRecording get ifTrue: [{'Recording...'}] ifFalse: [lastText get]) collectWithIndex: [:t :i |
 						GDLabel3D new
 							text: t;
+							font: font;
 							noDepthTest: true;
 							translation: -1.5 @ (-0.2 - (i m / 8)) @ -5;
 							horizontalAlignment: 0;
+							outlineModulate: Color black;
 							verticalAlignment: 0;
 							width: 400;
-							shaded: true;
 							autowrap: (i = 0 ifTrue: [true] ifFalse: [false])]})
 				in: headPortal.
 			VoiceComandsList new}]

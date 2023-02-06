@@ -16,13 +16,15 @@ VoiceUI >> reduce: aCollectionOfStrings [
 VoiceUI >> render: props [
 
 	| text |
-	^ props extract: [:key :voiceIntents :hovered :rest | | handlers handlersKeys showKeys |
+	^ props extract: [:key :voiceIntents :hovered :rest | | handlers handlersKeys showKeys font |
 		handlers := self useProvided: #voiceIntentHandlers.
 		handlersKeys := (handlers get gather: [:ref | ref get keys]) 
 			select: [:intents | intents beginsWith: key].
 		
 		showKeys := self useState: false.
 		text := self useState: key.
+		
+		font := self useProvided: #dejaVuSansOutline.
 	
 		GDSpatial new
 			setAll: rest;
@@ -37,11 +39,11 @@ VoiceUI >> render: props [
 					text: ((showKeys get or: [hovered]) 
 						ifTrue: [self reduce: handlersKeys] 
 						ifFalse: [key]);
+					font: font;
 					fixedSize: true;
 					horizontalAlignment: 0;
 					verticalAlignment: 0;
 					pixelSize: 0.001;
-					shaded: true;
 					translation: 0 @ 0 @ 0;
 					billboard: GDSpatialMaterial billboardEnabled;
 					noDepthTest: true.

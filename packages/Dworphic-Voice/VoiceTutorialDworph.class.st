@@ -64,12 +64,15 @@ VoiceTutorialDworph >> tutorialText [
 
 	^ {
 		'Welcome to world builder!'.
-		'This app allows you to build a world interactively. It is completely voice-controlled. To trigger voice commands, either '.
-		'1. move either hand to your mouth (like a microphone) to record, and move it back away to stop recording.'.
-		'2. or  press "B" on either joystick (thats the main button further away)'.
+		'This app allows you to build a world interactively. It is completely voice-controlled. To trigger voice commands, press "B" on the right joystick (thats the main button further away)'.
 		''.
-		'Note: If you say "help me", all commands are shown.'.
-		'If you point on an object, you can see the object''s voice commands and can give them directly.'.
+		'Each object has an id, which is visible near the red dot of the object.'.''.
 		''.
-		'To start your journey, say "tutorial finish".'}
+		'All commands follow the pattern <object id> <message>'.
+		''.
+		'If you point on an object, you can see the objects voice commands and can give them directly without saying the object id.'.
+		''.
+		'To close this window, say "tutorial finish".'.
+		''.
+		'To open an overview of all commands, say "help me".'}
 ]
