@@ -4,7 +4,7 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22TrashCan >> render: props [
 
 	| selectedMethods grabbedMethod trashCanMesh |
@@ -29,13 +29,13 @@ CB22TrashCan >> render: props [
 		transform: (Matrix4x4 withOffset: self trashCanPosition)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22TrashCan >> trashCanPosition [
 
 	^ 1 @ 0 @ 0.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 CB22TrashCan >> useTrashCanMesh [
 
 	^ self

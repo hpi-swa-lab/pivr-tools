@@ -4,7 +4,7 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 FormDworph >> render: props [
 
 	^ props extract: [:form :morph :rest | | texture image actualForm |

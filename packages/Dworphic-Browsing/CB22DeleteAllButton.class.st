@@ -4,7 +4,7 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22DeleteAllButton >> render: props [
 
 	| selectedMethods |
