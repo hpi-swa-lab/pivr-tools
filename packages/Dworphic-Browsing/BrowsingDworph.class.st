@@ -24,7 +24,7 @@ BrowsingDworph class >> pinboardRadius [
 	^ 1.5
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 BrowsingDworph >> render: props [
 
 	| selectedMethods areaRef browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
@@ -94,7 +94,7 @@ BrowsingDworph >> render: props [
 				center: browserCenter get]}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 BrowsingDworph >> renderSphere: radius highQuality: highQuality visible: visible [
 
 	^ GDCollisionShape new
@@ -107,7 +107,7 @@ BrowsingDworph >> renderSphere: radius highQuality: highQuality visible: visible
 			height: radius * 2); visible: visible)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 BrowsingDworph >> useSkyTexture: highQuality [
 
 	^ self
@@ -118,7 +118,7 @@ BrowsingDworph >> useSkyTexture: highQuality [
 		dependencies: #()
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 BrowsingDworph >> useStyledTextMorph: text [
 
 	^ self useMemo: [(SHTextStylerST80 new
@@ -126,23 +126,4 @@ BrowsingDworph >> useStyledTextMorph: text [
 				styledTextFor: text asText) asMorph
 				backgroundColor: Color white;
 				yourself] dependencies: {text}
-]
-
-{ #category : #'as yet unclassified' }
-BrowsingDworph >> useWinterTexture: highQuality image: image [
-
-	^ self
-		useMemo: [
-			GDResourceLoader instance loadPath: (highQuality
-				ifTrue: [
-					image = 'landscape'
-						ifTrue: ['res://assets/assets-large/winter_landscape_high_res.png']
-						ifFalse: ['res://assets/assets-large/winter_church_high_res.jpg']]
-				ifFalse: [
-					image = 'church'
-					ifTrue: ['res://assets/assets-large/winter_church_low_res.jpg']
-					ifFalse: ['res://assets/assets-large/winter_landscape_low_res.jpg']]
-			)
-		]
-		dependencies: #()
 ]

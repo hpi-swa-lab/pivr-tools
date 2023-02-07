@@ -4,7 +4,7 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22RandomMethodButton >> render: props [
 
 	| lastCreationEvent nextMethodId selectedMethods sourceClass |

@@ -4,13 +4,13 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #utilities }
 CB22MethodBrowser class >> getClassNamed: name [
 
 	^ Environment current classNamed: name 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22MethodBrowser >> activeMethodTransform: angle center: center [
 	"(Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: angle center: center)) translatedBy: 0 @ self methodYOffset @ 0"
 
@@ -25,13 +25,13 @@ CB22MethodBrowser >> activeMethodTransform: angle center: center [
 		around: 0 @ 1 @ 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22MethodBrowser >> methodYOffset [
 	
 	^ self yOffset + 20cm
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22MethodBrowser >> render: props [
 
 	| methods activeClass selectedMethods method browserRotation cylinderMesh center activeMethod sound streamPlayerRef newMethodSpec |
@@ -93,7 +93,7 @@ CB22MethodBrowser >> render: props [
 			#browserRotationSetter -> browserRotation setter})}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 CB22MethodBrowser >> useCylinderMesh [
 
 	^ self
@@ -101,7 +101,7 @@ CB22MethodBrowser >> useCylinderMesh [
 		dependencies: #()
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22MethodBrowser >> yOffset [
 
 	^ 15 cm

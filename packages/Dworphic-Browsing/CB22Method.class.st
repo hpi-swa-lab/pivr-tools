@@ -4,13 +4,13 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22Method >> collisionShape [
 
 	^ (self godot: #BoxShape) extents: 0.06 @ 0.015 @ 0.07 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'morph handling' }
 CB22Method >> getTextMorphExtent: morph [
 
 	| extent |
@@ -18,13 +18,13 @@ CB22Method >> getTextMorphExtent: morph [
 	^ 0.015 @ (extent x * 0.0005) @ (extent y * 0.0005) 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'morph handling' }
 CB22Method >> getTextMorphShape: morph [
 
 	^ (self godot: #BoxShape) extents: (self getTextMorphExtent: morph) 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> render: props [
 
 	| grabbed desc text pressed morph world transform t et onPinboard endGrab api name grabbedMethod key colorMode class initialTransform |
@@ -55,7 +55,6 @@ CB22Method >> render: props [
 	
 	et := self useProvided: #rightControllerTransform.
 	t := self transformOnPinboard: et.
-	"self halt."
 	
 	self
 		useEffect: [
@@ -101,7 +100,6 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
-			Transcript showln: 'Method >> onGrab'.
 			key = 0
 				ifTrue: [ | newId selectedMethods |
 					"Method is active method by browser"
@@ -131,7 +129,7 @@ CB22Method >> render: props [
 			grabbed set: false]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> renderCollisionShape: morph [
 
 	^ GDCollisionShape new
@@ -139,7 +137,7 @@ CB22Method >> renderCollisionShape: morph [
 		rotation: 4.2 @ 0 @ Float pi / 2
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> renderMethodDisplayFar: name extent: e [
 
 	^ GDLabel3D new
@@ -151,7 +149,7 @@ CB22Method >> renderMethodDisplayFar: name extent: e [
 		rotation: 0.4 @ 0 @ 0 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> renderMethodDisplayNear: morph [
 
 	^ FormDworph new
@@ -160,7 +158,7 @@ CB22Method >> renderMethodDisplayNear: morph [
 		translation: 0 @ 0.017 @ 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22Method >> transformInSphere: et center: c radius: r [
 
 	^ (et forwardRay intersectSphere: c radius: r)
@@ -168,7 +166,7 @@ CB22Method >> transformInSphere: et center: c radius: r [
 		ifNil: [Matrix4x4 identity]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22Method >> transformOnPinboard: handTransform [
 
 	^ (handTransform forwardRay
@@ -178,7 +176,7 @@ CB22Method >> transformOnPinboard: handTransform [
 		ifNil: [Matrix4x4 identity]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 CB22Method >> useStyledTextMorph: text [
 
 	^ self
