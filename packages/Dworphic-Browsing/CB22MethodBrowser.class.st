@@ -4,13 +4,13 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #utilities }
+{ #category : #'as yet unclassified' }
 CB22MethodBrowser class >> getClassNamed: name [
 
 	^ Environment current classNamed: name 
 ]
 
-{ #category : #transform }
+{ #category : #'as yet unclassified' }
 CB22MethodBrowser >> activeMethodTransform: angle center: center [
 	"(Matrix4x4 withOffset: (self pointOnCircle: self circleRadius angle: angle center: center)) translatedBy: 0 @ self methodYOffset @ 0"
 
@@ -25,7 +25,7 @@ CB22MethodBrowser >> activeMethodTransform: angle center: center [
 		around: 0 @ 1 @ 0
 ]
 
-{ #category : #constants }
+{ #category : #'as yet unclassified' }
 CB22MethodBrowser >> methodYOffset [
 	
 	^ self yOffset + 20cm
@@ -34,14 +34,14 @@ CB22MethodBrowser >> methodYOffset [
 { #category : #'as yet unclassified' }
 CB22MethodBrowser >> render: props [
 
-	| methods activeClass selectedMethods method browserRotation cylinderMesh center activeMethod sound streamPlayerRef |
+	| methods activeClass selectedMethods method browserRotation cylinderMesh center activeMethod sound streamPlayerRef newMethodSpec |
 	activeClass := props at: #activeClass.
 	methods := self
 		useMemo: [activeClass ifNotNil: [((CB22MethodBrowser getClassNamed: activeClass) methodDict values collect: [:sth | sth selector]) sort]]
 		dependencies: {activeClass}.
-	selectedMethods := props at: #methods.
+	selectedMethods := props at: #selectedMethods.
 	activeMethod := props at: #activeMethod.
-	browserRotation := self useState: 0. 
+	browserRotation := self useState: 0.
 	cylinderMesh := self useCylinderMesh.
 	
 	streamPlayerRef := self useGodotRef.
@@ -67,7 +67,14 @@ CB22MethodBrowser >> render: props [
 				isActive ifTrue: [
 					activeMethod get = methodName ifFalse: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource. self activeMethodTransform: angle center: center}).
+						newMethodSpec := CB22MethodSpec new
+							key: 0;
+							class: activeClass;
+							name: method selector;
+							text: method getSource;
+							initialTransform: (self activeMethodTransform: angle center: center);
+							yourself.
+						selectedMethods set: ((selectedMethods get reject: [:desc | (desc key) = 0]) copyWith: newMethodSpec).
 						activeMethod set: methodName]].
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;
@@ -77,7 +84,7 @@ CB22MethodBrowser >> render: props [
 					index: index;
 					action: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | desc first == 0]) copyWith: {0. activeClass name. method selector. method getSource. nil}).
+						selectedMethods set: ((selectedMethods get reject: [:desc | (desc at: #key) = 0]) copyWith: (CB22MethodSpec fromKey: 0 Class: activeClass name Name: method selector text: method getSource)).
 						activeMethod set: methodName];
 					isActive: isActive]].
 		self renderCylinder: (Dictionary withAll: {
@@ -86,7 +93,7 @@ CB22MethodBrowser >> render: props [
 			#browserRotationSetter -> browserRotation setter})}
 ]
 
-{ #category : #resources }
+{ #category : #'as yet unclassified' }
 CB22MethodBrowser >> useCylinderMesh [
 
 	^ self
@@ -94,7 +101,7 @@ CB22MethodBrowser >> useCylinderMesh [
 		dependencies: #()
 ]
 
-{ #category : #constants }
+{ #category : #'as yet unclassified' }
 CB22MethodBrowser >> yOffset [
 
 	^ 15 cm

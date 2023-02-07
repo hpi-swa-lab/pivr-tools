@@ -4,7 +4,7 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #rendering }
+{ #category : #'as yet unclassified' }
 CB22Button >> render: props [
 
 	| areaRef |
