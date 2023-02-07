@@ -35,7 +35,7 @@ CB22Method >> render: props [
 	desc := props at: #desc.
 	text := desc text.
 	key := desc key.
-	class := desc class.
+	class := desc className.
 	name := desc name.
 	initialTransform := desc initialTransform ifNil: [
 		Matrix4x4 identity
@@ -66,7 +66,7 @@ CB22Method >> render: props [
 				(api at: #startGrab) value: e.
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
 				grabbed set: true]]
-		dependencies: {}. 
+		dependencies: {}.
 	
 	^ GRGrabbableArea new
 		api: api;
@@ -109,13 +109,12 @@ CB22Method >> render: props [
 					selectedMethods := props at: #selectedMethods.
 					selectedMethods set: ((selectedMethods get reject: [:d | d key = 0]) copyWith: (CB22MethodSpec new
 						key: key;
-						class: class;
+						className: class;
 						name: name;
 						text: text;
 						initialTransform: initialTransform;
 						grabEvent: e;
-						yourself)).
-					Transcript showln: selectedMethods get]
+						yourself))]
 				ifFalse: [
 					onPinboard get ifTrue: [
 						onPinboard set: false.

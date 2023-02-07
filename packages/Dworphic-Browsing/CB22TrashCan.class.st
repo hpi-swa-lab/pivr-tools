@@ -10,13 +10,13 @@ CB22TrashCan >> render: props [
 	| selectedMethods grabbedMethod trashCanMesh |
 	selectedMethods := props at: #selectedMethods.
 	grabbedMethod := props at: #grabbedMethod.
-	trashCanMesh := self useTrashCanMesh.
+	trashCanMesh := self useTrashCanMesh. 
 	
 	^ GRInteractiveArea new
 		onButtonRelease: [:e |
 			e isGrip ifTrue: [
 				e handle ifNotNil: [
-					selectedMethods set: [:list | list reject: [:method | (method key) = e handle]].
+					selectedMethods set: [:list | list reject: [:method | method key = e handle]].
 					grabbedMethod set: nil]]];
 		children: {
 			GDCollisionShape new shape: (GDCylinderShape new
@@ -32,7 +32,7 @@ CB22TrashCan >> render: props [
 { #category : #constants }
 CB22TrashCan >> trashCanPosition [
 
-	^ 1 @ 0 @ 0.
+	^ 1 @ 0 @ 0 
 ]
 
 { #category : #resources }
@@ -40,5 +40,5 @@ CB22TrashCan >> useTrashCanMesh [
 
 	^ self
 		useMemo: [GDResourceLoader instance loadPath: 'res://assets/models/trash_can/trash_can.tres']
-		dependencies: #()
+		dependencies: #() 
 ]

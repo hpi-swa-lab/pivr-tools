@@ -28,7 +28,7 @@ BrowsingDworph class >> pinboardRadius [
 BrowsingDworph >> render: props [
 
 	| selectedMethods areaRef browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
-	selectedMethods := self useState: {CB22MethodSpec fromKey: 1 Class: 'No class' Name: 'noMethodName' text: 'self halt.'}.
+	selectedMethods := self useState: {CB22MethodSpec fromKey: 1 class: 'No class' name: 'noMethodName' text: 'self halt.'}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	lastCreationEvent := self useRef: nil.

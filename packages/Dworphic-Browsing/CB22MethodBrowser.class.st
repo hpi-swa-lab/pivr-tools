@@ -66,15 +66,15 @@ CB22MethodBrowser >> render: props [
 				isActive := angle abs < (360 / methods size).
 				isActive ifTrue: [
 					activeMethod get = methodName ifFalse: [
-						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
+						method := (self class getClassNamed: activeClass) methodDict at: methodName.
 						newMethodSpec := CB22MethodSpec new
 							key: 0;
-							class: activeClass;
+							className: activeClass;
 							name: method selector;
 							text: method getSource;
 							initialTransform: (self activeMethodTransform: angle center: center);
 							yourself.
-						selectedMethods set: ((selectedMethods get reject: [:desc | (desc key) = 0]) copyWith: newMethodSpec).
+						selectedMethods set: ((selectedMethods get reject: [:desc | desc key = 0]) copyWith: newMethodSpec).
 						activeMethod set: methodName]].
 				(self methodAsComponent: #renderChoice:)
 					choice: methodName;
@@ -84,7 +84,7 @@ CB22MethodBrowser >> render: props [
 					index: index;
 					action: [
 						method := (CB22MethodBrowser getClassNamed: activeClass) methodDict at: methodName.
-						selectedMethods set: ((selectedMethods get reject: [:desc | (desc at: #key) = 0]) copyWith: (CB22MethodSpec fromKey: 0 Class: activeClass name Name: method selector text: method getSource)).
+						selectedMethods set: ((selectedMethods get reject: [:desc | (desc at: #key) = 0]) copyWith: (CB22MethodSpec fromKey: 0 class: activeClass name name: method selector text: method getSource)).
 						activeMethod set: methodName];
 					isActive: isActive]].
 		self renderCylinder: (Dictionary withAll: {

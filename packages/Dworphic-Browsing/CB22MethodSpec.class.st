@@ -5,7 +5,7 @@ Class {
 		'name',
 		'text',
 		'key',
-		'class',
+		'className',
 		'initialTransform',
 		'grabEvent'
 	],
@@ -13,24 +13,24 @@ Class {
 }
 
 { #category : #'instance creation' }
-CB22MethodSpec class >> fromKey: key Class: class Name: name text: text [
+CB22MethodSpec class >> fromKey: key class: class name: name text: text [
 
 	^ CB22MethodSpec new
 		key: key;
-		class: class;
+		className: class;
 		name: name;
 		text: text;
 		yourself
 ]
 
 { #category : #accessing }
-CB22MethodSpec >> class [
+CB22MethodSpec >> className [
 
 	^ class
 ]
 
 { #category : #accessing }
-CB22MethodSpec >> class: aClassName [
+CB22MethodSpec >> className: aClassName [
 
 	class := aClassName
 ]
