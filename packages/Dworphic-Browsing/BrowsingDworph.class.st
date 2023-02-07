@@ -28,8 +28,7 @@ BrowsingDworph class >> pinboardRadius [
 BrowsingDworph >> render: props [
 
 	| selectedMethods areaRef browserVisible highQuality os lastCreationEvent nextMethodId grabbedMethod activePackage activeClass browserCenter headTransformRef activeMethod sphereVisible |
-	selectedMethods := self useState: {
-		{#key -> 1. #class -> 'NoClass'. #name -> 'Debug'. #text -> 'self halt'. #initialTransform -> nil} asDictionary}.
+	selectedMethods := self useState: {CB22MethodSpec fromKey: 1 Class: 'No class' Name: 'noMethodName' text: 'self halt.'}.
 	browserVisible := self useState: false.
 	areaRef := self useGodotRef.
 	lastCreationEvent := self useRef: nil.
@@ -49,7 +48,7 @@ BrowsingDworph >> render: props [
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
 				browserVisible set: browserVisible get not.
-				selectedMethods set: (selectedMethods get reject: [:desc | (desc at: #key) = 0])]]
+				selectedMethods set: (selectedMethods get reject: [:desc | (desc key) = 0])]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.
@@ -68,6 +67,7 @@ BrowsingDworph >> render: props [
 			selectedMethods get collect: [:desc |
 				CB22Method new
 					desc: desc;
+					key: desc key;
 					grabbedMethod: grabbedMethod;
 					selectedMethods: selectedMethods;
 					nextMethodId: nextMethodId;

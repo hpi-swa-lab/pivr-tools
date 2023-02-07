@@ -16,7 +16,7 @@ CB22TrashCan >> render: props [
 		onButtonRelease: [:e |
 			e isGrip ifTrue: [
 				e handle ifNotNil: [
-					selectedMethods set: [:list | list reject: [:method | (method at: #key) = e handle]].
+					selectedMethods set: [:list | list reject: [:method | (method key) = e handle]].
 					grabbedMethod set: nil]]];
 		children: {
 			GDCollisionShape new shape: (GDCylinderShape new

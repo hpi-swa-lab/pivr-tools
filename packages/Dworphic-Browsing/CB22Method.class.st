@@ -33,11 +33,11 @@ CB22Method >> render: props [
 	world := self useWorldPortal.
 	
 	desc := props at: #desc.
-	text := desc at: #text.
-	key := desc at: #key.
-	class := desc at: #class.
-	name := desc at: #name.
-	initialTransform := desc at: #initialTransform ifAbsent: [
+	text := desc text.
+	key := desc key.
+	class := desc class.
+	name := desc name.
+	initialTransform := desc initialTransform ifNil: [
 		Matrix4x4 identity
 			rotation: -180 around: 1 @ 0 @ 0;
 			rotation: 180 around: 0 @ 1 @ 0;
@@ -66,6 +66,7 @@ CB22Method >> render: props [
 				(api at: #startGrab) value: e.
 				grabbed set: true]"
 		"]"
+		
 		]
 		dependencies: {}.
 	
@@ -101,7 +102,6 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
-			self halt.
 			Transcript showln: 'Method >> onGrab'.
 			key = 0
 				ifTrue: [ | newId selectedMethods |
@@ -110,13 +110,14 @@ CB22Method >> render: props [
 					(props at: #nextMethodId) set: newId + 1.
 					key := newId.
 					selectedMethods := props at: #selectedMethods.
-					selectedMethods set: ((selectedMethods get reject: [:d | (d at: #key) = 0]) copyWith: {
-						#key -> key.
-						#class -> class.
-						#name -> name.
-						#text -> text.
-						#initialTransform -> transform get.
-						#grabEvent -> e} asDictionary).
+					selectedMethods set: ((selectedMethods get reject: [:d | d key = 0]) copyWith: (CB22MethodSpec new
+						key: key;
+						class: class;
+						name: name;
+						text: text;
+						initialTransform: initialTransform;
+						grabEvent: e;
+						yourself)).
 					Transcript showln: selectedMethods get]
 				ifFalse: [
 					onPinboard get ifTrue: [

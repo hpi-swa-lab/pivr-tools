@@ -20,11 +20,7 @@ CB22RandomMethodButton >> render: props [
 				selectedMethods set: [:old | | method |
 					nextMethodId set: nextMethodId get + 1.
 					method := (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value.
-					old copyWith: {
-						#key -> nextMethodId get.
-						#class -> sourceClass name.
-						#name -> method selector.
-						#text -> method getSource asString} asDictionary]]];
+					old CB22MethodSpec fromKey: nextMethodId get Class: sourceClass name Name: method selector text: method getSource asString]]];
 		children: {
 			self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color bubblegum.
 			GDLabel3D new
