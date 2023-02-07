@@ -24,29 +24,27 @@ CB22Method >> getTextMorphShape: morph [
 	^ (self godot: #BoxShape) extents: (self getTextMorphExtent: morph) 
 ]
 
-{ #category : #rendering }
+{ #category : #'as yet unclassified' }
 CB22Method >> render: props [
 
-	| grabbed desc text pressed morph world transform t et onPinboard endGrab api name grabbedMethod key colorMode class initialTransform |
+	| grabbed text pressed morph world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode class initialTransform |
 	grabbed := self useState: false.
 	pressed := self useState: false.
+	initialized := self useState: false.
 	world := self useWorldPortal.
+	text := (props at: #text) value.
+	name := (props at: #name) value.
+	grabbedMethod := (props at: #grabbedMethod) value.
+	key := props at: #key.
+	class := props at: #class.
+	morph := self useStyledTextMorph: text.
 	
-	desc := props at: #desc.
-	text := desc text.
-	key := desc key.
-	class := desc class.
-	name := desc name.
-	initialTransform := desc initialTransform ifNil: [
+	initialTransform := props at: #initialTransform ifAbsent: [
 		Matrix4x4 identity
 			rotation: -180 around: 1 @ 0 @ 0;
 			rotation: 180 around: 0 @ 1 @ 0;
 			translation: 0 @ 1.5 @ 0.5].
 	transform := self useState: initialTransform.
-	
-	grabbedMethod := (props at: #grabbedMethod) value.
-	
-	morph := self useStyledTextMorph: text.
 	
 	onPinboard := self useState: false.
 	endGrab := self useRef: nil.
@@ -55,19 +53,13 @@ CB22Method >> render: props [
 	
 	et := self useProvided: #rightControllerTransform.
 	t := self transformOnPinboard: et.
-	
 	self
 		useEffect: [
-			"(props at: #lastCreationEvent) ifNotNil: [
+			(props at: #lastCreationEvent) ifNotNil: [
 				(api at: #startGrab) value: (props at: #lastCreationEvent).
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
-				grabbed set: true"
-			desc grabEvent ifNotNil: [:e |
-				(api at: #startGrab) value: e.
-				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
 				grabbed set: true]]
-		dependencies: {}. 
-	
+		dependencies: {}.
 	^ GRGrabbableArea new
 		api: api;
 		point: onPinboard get;
@@ -100,29 +92,19 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
-			key = 0
-				ifTrue: [ | newId selectedMethods |
-					"Method is active method by browser"
-					newId := (props at: #nextMethodId) get.
-					(props at: #nextMethodId) set: newId + 1.
-					key := newId.
-					selectedMethods := props at: #selectedMethods.
-					selectedMethods set: ((selectedMethods get reject: [:d | d key = 0]) copyWith: (CB22MethodSpec new
-						key: key;
-						class: class;
-						name: name;
-						text: text;
-						initialTransform: initialTransform;
-						grabEvent: e;
-						yourself)).
-					Transcript showln: selectedMethods get]
-				ifFalse: [
-					onPinboard get ifTrue: [
-						onPinboard set: false.
-						(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
-					grabbed set: true.
-					colorMode set: 'grabbed'.
-					grabbedMethod set: key]];
+			key == 0 ifTrue: [ | newId methods |
+				"Method is active method by browser"
+				newId := (props at: #nextMethodId) get.
+				(props at: #nextMethodId) set: newId + 1.
+				key := newId.
+				methods := props at: #methods.
+				methods set: ((methods get reject: [:desc | desc first == 0]) copyWith: {key. class. name. text. transform get})].
+			onPinboard get ifTrue: [
+				onPinboard set: false.
+				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
+			grabbed set: true.
+			colorMode set: 'grabbed'.
+			grabbedMethod set: key];
 		onRelease: [:e |
 			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].

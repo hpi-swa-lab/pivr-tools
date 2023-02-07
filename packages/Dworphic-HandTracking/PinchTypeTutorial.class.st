@@ -21,8 +21,9 @@ PinchTypeTutorial >> render: props [
 	currentStage := self useState: 1.
 	changePhase := [currentStage set: [:val | val. val + 1]].
 
-	^ GDSpatial new translation: 0 @ 170cm @ 0cm; children: {	
+	^ GDSpatial new translation:-40cm @ 170cm @ 0cm; rotation: 0@1.6@0;children: {	
 		(self cubeOfSize: 120 cm @ 120 cm @ 1 cm color: Color lightGray).
+		"Using methodAsComponent allows us to dynamically render tutorial phases based on the defined value in currentStage."
 		(self methodAsComponent: ('renderPhase',currentStage get,':') asSymbol) onPhaseChange: changePhase.
 	}
 
@@ -34,8 +35,10 @@ PinchTypeTutorial >> renderContinueButton: props [
 	isHovered := self useState: false.
 	hasBeenUsed := self useState: false.
 	^ props extract: [:onPhaseChange | 
+		"The continueButton serves as a one-time-use trigger to switch to a new tutorial phase."
 		GRInteractiveArea new translation: 0 @ -50cm @ 1cm; onButtonPress: [
 				hasBeenUsed get ifFalse:[
+					"We want to avoid triggering the button multiple times."
 					hasBeenUsed set: true.
 					onPhaseChange value.
 					].
@@ -55,6 +58,7 @@ PinchTypeTutorial >> renderContinueButton: props [
 
 { #category : #'as yet unclassified' }
 PinchTypeTutorial >> renderPhase1: props [
+"Move to next phase once user activates the continueButton"
 
 	^ props extract: [:onPhaseChange | 
 		{
@@ -71,6 +75,7 @@ PinchTypeTutorial >> renderPhase1: props [
 
 { #category : #'as yet unclassified' }
 PinchTypeTutorial >> renderPhase2: props [
+"Move to next phase once user learns about TextFocus and activates the continueButton"
 
 	| focus focusWasActive |
 	focus := (self useProvided: #textFocus) get.
@@ -95,6 +100,7 @@ PinchTypeTutorial >> renderPhase2: props [
 
 { #category : #'as yet unclassified' }
 PinchTypeTutorial >> renderPhase3: props [
+"Move to next phase once user types the words 'Hello World' and activates the continueButton"
 
 	| focus showPart1 showContinue|
 	focus := (self useProvided: #textFocus) get.
@@ -103,12 +109,11 @@ PinchTypeTutorial >> renderPhase3: props [
 	^ props extract: [:onPhaseChange | 
 		{
 		showPart1 get ifTrue: [self label: (focus notNone ifFalse: ['Select the text field once more to get started.']
-			ifTrue: ['Now try to type the word "hello" by pinching the finger tip with the correct color for each letter with the thumb of that hand, one letter at a time. You will see which character you entered at the top. To delete a character, touch your thumbs toghether. When hello is the only word in the suggestion list on your left, close your first to send the word. ']) .].
+			ifTrue: ['Now try to type the word "hello" by pinching the finger tip with the correct color for each letter with the thumb of that hand, one letter at a time. You will see which character you entered at the top. To delete a character, touch your thumbs together. When hello is the only word in the suggestion list on your left, close your first to send the word. ']) .].
 			(showPart1 get not and: showContinue get not) ifTrue: [
 				self label: 'Awesome, now try inserting the word "world" !'.
 			].
 		showContinue get ifTrue: [self label: 'Fantastic! Now close the keyboard again and press continue'.].
-		
 		self showTextbox onTextEntered: [:text |
 			 (text includesSubstring: 'hello' )  ifTrue: [
 				showPart1 set: false.
@@ -127,6 +132,7 @@ PinchTypeTutorial >> renderPhase3: props [
 
 { #category : #'as yet unclassified' }
 PinchTypeTutorial >> renderPhase4: props [
+"Move to next phase once user enteres the word candidate, preferably through the suggestion panel and activates the continueButton"
 
 	| hasTypedCorrectWord |
 	hasTypedCorrectWord := self useState: false.
@@ -140,6 +146,7 @@ PinchTypeTutorial >> renderPhase4: props [
 
 { #category : #'as yet unclassified' }
 PinchTypeTutorial >> renderPhase5: props [
+"End of tutorial"
 
 	| hasTypedCorrectWord |
 	hasTypedCorrectWord := self useState: false.

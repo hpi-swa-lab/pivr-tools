@@ -4,29 +4,29 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #rendering }
+{ #category : #'as yet unclassified' }
 CB22TrashCan >> render: props [
 
-	| selectedMethods grabbedMethod trashCanMesh |
-	selectedMethods := props at: #selectedMethods.
-	grabbedMethod := props at: #grabbedMethod.
-	trashCanMesh := self useTrashCanMesh.
-	
-	^ GRInteractiveArea new
-		onButtonRelease: [:e |
-			e isGrip ifTrue: [
-				e handle ifNotNil: [
-					selectedMethods set: [:list | list reject: [:method | (method key) = e handle]].
-					grabbedMethod set: nil]]];
-		children: {
-			GDCollisionShape new shape: (GDCylinderShape new
-				height: 80 cm;
-				radius: 20 cm).
-			GDMeshInstance new
-				mesh: trashCanMesh;
-				scale: 0.0015 asVector3;
-				rotation: Float pi / -2 @ 0 @ 0};
-		transform: (Matrix4x4 withOffset: self trashCanPosition)
+|methods grabbedMethod trashCanMesh|
+methods := props at: #methods.
+grabbedMethod := props at: #grabbedMethod.
+trashCanMesh := self useTrashCanMesh.
+
+
+
+^ GRInteractiveArea new
+				onButtonRelease: [:e | e isGrip ifTrue: [e handle ifNotNil: [methods set: [:list | list reject: [:method | method first = e handle]]. grabbedMethod set: nil]]];
+				children: {
+					GDCollisionShape new
+				shape: (GDCylinderShape new
+					height: 80cm;
+					radius: 20cm).
+					GDMeshInstance new
+						mesh: trashCanMesh;
+						scale: 0.0015 asVector3;
+						rotation: Float pi / -2 @ 0 @0.};
+				transform: (Matrix4x4 withOffset: self trashCanPosition).
+
 ]
 
 { #category : #constants }

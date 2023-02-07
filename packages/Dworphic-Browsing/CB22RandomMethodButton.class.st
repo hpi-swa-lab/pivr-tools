@@ -4,23 +4,22 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #rendering }
+{ #category : #'as yet unclassified' }
 CB22RandomMethodButton >> render: props [
 
-	| lastCreationEvent nextMethodId selectedMethods sourceClass |
+	| lastCreationEvent nextMethodId methods |
 	lastCreationEvent := props at: #lastCreationEvent.
 	nextMethodId := props at: #nextMethodId.
-	selectedMethods := props at: #selectedMethods.
-	sourceClass := CMFFiber.
+	methods := props at: #methods.
 	
 	^ GRInteractiveArea new
 		onButtonPress: [:e |
 			e isGrip ifTrue: [
 				lastCreationEvent set: e.
-				selectedMethods set: [:old | | method |
+				methods set: [:old | | method |
 					nextMethodId set: nextMethodId get + 1.
 					method := (CMFFiber methodDict values at: (ThreadSafeRandom nextInt: 40)) value.
-					old CB22MethodSpec fromKey: nextMethodId get Class: sourceClass name Name: method selector text: method getSource asString]]];
+					old copyWith: {nextMethodId get. CMFFiber name. method selector. method getSource asString. nil}]]];
 		children: {
 			self cubeOfSize: 0.2 @ 0.3 @ 0.1 color: Color bubblegum.
 			GDLabel3D new
