@@ -42,7 +42,6 @@ PinchtypeKeyboard >> render: props [
 	layout := self layout.
 	
 	^ GRGrabbableArea new
-	"transform: ( ((Matrix4x4 new scaledBy: (Vector3 value: 3.0) )translation: 1@1@0));"
 	transform: (props at: #transform);
 		children: {
 			(self

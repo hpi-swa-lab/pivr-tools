@@ -67,6 +67,7 @@ TrackedHand >> render: props [
 	transform := self useState: Matrix4x4 new.
 	startPos := self useState: Vector3 zero.
 
+	"Set the registered hand here ans pass all relevant informations for hand tracking to handRef."
 	self useRegisterHand: handRef.
 	
 	focus := (self useProvided: #textFocus) get.
@@ -92,6 +93,7 @@ TrackedHand >> render: props [
 	isFistClosed := self useMemo: [areFistsClosed get at: (props at: #side) ifAbsent: [false].] dependencies: {areFistsClosed get}.
 	angle := self useMemo: [(tipPos get - proximalPos get) angleTo: (metacarpalPos get - proximalPos get)] dependencies: {proximalPos get. metacarpalPos get. tipPos get.}.
 	
+	"Setup emulated button presses through handtracking gestures."
 	onButtonPress := self useCallback: [:button | | event |
 		event := GRInteractiveAreaEventButton new
 			side: (props at: #side);
@@ -108,6 +110,9 @@ TrackedHand >> render: props [
 		eventReceivers get do: [:r | (r get at: #onButtonRelease) cull: event]] dependencies: {}.
 	
 	"Transcript showln: (angle < 1 and: waitForRelease get not) asString, ' ', (angle < 1) asString, ' ', (waitForRelease get) asString."
+	
+	"On closed fist set the starting position for suggestion panel scrolling and trigger the grabbing.
+	On released fist set release both grip and trigger as well as enter the current selected word from the suggestion panel."
 	self useEffect: [
 
 		(angle < 1 and: isFistClosed not) ifTrue: [
@@ -122,7 +127,7 @@ TrackedHand >> render: props [
 			onButtonRelease value: GDGlobalConstants joyVrGrip.
 			currentWord set: [:old | {}].]] dependencies: {angle}.
 	
-	
+	"On closed fist scroll through the menu with a deadzone of 10cm and a scrolling speed min 500ms per scroll and max instant jumping to top or bottom."
 	self useEffect: [
 		| deltaY duration |
 		deltaY := metacarpalPos get y - startPos get y.
@@ -133,12 +138,14 @@ TrackedHand >> render: props [
 		cooldown set: TimeStamp now.
 		]] dependencies: {metacarpalPos get}.
 	
+	"On a new text entry (triggered by change of currentWord) reset scrolling list of suggestion panel to first element and search for new entries based on current input. Limit to 15 entries max."
 	self useEffect: [
 		| sugg |
 		scrollPos set: 1.
 		sugg := suggestions search: currentWord get.
 		suggestionEntries set: ((sugg) first: (sugg size min: 15))] dependencies: {currentWord get}.
 		
+	"Per finger mapping including setup of middle finger metacarpal, proximal and tip for fist closing detection as well as coloring of finger tips."
 	finger := [:name | self node name: name , 'Metacarpal';
 				subscribeTo: #'global_transform' do: [:pos | name = 'Middle' ifTrue: [metacarpalPos set: pos translation] ];
 				 children: {self node name: name , 'Proximal';
@@ -152,8 +159,10 @@ TrackedHand >> render: props [
 									ref: (tipRefs get at: name).}}}}}].
 	rootRef := self useGodotRef.
 	
+	"Loads the OpenXR Hand from handtracking and registers for side."
 	self useRegisterHandsSide: (props at: #side) ref: rootRef.
 	
+	"Setup handtracking with hand collision as well as widgets including WristMenu and TrackedHand>>closedFistStartPoint:"
 	^ {(GDSpatial new ref: rootRef; children: {
 		self node
 			ref: handRef;
@@ -174,16 +183,26 @@ TrackedHand >> render: props [
 				finger value: 'Ring'.
 				finger value: 'Little'.
 				}}).
-				(isFistClosed and: focus notNone) ifTrue: [
+				(self methodAsComponent: #renderClosedFistStartPoint:)
+					isFistClosed: isFistClosed;
+					focus: focus;
+					startPos: startPos get.
+		}
+]
+
+{ #category : #'as yet unclassified' }
+TrackedHand >> renderClosedFistStartPoint: props [
+		
+	^ props extract: [ :isFistClosed :startPos :focus |
+		(isFistClosed and: focus notNone) ifTrue: [
 					GDMeshInstance new mesh: (GDSphereMesh new
 					radius: 1cm;
-					height: 2cm ;
+					height: 2cm;
 					material: (GDSpatialMaterial new
 						albedoColor: Color red darker;
 						flagsUnshaded: true));
-					translation: startPos get
-				].
-		}
+					translation: startPos
+				]].
 ]
 
 { #category : #'as yet unclassified' }
@@ -229,7 +248,6 @@ TrackedHand >> renderThumb: props [
 						and: (proximalPos get = Vector3 zero) not)
 						ifTrue: [
 							(other = thumbRef get get ) ifTrue: [
-								Transcript showln: TimeStamp now asString, ': Pinchtype corrected one character: ', (currentWord get ifNotEmpty: [currentWord get last] ifEmpty: ['<already empty>']).
 								currentWord get ifNotEmpty: [currentWord set: [:c | c allButLast]].].
 				(tipRefs get
 					associationsSelect: [:asc | asc value get = other]) associations
