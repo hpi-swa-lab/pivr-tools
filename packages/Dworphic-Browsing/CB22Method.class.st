@@ -58,17 +58,16 @@ CB22Method >> render: props [
 	"self halt."
 	
 	self
-		useEffect: ["(props at: #lastCreationEvent) ifNotNil: [
+		useEffect: [
+			"(props at: #lastCreationEvent) ifNotNil: [
 				(api at: #startGrab) value: (props at: #lastCreationEvent).
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
 				grabbed set: true"
-		"desc at: #grabEvent ifPresent: [:e |
+			desc grabEvent ifNotNil: [:e |
 				(api at: #startGrab) value: e.
-				grabbed set: true]"
-		"]"
-		
-		]
-		dependencies: {}.
+				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
+				grabbed set: true]]
+		dependencies: {}. 
 	
 	^ GRGrabbableArea new
 		api: api;
