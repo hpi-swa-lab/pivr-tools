@@ -101,10 +101,6 @@ VoiceWorldBuilderDworph >> render: props [
 				value: 'sheep '
 				value: 'res://assets/voice/sheep/sheep.mesh'
 				value: {#scale -> 0.1 asVector3}).
-			'create daniel' -> (creationBlock
-				value: 'daniel '
-				value: 'res://assets/voice/daniel/daniel.mesh'
-				value: {#y -> 1.5. #scale -> 1. #xRotation -> (-63 degreesToRadians). #yRotation -> Float halfPi. #zRotation -> Float halfPi negated.}).
 			'season winter' -> (seasonBlock value: self winterColor value: self winterSky).
 			'season spring' -> (seasonBlock value: self springColor value: self summerSky).
 			'season summer' -> (seasonBlock value: self summerColor value: self summerSky).

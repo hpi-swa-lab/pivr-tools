@@ -161,7 +161,7 @@ VoiceRecognizerDworph >> render: props [
 	
 	head := self useHeadTransform.
 	right := self useProvided: #rightControllerTransform.
-	isHandCloseToHead := head translation distanceTo: right translation < 0.2 m.
+	isHandCloseToHead := (head translation distanceTo: right translation) < 0.2 m.
 	
 	isRecordingButtonPressed := self useState: false.
 	self useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecordingButtonPressed set: true]]
@@ -189,7 +189,7 @@ VoiceRecognizerDworph >> render: props [
 		GDSpatial new children: {
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
-				set: #'is_recording' to: isRecording get;
+				set: #'is_recording' to: isRecording;
 				set: #'text_recognized' to: [:text | | json matches |
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {'No match! Understood: ', (json at: #text)}.

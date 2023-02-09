@@ -25,7 +25,7 @@ VoiceWorldBuilderGeometryMesh >> render: props [
 	zRotation := self useState: (other at: #zRotation ifAbsent: [0]).
 	
 	mesh := self useMemo: [GDResourceLoader instance loadPath: meshUrl] dependencies: #().
-	aabb := self useMemo: [(mesh grAsClass: #GDMesh) getAabb * scale get] dependencies: {mesh. scale}.
+	aabb := self useMemo: [(mesh grAsClass: #GDMesh) getAabb * scale get] dependencies: {mesh}.
 	
 	hovered := self useState: false.
 	
