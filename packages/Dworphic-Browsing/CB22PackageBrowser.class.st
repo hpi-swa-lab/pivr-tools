@@ -4,7 +4,7 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22PackageBrowser >> render: props [
 
 	| packages availablePackages browserRotation activePackage cylinderMesh center sound streamPlayerRef |
@@ -44,7 +44,7 @@ CB22PackageBrowser >> render: props [
 		}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 CB22PackageBrowser >> useCylinderMesh [
 
 	^ self
@@ -52,7 +52,7 @@ CB22PackageBrowser >> useCylinderMesh [
 		dependencies: #()
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22PackageBrowser >> yOffset [
 
 	^ -25 cm

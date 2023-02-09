@@ -4,25 +4,25 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22Browser >> circleRadius [
 
 	^ 1
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22Browser >> cylinderScale [
 
 	^1.8 @ 0.5 @ 1.8
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22Browser >> cylinderTranslation: center [
 
 	^ center x @ (center y + self yOffset) @ center z
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22Browser >> pointOnCircle: radius angle: degs center: c [
 
 	| angle |
@@ -30,7 +30,7 @@ CB22Browser >> pointOnCircle: radius angle: degs center: c [
 	^ (c x + angle sin * radius) @ c y @ (c z + (angle cos * radius))
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Browser >> renderChoice: props [
 
 	| transform center |
@@ -54,7 +54,7 @@ CB22Browser >> renderChoice: props [
 		yourself
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Browser >> renderCylinder: props [
 
 	| browserRotation center cylinderMesh browserRotationSetter |
@@ -72,7 +72,13 @@ CB22Browser >> renderCylinder: props [
 	"self renderCylinderCollisionShape: {}"
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
+CB22Browser >> useCylinderMesh [
+
+	self subclassResponsibility
+]
+
+{ #category : #resources }
 CB22Browser >> useCylinderShape [
 
 	^ self
@@ -80,7 +86,7 @@ CB22Browser >> useCylinderShape [
 		dependencies: #()
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22Browser >> yOffset [
  	 self subclassResponsibility
 ]

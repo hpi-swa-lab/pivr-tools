@@ -30,10 +30,6 @@ SuggestionPanel >> render: props [
 
 	scrollPos := (self useProvided: #scrollPos) get.
 	
-	"This line deals with the issue that the scroll container (for some reason) initializes itself to scroll to the bottom 
-	directly even though I set scrollVertical to 0 but I need it to be scrolled at the start. So I update the scrollPos value just once after a short moment to update the scroll container."
-	"self useEffect: [((TimeStamp now -  get) > (Duration milliSeconds: 500)) ifTrue: []] dependencies: {cooldown get}."
-	
 	^ GRViewportTexture new
 		extent: self resolution;
 		children: (GDControl new

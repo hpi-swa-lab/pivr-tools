@@ -4,13 +4,13 @@ Class {
 	#category : #'Dworphic-Browsing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CB22Method >> collisionShape [
 
 	^ (self godot: #BoxShape) extents: 0.06 @ 0.015 @ 0.07 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'morph handling' }
 CB22Method >> getTextMorphExtent: morph [
 
 	| extent |
@@ -18,33 +18,35 @@ CB22Method >> getTextMorphExtent: morph [
 	^ 0.015 @ (extent x * 0.0005) @ (extent y * 0.0005) 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'morph handling' }
 CB22Method >> getTextMorphShape: morph [
 
 	^ (self godot: #BoxShape) extents: (self getTextMorphExtent: morph) 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> render: props [
 
-	| grabbed text pressed morph world transform t et onPinboard endGrab api initialized name grabbedMethod key colorMode class initialTransform |
+	| grabbed desc text pressed morph world transform t et onPinboard endGrab api name grabbedMethod key colorMode class initialTransform |
 	grabbed := self useState: false.
 	pressed := self useState: false.
-	initialized := self useState: false.
 	world := self useWorldPortal.
-	text := (props at: #text) value.
-	name := (props at: #name) value.
-	grabbedMethod := (props at: #grabbedMethod) value.
-	key := props at: #key.
-	class := props at: #class.
-	morph := self useStyledTextMorph: text.
 	
-	initialTransform := props at: #initialTransform ifAbsent: [
+	desc := props at: #desc.
+	text := desc text.
+	key := desc key.
+	class := desc className.
+	name := desc name.
+	initialTransform := desc initialTransform ifNil: [
 		Matrix4x4 identity
 			rotation: -180 around: 1 @ 0 @ 0;
 			rotation: 180 around: 0 @ 1 @ 0;
 			translation: 0 @ 1.5 @ 0.5].
 	transform := self useState: initialTransform.
+	
+	grabbedMethod := (props at: #grabbedMethod) value.
+	
+	morph := self useStyledTextMorph: text.
 	
 	onPinboard := self useState: false.
 	endGrab := self useRef: nil.
@@ -53,13 +55,19 @@ CB22Method >> render: props [
 	
 	et := self useProvided: #rightControllerTransform.
 	t := self transformOnPinboard: et.
+	
 	self
 		useEffect: [
-			(props at: #lastCreationEvent) ifNotNil: [
+			"(props at: #lastCreationEvent) ifNotNil: [
 				(api at: #startGrab) value: (props at: #lastCreationEvent).
+				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
+				grabbed set: true"
+			desc grabEvent ifNotNil: [:e |
+				(api at: #startGrab) value: e.
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
 				grabbed set: true]]
 		dependencies: {}.
+	
 	^ GRGrabbableArea new
 		api: api;
 		point: onPinboard get;
@@ -92,26 +100,35 @@ CB22Method >> render: props [
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
-			key == 0 ifTrue: [ | newId methods |
-				"Method is active method by browser"
-				newId := (props at: #nextMethodId) get.
-				(props at: #nextMethodId) set: newId + 1.
-				key := newId.
-				methods := props at: #methods.
-				methods set: ((methods get reject: [:desc | desc first == 0]) copyWith: {key. class. name. text. transform get})].
-			onPinboard get ifTrue: [
-				onPinboard set: false.
-				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
-			grabbed set: true.
-			colorMode set: 'grabbed'.
-			grabbedMethod set: key];
+			key = 0
+				ifTrue: [ | newId selectedMethods |
+					"Method is active method by browser"
+					newId := (props at: #nextMethodId) get.
+					(props at: #nextMethodId) set: newId + 1.
+					key := newId.
+					selectedMethods := props at: #selectedMethods.
+					selectedMethods set: ((selectedMethods get reject: [:d | d key = 0]) copyWith: (CB22MethodSpec new
+						key: key;
+						className: class;
+						name: name;
+						text: text;
+						initialTransform: initialTransform;
+						grabEvent: e;
+						yourself))]
+				ifFalse: [
+					onPinboard get ifTrue: [
+						onPinboard set: false.
+						(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0)].
+					grabbed set: true.
+					colorMode set: 'grabbed'.
+					grabbedMethod set: key]];
 		onRelease: [:e |
 			colorMode set: 'normal'.
 			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
 			grabbed set: false]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> renderCollisionShape: morph [
 
 	^ GDCollisionShape new
@@ -119,7 +136,7 @@ CB22Method >> renderCollisionShape: morph [
 		rotation: 4.2 @ 0 @ Float pi / 2
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> renderMethodDisplayFar: name extent: e [
 
 	^ GDLabel3D new
@@ -131,7 +148,7 @@ CB22Method >> renderMethodDisplayFar: name extent: e [
 		rotation: 0.4 @ 0 @ 0 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CB22Method >> renderMethodDisplayNear: morph [
 
 	^ FormDworph new
@@ -140,7 +157,7 @@ CB22Method >> renderMethodDisplayNear: morph [
 		translation: 0 @ 0.017 @ 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22Method >> transformInSphere: et center: c radius: r [
 
 	^ (et forwardRay intersectSphere: c radius: r)
@@ -148,7 +165,7 @@ CB22Method >> transformInSphere: et center: c radius: r [
 		ifNil: [Matrix4x4 identity]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #transform }
 CB22Method >> transformOnPinboard: handTransform [
 
 	^ (handTransform forwardRay
@@ -158,7 +175,7 @@ CB22Method >> transformOnPinboard: handTransform [
 		ifNil: [Matrix4x4 identity]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 CB22Method >> useStyledTextMorph: text [
 
 	^ self
