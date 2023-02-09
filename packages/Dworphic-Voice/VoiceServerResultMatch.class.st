@@ -1,3 +1,6 @@
+"
+I am a data class for accessing the results of the transcription pipeline
+"
 Class {
 	#name : #VoiceServerResultMatch,
 	#superclass : #Object,

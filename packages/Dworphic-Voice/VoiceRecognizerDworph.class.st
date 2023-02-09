@@ -1,3 +1,6 @@
+"
+I am the main component for interacting with the transcription pipeline and managing the voice recording. Needed to make voice support work.
+"
 Class {
 	#name : #VoiceRecognizerDworph,
 	#superclass : #GRComponent,

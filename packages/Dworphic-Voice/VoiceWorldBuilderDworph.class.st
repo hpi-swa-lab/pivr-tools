@@ -1,3 +1,6 @@
+"
+I am an application for building a farm
+"
 Class {
 	#name : #VoiceWorldBuilderDworph,
 	#superclass : #GRComponent,
@@ -126,7 +129,7 @@ VoiceWorldBuilderDworph >> render: props [
 	^ GRProvider values: {
 		#floorRef -> floorRef.
 	} children: {
-		showTutorial get ifTrue: [VoiceTutorialDworph new].
+		showTutorial get ifTrue: [VoiceTutorial new].
 		elements get.
 		GDStaticBody new children: {self floorWithColor: floorColor get}; ref: floorRef.
 		self light.
