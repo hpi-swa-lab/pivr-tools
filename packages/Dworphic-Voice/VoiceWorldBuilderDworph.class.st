@@ -47,21 +47,20 @@ VoiceWorldBuilderDworph >> light [
 { #category : #'as yet unclassified' }
 VoiceWorldBuilderDworph >> render: props [
 
-	| showTutorial elements keyIndex creationBlock floorColor sky floorRef |
+	| showTutorial elements keyIndex creationBlock floorColor sky floorRef seasonBlock |
 	showTutorial := self useState: true.
 	self
 		useVoiceIntents: {'finish' -> [showTutorial set: false]. 'open' -> [showTutorial set: true]}
 		key: 'tutorial'.
 	
-	"An always increasing counter to manage voice created instance names"
+	"A montonically increasing counter for managing object ids"
 	keyIndex := self useState: 1.
 	elements := self useState: {}.
 	
 	floorColor := self useState: self summerColor.
 	sky := self useState: self summerSky.
 	
-	"This is a block which returns a block suitable as voice intent action. The voice intent action block returned returns a block itself
-	which does the teardown."
+	"higher-order block that returns a block suitable as a voice intent block for creating components"
 	creationBlock := [:keyBase :meshUrl :other | | oldIndex mesh |
 		[
 			oldIndex := keyIndex get.
@@ -78,6 +77,15 @@ VoiceWorldBuilderDworph >> render: props [
 				oldElements copyWith: mesh].
 			
 			[elements set: [:oldElements | oldElements copyWithout: mesh]]]].
+
+	"higher-order block that returns a block suitable as a voice intent block for changing the season"
+	seasonBlock := [:newFloorColor :newSky | | oldFloor oldSky |
+		[
+				oldFloor := floorColor get.
+				floorColor set: newFloorColor.
+				oldSky := sky get.
+				sky set: newSky.
+				[floorColor set: oldFloor. sky set: oldSky]]].
 	
 	self
 		useVoiceIntents: {
@@ -97,39 +105,19 @@ VoiceWorldBuilderDworph >> render: props [
 				value: 'daniel '
 				value: 'res://assets/voice/daniel/daniel.mesh'
 				value: {#y -> 1.5. #scale -> 1. #xRotation -> (-63 degreesToRadians). #yRotation -> Float halfPi. #zRotation -> Float halfPi negated.}).
-			'season winter' -> [ | oldFloor oldSky |
-				oldFloor := floorColor get.
-				floorColor set: self winterColor.
-				oldSky := sky get.
-				sky set: self winterSky.
-				[floorColor set: oldFloor. sky set: oldSky]].
-			'season spring' -> [ | oldFloor oldSky |
-				oldFloor := floorColor get.
-				floorColor set: self springColor.
-				oldSky := sky get.
-				sky set: self summerSky. "wip todo"
-				[floorColor set: oldFloor. sky set: oldSky]].
-			'season summer' -> [ | oldFloor oldSky |
-				oldFloor := floorColor get.
-				floorColor set: self summerColor.
-				oldSky := sky get.
-				sky set: self summerSky.
-				[floorColor set: oldFloor. sky set: oldSky]].
-			'season autumn' -> [ | oldFloor oldSky |
-				oldFloor := floorColor get.
-				floorColor set: self autumnColor.
-				oldSky := sky get.
-				sky set: self autumnSky.
-				[floorColor set: oldFloor. sky set: oldSky]].}
+			'season winter' -> (seasonBlock value: self winterColor value: self winterSky).
+			'season spring' -> (seasonBlock value: self springColor value: self summerSky).
+			'season summer' -> (seasonBlock value: self summerColor value: self summerSky).
+			'season autumn' -> (seasonBlock value: self autumnColor value: self autumnSky).}
 		key: 'world'.
-	"global commands"
 	
+	"floorRef can be used to find intersection points, allowing eg contextual movement like 'move over there'"
 	floorRef := self useGodotRef.
 	
 	^ GRProvider values: {
 		#floorRef -> floorRef.
 	} children: {
-		showTutorial get ifTrue: [VoiceTutorial new].
+		showTutorial get ifTrue: [VoiceWorldBuilderTutorial new].
 		elements get.
 		GDStaticBody new children: {self floorWithColor: floorColor get}; ref: floorRef.
 		self light.

@@ -1,17 +1,17 @@
 Class {
-	#name : #VoiceTutorial,
+	#name : #VoiceWorldBuilderTutorial,
 	#superclass : #GRComponent,
 	#category : #'Dworphic-Voice'
 }
 
 { #category : #'as yet unclassified' }
-VoiceTutorial >> fontSize [
+VoiceWorldBuilderTutorial >> fontSize [
 
 	^ 30
 ]
 
 { #category : #'as yet unclassified' }
-VoiceTutorial >> render: props [
+VoiceWorldBuilderTutorial >> render: props [
 
 	| headPortal |
 	headPortal := self useProvided: #headPortal.
@@ -54,13 +54,13 @@ VoiceTutorial >> render: props [
 ]
 
 { #category : #'as yet unclassified' }
-VoiceTutorial >> resolution [
+VoiceWorldBuilderTutorial >> resolution [
 
 	^ (1500 @ 1000)
 ]
 
 { #category : #'as yet unclassified' }
-VoiceTutorial >> tutorialText [
+VoiceWorldBuilderTutorial >> tutorialText [
 
 	^ {
 		'Welcome to world builder!'.
