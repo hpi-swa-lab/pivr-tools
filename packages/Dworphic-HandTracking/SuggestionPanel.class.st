@@ -1,3 +1,6 @@
+"
+A SuggestionPanel is a Dworph that shows users the possible words that may result from their pinchtype query. It indicates which word is currently selected.
+"
 Class {
 	#name : #SuggestionPanel,
 	#superclass : #GRComponent,

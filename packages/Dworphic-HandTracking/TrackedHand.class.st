@@ -1,3 +1,6 @@
+"
+A TrackedHand renders one hand of the user. It creates bone nodes which are moved by OpenXR and detects gestures. It detects fist and pinch gestures. Pinch gestures are handled when other fingers intersect with the thumb tip. Fist gestures are recognized by the angle between the palm and the middle finger.
+"
 Class {
 	#name : #TrackedHand,
 	#superclass : #GRComponent,

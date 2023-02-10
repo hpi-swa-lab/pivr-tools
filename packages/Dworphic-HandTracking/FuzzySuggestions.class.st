@@ -1,3 +1,8 @@
+"
+A FuzzySuggestions can be used to run queries typed in via PinchType against a list of suggestable words.
+It is fuzzy, meaning that even iff some characters are missing a query can match a word. For example, the query 'youf' matches 'yourself'. By default, the first three characters are non-fuzzy to limit the number of results.
+Search queries are arrays of chars and numbers. Numbers represent PinchType character groups. For example, search: {0. 'a'} requires the first character of a suggested word to be in the first chracter group (=typed by the left little finger) and requires the second character to be an 'a'. This is currently not used, but would allow to input single characters mixed with pinched characters. 
+"
 Class {
 	#name : #FuzzySuggestions,
 	#superclass : #Object,

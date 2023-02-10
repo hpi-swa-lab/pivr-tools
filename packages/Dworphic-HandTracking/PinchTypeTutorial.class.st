@@ -1,3 +1,6 @@
+"
+A PinchTypeTutorial is a Dworph that explains both pinchtype and handtracking in general to new users.
+"
 Class {
 	#name : #PinchTypeTutorial,
 	#superclass : #GRComponent,

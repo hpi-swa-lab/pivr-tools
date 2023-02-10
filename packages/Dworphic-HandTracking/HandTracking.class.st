@@ -1,3 +1,6 @@
+"
+A HandTracking is a Dworph that is the entrypoint into hand tracking. It can be accessed from AppControl. It registers the TrackedHands as controllers and displays the Pinchtype components when a textbox is selected.
+"
 Class {
 	#name : #HandTracking,
 	#superclass : #GRComponent,

@@ -1,3 +1,6 @@
+"
+A PinchtypeKeyboard is Dworph that displays a keyboard color-coded to show users which finger pinch represents which characters (the fingertips are lso colorcoded). It also displays the currently unsubmitted characters represented by colored boxes.
+"
 Class {
 	#name : #PinchtypeKeyboard,
 	#superclass : #GRComponent,

@@ -1,3 +1,12 @@
+"
+A FuzzySuggestionEntry is a dataclass used to store information about a word that can be suggested by FuzzySuggestions
+
+Instance Variables
+	chars:		An array of characters, the characters that make up the word
+	group:		An array of numbers that represent pinchtype character groups
+
+
+"
 Class {
 	#name : #FuzzySuggestionEntry,
 	#superclass : #Object,

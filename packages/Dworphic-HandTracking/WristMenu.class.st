@@ -1,3 +1,6 @@
+"
+A WristMenu shows HandTracking users quick access burtons at their wrist which can be touched by fingers of the other hand.
+"
 Class {
 	#name : #WristMenu,
 	#superclass : #GRComponent,
