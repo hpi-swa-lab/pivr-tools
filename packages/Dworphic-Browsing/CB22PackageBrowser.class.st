@@ -55,5 +55,5 @@ CB22PackageBrowser >> useCylinderMesh [
 { #category : #constants }
 CB22PackageBrowser >> yOffset [
 
-	^ -25 cm
+	^ -25 cm+ self class browserYOffset
 ]
