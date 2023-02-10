@@ -7,8 +7,10 @@ GRComponent >> replaceLog [
 	| log |
 	log := self useProvidedRef: #logEntries.
 	
-	^ [:anIndex :aBlock | log get set: [:entries | entries at: anIndex put: (aBlock cull: (entries at: anIndex)). entries]]
-	
+	^ [:anIndex :aBlock |
+		log get set: [:entries |
+			entries at: anIndex put: (aBlock cull: (entries at: anIndex)).
+			entries]]
 ]
 
 { #category : #'*Dworphic-Log' }
@@ -16,5 +18,7 @@ GRComponent >> useLog [
 
 	| log |
 	log := self useProvidedRef: #logEntries.
-	^ [:message | log get set: [:entries | entries copyWith: message]. (log get get size)]
+	^ [:message |
+		log get set: [:entries | entries copyWith: message].
+		log get get size]
 ]

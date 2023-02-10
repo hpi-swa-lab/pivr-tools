@@ -4,11 +4,11 @@ Class {
 	#category : #'Dworphic-Attention'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 AttentionDworph >> render: props [
 
 	| target |
 	target := props at: #target.
 	
-	^ (self cubeOfSize: 1 color: Color orange) translation: target.
+	^ (self cubeOfSize: 1 color: Color orange) translation: target
 ]

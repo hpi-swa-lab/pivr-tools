@@ -22,14 +22,13 @@ LogDworph >> render: props [
 
 	| entries viewportTex transcript |
 	transcript := self useRef: nil.
-	self useEffect: [
-		transcript set: DworphicTranscript new.
-		[transcript get cleanup]] dependencies: #().
+	self
+		useEffect: [
+			transcript set: DworphicTranscript new.
+			[transcript get cleanup]]
+		dependencies: #().
 	
-	entries := transcript get
-		ifNil: [#()]
-		ifNotNil: [:t |
-			t lines].
+	entries := transcript get ifNil: [#()] ifNotNil: [:t | t lines].
 	viewportTex := self useState: nil.
 	
 	^ GRViewportTexture new
@@ -60,9 +59,11 @@ LogDworph >> render: props [
 									subscribeCall: 'grab_focus' with: #() do: []}}});
 		meshDo: [:material |
 			GRGrabbableArea new children: {
-				GDCollisionShape new shape: (GDBoxShape new extents: 0.75 @ 0.5 @ 0.1); translation: 0 @ 1 @ 0.
+				GDCollisionShape new
+					shape: (GDBoxShape new extents: 0.75 @ 0.5 @ 0.1);
+					translation: 0 @ 1 @ 0.
 				GDMeshInstance new
-				translation: 0@1@0;
+					translation: 0 @ 1 @ 0;
 					mesh: (GDQuadMesh new
 						size: 1.5 @ 1;
 						material: material).

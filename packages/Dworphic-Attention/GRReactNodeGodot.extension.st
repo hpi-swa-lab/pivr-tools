@@ -9,5 +9,5 @@ GRReactNodeGodot >> highlight [
 { #category : #'*Dworphic-Attention' }
 GRReactNodeGodot >> traceMe [
 
-	^ TraceCollectorDworph new child: self.
+	^ TraceCollectorDworph new child: self
 ]
