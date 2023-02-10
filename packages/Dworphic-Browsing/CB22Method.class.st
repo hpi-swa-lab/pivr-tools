@@ -27,7 +27,7 @@ CB22Method >> getTextMorphShape: morph [
 { #category : #rendering }
 CB22Method >> render: props [
 
-	| grabbed desc text pressed morph world transform t et onPinboard endGrab api name grabbedMethod key colorMode class initialTransform |
+	| grabbed desc text pressed morph world transform pinboardTransform eventTransform onPinboard endGrab api name grabbedMethod key colorMode class initialTransform |
 	grabbed := self useState: false.
 	pressed := self useState: false.
 	world := self useWorldPortal.
@@ -53,15 +53,11 @@ CB22Method >> render: props [
 	api := Dictionary new.
 	colorMode := self useState: 'normal'.
 	
-	et := self useProvided: #rightControllerTransform.
-	t := self transformOnPinboard: et.
+	eventTransform := self useProvided: #rightControllerTransform.
+	pinboardTransform := self transformOnPinboard: eventTransform.
 	
 	self
 		useEffect: [
-			"(props at: #lastCreationEvent) ifNotNil: [
-				(api at: #startGrab) value: (props at: #lastCreationEvent).
-				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
-				grabbed set: true"
 			desc grabEvent ifNotNil: [:e |
 				(api at: #startGrab) value: e.
 				(api at: #setGrabOffset) value: (Matrix4x4 withRotation: -90 around: 1 @ 0 @ 0).
@@ -96,7 +92,7 @@ CB22Method >> render: props [
 					(api at: #endGrab) value]].
 			(onPinboard get and: [e strength < -0.5]) ifTrue: [
 				onPinboard set: false.
-				transform set: (self transformInSphere: et center: et translation radius: 2 cm)]];
+				transform set: (self transformInSphere: eventTransform center: eventTransform translation radius: 2 cm)]];
 		onButtonRelease: [:e | e isTrigger ifTrue: [pressed set: false]];
 		handle: key;
 		onGrab: [:e |
@@ -124,7 +120,7 @@ CB22Method >> render: props [
 					grabbedMethod set: key]];
 		onRelease: [:e |
 			colorMode set: 'normal'.
-			onPinboard get ifTrue: [transform set: t] ifFalse: [transform set: e transform].
+			onPinboard get ifTrue: [transform set: pinboardTransform] ifFalse: [transform set: e transform].
 			grabbed set: false]
 ]
 

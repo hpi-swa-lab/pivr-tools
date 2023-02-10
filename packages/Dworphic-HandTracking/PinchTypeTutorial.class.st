@@ -161,6 +161,11 @@ PinchTypeTutorial >> renderPhase5: props [
 ]
 
 { #category : #'as yet unclassified' }
+PinchTypeTutorial >> showTextbox [
+	^ TextInputDworph new translation: 0 @ -25cm @ 2cm .
+]
+
+{ #category : #'as yet unclassified' }
 PinchTypeTutorial >> textbox [
 	^ TextInputDworph new translation: 0 @ -25cm @ 2cm .
 ]

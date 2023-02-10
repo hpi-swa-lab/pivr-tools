@@ -1,3 +1,6 @@
+"
+I am the main component for interacting with the transcription pipeline and managing the voice recording. Needed to make voice support work.
+"
 Class {
 	#name : #VoiceRecognizerDworph,
 	#superclass : #GRComponent,
@@ -122,12 +125,6 @@ VoiceRecognizerDworph >> match: aVoiceServerResultMatch on: aCollectionOfIntentH
 ]
 
 { #category : #'as yet unclassified' }
-VoiceRecognizerDworph >> match: aString withParams: aCollection on: aCollectionOfIntentHandlerCollections [
-
-	aCollectionOfIntentHandlerCollections get do: [:aCollectionOfIntentHandlers | aCollectionOfIntentHandlers get keysAndValuesDo: [:intentString :callback | aString = intentString ifTrue: [callback valueWithEnoughArguments: aCollection]]]
-]
-
-{ #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> port [
 	^ 5000
 ]
@@ -146,14 +143,11 @@ VoiceRecognizerDworph >> recordingIndicator: aBoolean [
 { #category : #'as yet unclassified' }
 VoiceRecognizerDworph >> render: props [
 
-	| isRecording script lastText head right distance shouldRecord headPortal intentHandlers visible isVisible undoStackState font |
-	isRecording := self useState: false.
+	| script lastText head right headPortal intentHandlers undoStackState font isRecording isHandCloseToHead isRecordingButtonPressed |
 	script := self useState: nil.
-	lastText := self useState: {'Say "show" to show applications, and "hide" to hide them.'}.
+	lastText := self useState: {'Bress B to record, or move your right hand to your mouth.'}.
 	
 	intentHandlers := self useProvided: #voiceIntentHandlers.
-	visible := self useState: false.
-	
 	undoStackState := self useState: OrderedCollection new.
 	
 	self
@@ -167,19 +161,17 @@ VoiceRecognizerDworph >> render: props [
 	
 	head := self useHeadTransform.
 	right := self useProvided: #rightControllerTransform.
-	headPortal := self useProvided: #headPortal.
-	distance := head translation distanceTo: right translation.
-	shouldRecord := distance < 0.2 m.
-	isVisible := (shouldRecord or: [visible get]) or: [isRecording get].
+	isHandCloseToHead := (head translation distanceTo: right translation) < 0.2 m.
 	
-	self useEffect: [isRecording set: shouldRecord] dependencies: {shouldRecord}.
-	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {isRecording get}.
-	
-	self
-		useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: true]]
-		release: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecording set: false]]
+	isRecordingButtonPressed := self useState: false.
+	self useButtonPress: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecordingButtonPressed set: true]]
+		release: [:e | e button = GDGlobalConstants joyOculusBy ifTrue: [isRecordingButtonPressed set: false]]
 		axisChange: [:e | ]
 		side: #right.
+	
+	isRecording := (isHandCloseToHead or: [isRecordingButtonPressed get]).
+	
+	self useEffect: [self setIntentHandlersOnServer: intentHandlers] dependencies: {isRecording}.
 	
 	self
 		useVoiceIntents: {
@@ -191,14 +183,14 @@ VoiceRecognizerDworph >> render: props [
 		key: ''.
 		
 	font := self useProvided: #dejaVuSansOutline.
+	headPortal := self useProvided: #headPortal.
 	
 	^ script get ifNotNil: [
 		GDSpatial new children: {
 			GDAudioStreamPlayer new
 				call: 'set_script' arguments: {script get};
-				set: #'is_recording' to: isRecording get;
+				set: #'is_recording' to: isRecording;
 				set: #'text_recognized' to: [:text | | json matches |
-					visible get ifFalse: [visible set: true].
 					json := Json readFrom: text utf8ToSqueak readStream.
 					lastText set: {'No match! Understood: ', (json at: #text)}.
 					matches := (json at: #matches) collect: [:j | VoiceServerResultMatch fromJson: j].
@@ -210,8 +202,8 @@ VoiceRecognizerDworph >> render: props [
 								s add: block.
 								s copy]]]].
 			CMFReactNodePortal
-				child: (GDSpatial new children: {self recordingIndicator: isRecording get}, {
-					(isRecording get ifTrue: [{'Recording...'}] ifFalse: [lastText get]) collectWithIndex: [:t :i |
+				child: (GDSpatial new children: {self recordingIndicator: isRecording}, {
+					(isRecording ifTrue: [{'Recording...'}] ifFalse: [lastText get]) collectWithIndex: [:t :i |
 						GDLabel3D new
 							text: t;
 							font: font;

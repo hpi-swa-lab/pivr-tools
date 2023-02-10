@@ -1,5 +1,5 @@
 "
-This class automatically support some geometric voice commands, such as 'move x', for a mesh
+I provide common voice commands for transforming a given mesh
 "
 Class {
 	#name : #VoiceWorldBuilderGeometryMesh,
@@ -12,8 +12,6 @@ Class {
 
 { #category : #'as yet unclassified' }
 VoiceWorldBuilderGeometryMesh >> render: props [
-"renders a given mesh and provicdes some voice utilities for transforming it."
-
 	| key delete meshUrl hovered voiceIntents mesh aabb scale yRotation other xRotation zRotation ref controllerTransform floorRef position |
 	key := props at: #key.
 	delete := props at: #delete.
@@ -39,18 +37,6 @@ VoiceWorldBuilderGeometryMesh >> render: props [
 				intersection := floorRef get getWorld directSpaceState intersectRayFrom: controllerTransform forwardRay origin to: (controllerTransform forwardRay pointFromOrigin: 30 m).
 				intersection ifNotEmpty: [:is | position set: (is at: 'position')] ifEmpty: [Transcript showln: 'no intersection for moving']
 			].
-"		'x \num' -> [:num | | oldPosition |
-			oldPosition := position get copy.
-			position set: [:old | old copy x: (num ifNil: [oldPosition]) asNumber].
-			[position set: oldPosition]].
-		'y \num' ->  [:num | | oldPosition |
-			oldPosition := position get copy.
-			position set: [:old | old copy y: (num ifNil: [oldPosition]) asNumber].
-			[position set: oldPosition]].
-		'z \num' -> [:num | | oldPosition |
-			oldPosition := position get copy.
-			position set: [:old | old copy z: (num ifNil: [oldPosition]) asNumber].
-			[position set: oldPosition]]."
 		'move x \num' -> [:num | | oldPosition |
 			oldPosition := position get copy.
 			position set: [:old | old copy x: (old x + (num ifNil: ['0']) asNumber)].

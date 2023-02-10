@@ -11,12 +11,15 @@ TraceVisualizerDworph class >> appDescription [
 	^ super appDescription
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 TraceVisualizerDworph >> render: props [
 
 	| traces world |
-	
 	traces := self useProvided: #traces.
 	world := self useWorldPortal.
-	^ traces get values collect: [:traceList | traceList collect: [:trace | CMFReactNodePortal child: ((self cubeVisualOfSize: 0.1 color: Color gray) globalTranslation: trace) in: world]].
+	^ traces get values collect: [:traceList |
+		traceList collect: [:trace |
+			CMFReactNodePortal
+				child: ((self cubeVisualOfSize: 0.1 color: Color gray) globalTranslation: trace)
+				in: world]]
 ]

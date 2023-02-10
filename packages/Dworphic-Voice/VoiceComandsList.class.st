@@ -5,6 +5,11 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+VoiceComandsList >> fontPath [
+	^ 'res://assets/attention-direction/NotoSans.ttf'
+]
+
+{ #category : #'as yet unclassified' }
 VoiceComandsList >> fontSize [
 
 	^ 30
@@ -37,8 +42,7 @@ VoiceComandsList >> render: props [
 		useVoiceIntents: {
 			'help me' -> [
 				commandStrings set: (self intentHandlersKeys: intentHandlers).
-				visible set: true.
-				Transcript showln: 'help me']}
+				visible set: true]}
 		key: ' '.
 	
 	^ visible get
@@ -60,14 +64,14 @@ VoiceComandsList >> render: props [
 										children: {
 											GDLabel new
 												theme: (GDTheme new defaultFont: (GDDynamicFont new
-													fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+													fontData: (GDDynamicFontData new fontPath: self fontPath);
 													size: self fontSize));
 												autowrap: true;
 												text: 'You can say the following commands:'.
 											commandStrings get collect: [:entry |
 												GDLabel new
 													theme: (GDTheme new defaultFont: (GDDynamicFont new
-														fontData: (GDDynamicFontData new fontPath: 'res://assets/attention-direction/NotoSans.ttf');
+														fontData: (GDDynamicFontData new fontPath: self fontPath);
 														size: self fontSize));
 													autowrap: true;
 													text: entry]}}});

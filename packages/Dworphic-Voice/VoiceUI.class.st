@@ -1,3 +1,6 @@
+"
+I am a red sphere showing the object id and the voice commands of given object
+"
 Class {
 	#name : #VoiceUI,
 	#superclass : #GRComponent,

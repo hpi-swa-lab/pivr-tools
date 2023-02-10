@@ -5,6 +5,12 @@ Class {
 }
 
 { #category : #constants }
+CB22Browser class >> browserYOffset [
+
+	^ -40 cm
+]
+
+{ #category : #constants }
 CB22Browser >> circleRadius [
 
 	^ 1

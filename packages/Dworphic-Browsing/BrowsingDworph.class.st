@@ -41,14 +41,12 @@ BrowsingDworph >> render: props [
 	browserCenter := self useState: nil.
 	headTransformRef := self useProvidedRef: #headTransform.
 	
-	"Transcript showln: selectedMethods get."
-	
 	self
 		useButtonPress: [:e |
 			e button = GDGlobalConstants joyOculusBy ifTrue: [
 				browserCenter set: headTransformRef get translation.
 				browserVisible set: browserVisible get not.
-				selectedMethods set: (selectedMethods get reject: [:desc | (desc key) = 0])]]
+				selectedMethods set: (selectedMethods get reject: [:desc | desc key = 0])]]
 		release: [:e | ]
 		axisChange: [:e | ]
 		side: #right.

@@ -4,13 +4,13 @@ Class {
 	#category : #'Dworphic-Attention-UserTest'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 AtdBowDworph >> render: props [
 
 	^ self renderFull: props
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 AtdBowDworph >> renderFull: props [
 
 	| arrows world grabbedSide aim string |
@@ -45,7 +45,7 @@ AtdBowDworph >> renderFull: props [
 			in: world}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 AtdBowDworph >> renderVisuals: props [
 
 	^ GDSpatial new
