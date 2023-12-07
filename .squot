@@ -7,6 +7,5 @@ OrderedDictionary {
 	'packages/BaselineOfPiVR' : #SquotTonelSerializer,
 	'packages/Dworphic-Attention' : #SquotTonelSerializer,
 	'packages/Dworphic-Voice' : #SquotTonelSerializer,
-	'packages/BCD-Tutorial' : #SquotTonelSerializer,
-	'GReaSe-Tools' : #SquotTonelSerializer
+	'packages/BCD-Tutorial' : #SquotTonelSerializer
 }
